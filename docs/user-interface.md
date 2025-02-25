@@ -199,3 +199,132 @@ ramenctl relocate --drpc-name NAME [--namespace NAMESPACE] [--config CONFIG_FILE
 ```
 
 Relocate a protected application to the other cluster.
+
+## Examples
+
+This section show how different command are used together.
+
+### Testing environment
+
+Create a configuration file:
+
+```console
+$ ramenctl init --envfile envs/regional-dr.yaml
+Created "config.yaml", please review and edit as needed.
+```
+
+Reviewing the file:
+
+```console
+$ cat config.yaml
+---
+clusters:
+  hub:
+    name: hub
+  c1:
+    name: dr1
+  c2:
+    name: dr2
+
+storage:
+- name: rbd
+  storageClassName: rook-ceph-block
+  accessModes: ReadWriteOnce
+- name: cephfs
+  storageClassName: rook-cephfs-test-fs1
+  accessModes: ReadWriteMany
+
+tests:
+- name dep-appset-rbd
+  workload: deployment
+  deployer: applicationset
+  storage: rbd
+```
+
+Running tests:
+
+```console
+$ ramenctl test run
+✅ application "dep-appset-rbd" deployed on cluster "dr1"
+✅ application "dep-appset-rbd" protected on cluster "dr1"
+✅ application "dep-appset-rbd" failed over to cluster "dr2"
+✅ application "dep-appset-rbd" unprotected on cluster "dr2"
+✅ application "dep-appset-rbd" protected on cluster "dr2"
+❌ Failed to relocate application "dep-appset-rbd" to cluster "dr2"
+📦 Created report.202502252001
+```
+
+Checking the report:
+
+```console
+$ tree report.202502252001
+...
+$ less report.202502252001/test.log
+...
+```
+
+Cleaning up:
+
+```console
+$ ramenctl test clean
+✅ Cleaned up cluster "hub"
+✅ Cleaned up cluster "dr1"
+✅ Cleaned up cluster "dr2"
+```
+
+### Real environment
+
+Create a configuration file:
+
+```console
+$ ramenctl init
+Created "config.yaml", please review and edit as needed.
+```
+
+Reviewing the config file:
+
+```console
+$ cat config.yaml
+---
+# Clusters
+# Uncomment to add your kubconfigs and cluster names.
+# clusters:
+#   hub:
+#     name: hub
+#     config: hub/config
+#   c1:
+#     name: cluster1
+#     config: cluster1/config
+#   c2:
+#     name: cluster2
+#     config: cluster2/config
+```
+
+Adding kubeconfigs files and cluster names:
+
+```console
+$ cat config.yaml
+---
+# Clusters
+# Uncomment to add your kubconfigs and cluster names.
+clusters:
+  hub:
+    name: myhub
+    config: kubeconfigs/myhub
+  c1:
+    name: myc1
+    config: kubeconfigs/myc1
+  c2:
+    name: myc2
+    config: kubeconfigs/myc2
+```
+
+Validating clusters:
+
+```console
+$ ramenctl validate clusters
+🔎 Inspecting cluster "myhub"
+🔎 Inspecting cluster "myc1"
+🔎 Inspecting cluster "myc2"
+✅ Validation completed successfully
+```
