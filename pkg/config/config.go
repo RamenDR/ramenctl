@@ -5,65 +5,15 @@ package config
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
 	"text/template"
 )
 
-var sampleConfig = `## {{.CommandName}} configuration file
-
-## Clusters configuration.
-# - Modify clusters "kubeconfig" and "name" to match your hub and managed
-#   clusters names and path to the kubeconfig file.
-clusters:
-  hub:
-    name: hub
-    kubeconfig: hub/config
-  c1:
-    name: primary
-    kubeconfig: primary/config
-  c2:
-    name: secondary
-    kubeconfig: secondary/config
-
-## Git repository for test command.
-# - Modify "url" to use your own Git repository.
-# - Modify "branch" to test a different branch.
-repo:
-  url: https://github.com/RamenDR/ocm-ramen-samples.git
-  branch: main
-
-## DRPolicy for test command.
-# - Modify to match actual DRPolicy in the hub cluster.
-drPolicy: dr-policy
-
-## ClusterSet for test command".
-# - Modify to match your Open Cluster Management configuration.
-clusterSet: default
-
-## PVC specifications for test command.
-# - Modify items "storageclassname" to match the actual storage classes in the
-#   managed clusters.
-# - Add new items for testing more storage types.
-PVCSpecs:
-- name: rbd
-  storageClassName: rook-ceph-block
-  accessModes: ReadWriteOnce
-- name: cephfs
-  storageClassName: rook-cephfs-fs1
-  accessModes: ReadWriteMany
-
-## Tests cases for test command.
-# - Modify the test for your preferred workload or deployment type.
-# - Add new tests for testing more combinations in parallel.
-# - Available workloads: deploy
-# - Available deployers: appset, subscr, disapp
-tests:
-- workload: deploy
-  deployer: appset
-  pvcSpec: rbd
-`
+//go:embed sample.yaml
+var sampleConfig string
 
 func CreateSampleConfig(filename, commandName string) error {
 	sample := Sample{CommandName: commandName}
