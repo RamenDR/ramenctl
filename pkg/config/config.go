@@ -4,12 +4,14 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
+	"text/template"
 )
 
-var sampleConfig = `## %s configuration file
+var sampleConfig = `## {{.CommandName}} configuration file
 
 ## Clusters configuration.
 # - Modify clusters "kubeconfigpath" and "name" to match your hub and managed
@@ -63,15 +65,35 @@ tests:
   pvcspec: rbd
 `
 
-func CreateSampleConfig(filename, creator string) error {
-	content := fmt.Sprintf(sampleConfig, creator)
-	if err := createFile(filename, []byte(content)); err != nil {
+func CreateSampleConfig(filename, commandName string) error {
+	sample := Sample{CommandName: commandName}
+	content, err := sample.Bytes()
+	if err != nil {
+		return fmt.Errorf("failed to create sample config: %w", err)
+	}
+	if err := createFile(filename, content); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return fmt.Errorf("configuration file %q already exists", filename)
 		}
 		return fmt.Errorf("failed to create %q: %w", filename, err)
 	}
 	return nil
+}
+
+type Sample struct {
+	CommandName string
+}
+
+func (s *Sample) Bytes() ([]byte, error) {
+	t, err := template.New("sample").Parse(sampleConfig)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, s); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 func createFile(name string, content []byte) error {
