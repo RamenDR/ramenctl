@@ -15,17 +15,30 @@ import (
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/workloads"
+	"github.com/ramendr/ramenctl/pkg/console"
 )
 
 //go:embed sample.yaml
 var sampleConfig string
 
-func CreateSampleConfig(filename, commandName string) error {
-	sample := Sample{CommandName: commandName}
+func CreateSampleConfig(filename, commandName, envFile string) error {
+	var sample *Sample
+	if envFile != "" {
+		console.Info("Using envfile %q", envFile)
+		var err error
+		sample, err = sampleFromEnvFile(envFile, commandName)
+		if err != nil {
+			return fmt.Errorf("failed to load environment file: %w", err)
+		}
+	} else {
+		sample = defaultSample(commandName)
+	}
+
 	content, err := sample.Bytes()
 	if err != nil {
 		return fmt.Errorf("failed to create sample config: %w", err)
 	}
+
 	if err := createFile(filename, content); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return fmt.Errorf("configuration file %q already exists", filename)
@@ -48,7 +61,13 @@ func ReadConfig(filename string) (*types.Config, error) {
 }
 
 type Sample struct {
-	CommandName string
+	CommandName         string
+	HubName             string
+	HubKubeconfig       string
+	PrimaryName         string
+	PrimaryKubeconfig   string
+	SecondaryName       string
+	SecondaryKubeconfig string
 }
 
 func (s *Sample) Bytes() ([]byte, error) {
@@ -73,4 +92,16 @@ func createFile(name string, content []byte) error {
 		return err
 	}
 	return f.Close()
+}
+
+func defaultSample(commandName string) *Sample {
+	return &Sample{
+		CommandName:         commandName,
+		HubName:             "hub",
+		HubKubeconfig:       "hub/config",
+		PrimaryName:         "primary",
+		PrimaryKubeconfig:   "primary/config",
+		SecondaryName:       "secondary",
+		SecondaryKubeconfig: "secondary/config",
+	}
 }
