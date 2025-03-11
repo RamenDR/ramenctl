@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Environment for testing Regional-DR.
+---
+name: "rdr"
+ramen:
+  hub: hub
+  clusters: [dr1, dr2]
+  topology: regional-dr
+  features:
+    volsync: true
