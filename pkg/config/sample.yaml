@@ -15,8 +15,7 @@ clusters:
     kubeconfig: secondary/config
 
 ## Kubernetes distribution
-# - Modify "distro" to specify your clusters kuberenetes
-#   distribution(k8s or ocp).
+# - Modify to specify your clusters kuberenetes distribution (k8s or ocp).
 distro: k8s
 
 ## Git repository for test command.
