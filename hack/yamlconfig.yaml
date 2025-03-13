@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+---
+# https://yamllint.readthedocs.io/en/stable/configuration.html
+
+extends: default
+ignore: |
+  config/**
+  hack/test/*
+rules:
+  indentation:
+    indent-sequences: consistent
+  line-length:
+    allow-non-breakable-inline-mappings: true
+  truthy:
+    check-keys: false
+    
