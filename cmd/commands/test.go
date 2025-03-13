@@ -18,7 +18,7 @@ var TestRunCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run disaster recovery flow",
 	Run: func(c *cobra.Command, args []string) {
-		if err := test.Run(outputDir()); err != nil {
+		if err := test.Run(configFile, outputDir()); err != nil {
 			console.Fatal(err)
 		}
 		console.Completed("Test run completed successfully")

@@ -10,6 +10,11 @@ import (
 	"fmt"
 	"os"
 	"text/template"
+
+	"github.com/ramendr/ramen/e2e/config"
+	"github.com/ramendr/ramen/e2e/deployers"
+	"github.com/ramendr/ramen/e2e/types"
+	"github.com/ramendr/ramen/e2e/workloads"
 )
 
 //go:embed sample.yaml
@@ -28,6 +33,18 @@ func CreateSampleConfig(filename, commandName string) error {
 		return fmt.Errorf("failed to create %q: %w", filename, err)
 	}
 	return nil
+}
+
+func ReadConfig(filename string) (*types.Config, error) {
+	options := config.Options{
+		Workloads: workloads.AvailableNames(),
+		Deployers: deployers.AvailableNames(),
+	}
+	config, err := config.ReadConfig(filename, options)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read config: %w", err)
+	}
+	return config, nil
 }
 
 type Sample struct {

@@ -4,15 +4,25 @@
 package test
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 
-func Run(outputDir string) error {
-	app := "ramenctl-test-app"
-	primary := "dr1"
-	secondary := "dr2"
+func Run(configFile string, outputDir string) error {
+	config, err := config.ReadConfig(configFile)
+	if err != nil {
+		return err
+	}
+
+	// We want to run all tests in parallel, but for now lets run one test.
+	test := config.Tests[0]
+
+	app := fmt.Sprintf("test-%s-%s-%v", test.Deployer, test.Workload, test.PVCSpec)
+	primary := config.Clusters["c1"].Name
+	secondary := config.Clusters["c2"].Name
 
 	console.Info("Using report %q", outputDir)
 
