@@ -9,6 +9,12 @@ func Run(configFile string, outputDir string) error {
 		return err
 	}
 
+	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
+	// as is for inspection.
+	if err := setupEnvironment(cmd); err != nil {
+		return err
+	}
+
 	// We want to run all tests in parallel, but for now lets run one test.
 	test := newTest(cmd.Config.Tests[0], cmd)
 
