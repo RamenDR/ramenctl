@@ -29,10 +29,10 @@ var TestCleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Delete test artifacts",
 	Run: func(c *cobra.Command, args []string) {
-		if err := test.Clean(outputDir()); err != nil {
+		if err := test.Clean(configFile, outputDir()); err != nil {
 			console.Fatal(err)
 		}
-		console.Completed("Test cleanup completed successfully")
+		console.Completed("Test clean completed successfully")
 	},
 }
 

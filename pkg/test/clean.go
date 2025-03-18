@@ -3,30 +3,26 @@
 
 package test
 
-import (
-	"time"
+func Clean(configFile string, outputDir string) error {
+	cmd, err := newCommand("test-clean", configFile, outputDir)
+	if err != nil {
+		return err
+	}
 
-	"github.com/ramendr/ramenctl/pkg/console"
-)
+	// We want to run all tests in parallel, but for now lets run one test.
+	test := newTest(cmd.Config.Tests[0], cmd)
 
-func Clean(outputDir string) error {
-	hub := "hub"
-	primary := "dr1"
-	secondary := "dr2"
+	if err := test.Unprotect(); err != nil {
+		return err
+	}
 
-	console.Info("Using report %q", outputDir)
+	if err := test.Undeploy(); err != nil {
+		return err
+	}
 
-	console.Progress("Cleaning up cluster %q", primary)
-	time.Sleep(2 * time.Second)
-	console.Completed("Cluster %q cleaned", primary)
-
-	console.Progress("Cleaning up cluster %q", secondary)
-	time.Sleep(2 * time.Second)
-	console.Completed("Cluster %q cleaned", secondary)
-
-	console.Progress("Cleaning up cluster %q", hub)
-	time.Sleep(2 * time.Second)
-	console.Completed("Cluster %q cleaned", hub)
+	if err := cleanEnvironment(cmd); err != nil {
+		return err
+	}
 
 	return nil
 }
