@@ -43,6 +43,9 @@ func main() {
 	// Adapt ramenctl root command to the odf.
 	dr.RootCmd.Use = "dr"
 	dr.RootCmd.Short = "Troubleshoot OpenShift DR"
+	dr.RootCmd.Annotations = map[string]string{
+		cobra.CommandDisplayNameAnnotation: "odf dr",
+	}
 
 	// Add a subset of ramenctl command as the "odf dr" subcommand.
 	dr.RootCmd.AddCommand(dr.InitCmd, dr.TestCmd, dr.ValidateCmd)
