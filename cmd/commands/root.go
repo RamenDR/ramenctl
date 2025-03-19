@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/ramendr/ramenctl/pkg/build"
 )
 
 var (
@@ -18,14 +20,18 @@ var (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "ramenctl",
-	Short: "Manage and troubleshoot Ramen",
+	Use:     "ramenctl",
+	Short:   "Manage and troubleshoot Ramen",
+	Version: build.Version,
 
 	// When used as a subcommand in another tool, don't inherit persistent pre run commands.
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 }
 
 func init() {
+	// Use plain, machine friendly version string.
+	RootCmd.SetVersionTemplate("{{.Version}}\n")
+
 	// These flags are used by all sub commands.
 	RootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "config.yaml", "configuration file")
 }

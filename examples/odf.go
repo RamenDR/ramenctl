@@ -8,6 +8,8 @@ import (
 	"log"
 
 	dr "github.com/ramendr/ramenctl/cmd/commands"
+	drbuild "github.com/ramendr/ramenctl/pkg/build"
+
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +45,10 @@ func main() {
 	// Adapt ramenctl root command to the odf.
 	dr.RootCmd.Use = "dr"
 	dr.RootCmd.Short = "Troubleshoot OpenShift DR"
+
+	// Set build information for odf dr reports.
+	drbuild.Version = "v1.2.3"
+	drbuild.Commit = "eb92ed81e2715d286bfd8ce173c76d4ecda9e2b4"
 
 	// Add a subset of ramenctl command as the "odf dr" subcommand.
 	dr.RootCmd.AddCommand(dr.InitCmd, dr.TestCmd, dr.ValidateCmd)
