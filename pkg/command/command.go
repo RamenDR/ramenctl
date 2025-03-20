@@ -40,7 +40,7 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 
 	cfg, err := config.ReadConfig(configFile)
 	if err != nil {
-		err := fmt.Errorf("failed to read config %q: %w", err)
+		err := fmt.Errorf("failed to read config %q: %w", configFile, err)
 		log.Error(err)
 		return nil, err
 	}
