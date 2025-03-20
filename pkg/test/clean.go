@@ -11,13 +11,14 @@ func Clean(configFile string, outputDir string) error {
 
 	// We want to run all tests in parallel, but for now lets run one test.
 	test := newTest(cmd.Config.Tests[0], cmd)
-	if err := cmd.CleanTest(test); err != nil {
-		return err
+	if !cmd.CleanTest(test) {
+		return cmd.Failed()
 	}
 
-	if err := cmd.Cleanup(); err != nil {
-		return err
+	if !cmd.Cleanup() {
+		return cmd.Failed()
 	}
 
+	cmd.Passed()
 	return nil
 }

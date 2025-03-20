@@ -4,6 +4,7 @@
 package test
 
 import (
+	"errors"
 	"fmt"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -42,56 +43,66 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 	}, nil
 }
 
-func (c *Command) Setup() error {
+func (c *Command) Setup() bool {
 	console.Progress("Setup environment")
 	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
 		err := fmt.Errorf("failed to setup environment: %w", err)
+		console.Error(err)
 		c.Logger.Error(err)
-		return err
+		return false
 	}
 	console.Completed("Environment setup")
-	return nil
+	return true
 }
 
-func (c *Command) Cleanup() error {
+func (c *Command) Cleanup() bool {
 	console.Progress("Clean environment")
 	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
 		err := fmt.Errorf("failed to clean environment: %w", err)
+		console.Error(err)
 		c.Logger.Error(err)
-		return err
+		return false
 	}
 	console.Completed("Environment cleaned")
-	return nil
+	return true
 }
 
-func (c *Command) RunTest(test *Test) error {
-	if err := test.Deploy(); err != nil {
-		return err
+func (c *Command) RunTest(test *Test) bool {
+	if !test.Deploy() {
+		return false
 	}
-	if err := test.Protect(); err != nil {
-		return err
+	if !test.Protect() {
+		return false
 	}
-	if err := test.Failover(); err != nil {
-		return err
+	if !test.Failover() {
+		return false
 	}
-	if err := test.Relocate(); err != nil {
-		return err
+	if !test.Relocate() {
+		return false
 	}
-	if err := test.Unprotect(); err != nil {
-		return err
+	if !test.Unprotect() {
+		return false
 	}
-	if err := test.Undeploy(); err != nil {
-		return err
+	if !test.Undeploy() {
+		return false
 	}
-	return nil
+	return true
 }
 
-func (c *Command) CleanTest(test *Test) error {
-	if err := test.Unprotect(); err != nil {
-		return err
+func (c *Command) CleanTest(test *Test) bool {
+	if !test.Unprotect() {
+		return false
 	}
-	if err := test.Undeploy(); err != nil {
-		return err
+	if !test.Undeploy() {
+		return false
 	}
-	return nil
+	return true
+}
+
+func (c *Command) Failed() error {
+	return errors.New("failed")
+}
+
+func (c *Command) Passed() {
+	console.Completed("passed")
 }
