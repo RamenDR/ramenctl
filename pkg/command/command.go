@@ -5,8 +5,11 @@ package command
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"go.uber.org/zap"
+	"sigs.k8s.io/yaml"
 
 	e2eenv "github.com/ramendr/ramen/e2e/env"
 	"github.com/ramendr/ramen/e2e/types"
@@ -61,4 +64,14 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 		Env:       env,
 		Logger:    log,
 	}, nil
+}
+
+// WriteReport writes report in yaml format to the command output directory.
+func (c *Command) WriteReport(report any) error {
+	data, err := yaml.Marshal(report)
+	if err != nil {
+		return fmt.Errorf("failed to marshal report: %w", err)
+	}
+	path := filepath.Join(c.OutputDir, c.Name+".yaml")
+	return os.WriteFile(path, data, 0o640)
 }
