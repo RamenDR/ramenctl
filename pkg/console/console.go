@@ -26,8 +26,12 @@ func Completed(format string, args ...any) {
 	fmt.Print(pad(line), "\n")
 }
 
-func Fatal(err error) {
+func Error(err error) {
 	fmt.Fprintf(os.Stderr, "❌ %s\n", err)
+}
+
+func Fatal(err error) {
+	Error(err)
 	os.Exit(1)
 }
 
