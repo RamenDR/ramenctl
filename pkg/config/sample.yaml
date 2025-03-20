@@ -5,14 +5,14 @@
 #   clusters names and path to the kubeconfig file.
 clusters:
   hub:
-    name: hub
-    kubeconfig: hub/config
+    name: {{.HubName}}
+    kubeconfig: {{.HubKubeconfig}}
   c1:
-    name: primary
-    kubeconfig: primary/config
+    name: {{.PrimaryName}}
+    kubeconfig: {{.PrimaryKubeconfig}}
   c2:
-    name: secondary
-    kubeconfig: secondary/config
+    name: {{.SecondaryName}}
+    kubeconfig: {{.SecondaryKubeconfig}}
 
 ## Kubernetes distribution
 # - Modify to specify your clusters kuberenetes distribution (k8s or ocp).
