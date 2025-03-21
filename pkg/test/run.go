@@ -3,6 +3,8 @@
 
 package test
 
+import "sync"
+
 func Run(configFile string, outputDir string) error {
 	cmd, err := newCommand("test-run", configFile, outputDir)
 	if err != nil {
@@ -11,36 +13,25 @@ func Run(configFile string, outputDir string) error {
 
 	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
 	// as is for inspection.
-	if err := setupEnvironment(cmd); err != nil {
-		return err
+	if !cmd.Setup() {
+		return cmd.Failed()
 	}
 
-	// We want to run all tests in parallel, but for now lets run one test.
-	test := newTest(cmd.Config.Tests[0], cmd)
+	var wg sync.WaitGroup
+	for _, tc := range cmd.Config.Tests {
+		test := newTest(tc, cmd)
+		wg.Add(1)
+		go func() {
+			cmd.RunTest(test)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 
-	if err := test.Deploy(); err != nil {
-		return err
+	if cmd.IsFailed() {
+		return cmd.Failed()
 	}
 
-	if err := test.Protect(); err != nil {
-		return err
-	}
-
-	if err := test.Failover(); err != nil {
-		return err
-	}
-
-	if err := test.Relocate(); err != nil {
-		return err
-	}
-
-	if err := test.Unprotect(); err != nil {
-		return err
-	}
-
-	if err := test.Undeploy(); err != nil {
-		return err
-	}
-
+	cmd.Passed()
 	return nil
 }
