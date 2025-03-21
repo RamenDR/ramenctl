@@ -9,9 +9,7 @@ func Clean(configFile string, outputDir string) error {
 		return err
 	}
 
-	// We want to run all tests in parallel, but for now lets run one test.
-	test := newTest(cmd.Config.Tests[0], cmd)
-	if !cmd.CleanTest(test) {
+	if !cmd.CleanTests() {
 		return cmd.Failed()
 	}
 

@@ -15,9 +15,7 @@ func Run(configFile string, outputDir string) error {
 		return cmd.Failed()
 	}
 
-	// We want to run all tests in parallel, but for now lets run one test.
-	test := newTest(cmd.Config.Tests[0], cmd)
-	if !cmd.RunTest(test) {
+	if !cmd.RunTests() {
 		return cmd.Failed()
 	}
 

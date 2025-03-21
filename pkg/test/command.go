@@ -30,6 +30,9 @@ type Command struct {
 	Report *Report
 }
 
+// flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if the flow failed.
+type flowFunc func(t *Test)
+
 // newCommand return a new test command.
 func newCommand(name, configFile, outputDir string) (*Command, error) {
 	cmd, err := command.New(name, configFile, outputDir)
@@ -76,40 +79,14 @@ func (c *Command) Cleanup() bool {
 	return true
 }
 
-func (c *Command) RunTest(test *Test) bool {
+func (c *Command) RunTests() bool {
 	console.Progress("Run tests")
-	defer c.addTest(test)
-	if !test.Deploy() {
-		return false
-	}
-	if !test.Protect() {
-		return false
-	}
-	if !test.Failover() {
-		return false
-	}
-	if !test.Relocate() {
-		return false
-	}
-	if !test.Unprotect() {
-		return false
-	}
-	if !test.Undeploy() {
-		return false
-	}
-	return true
+	return c.runFlowFunc(c.runFlow)
 }
 
-func (c *Command) CleanTest(test *Test) bool {
+func (c *Command) CleanTests() bool {
 	console.Progress("Clean tests")
-	defer c.addTest(test)
-	if !test.Unprotect() {
-		return false
-	}
-	if !test.Undeploy() {
-		return false
-	}
-	return true
+	return c.runFlowFunc(c.cleanFlow)
 }
 
 func (c *Command) Failed() error {
@@ -126,6 +103,57 @@ func (c *Command) Passed() {
 	}
 	console.Completed("passed (%d passed, %d failed, %d skipped)",
 		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
+}
+
+func (c *Command) runFlowFunc(f flowFunc) bool {
+	var wg sync.WaitGroup
+	for _, tc := range c.Config.Tests {
+		test := newTest(tc, c)
+		wg.Add(1)
+		go func() {
+			f(test)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	return c.checkStatus()
+}
+
+func (c *Command) runFlow(test *Test) {
+	defer c.addTest(test)
+
+	if !test.Deploy() {
+		return
+	}
+	if !test.Protect() {
+		return
+	}
+	if !test.Failover() {
+		return
+	}
+	if !test.Relocate() {
+		return
+	}
+	if !test.Unprotect() {
+		return
+	}
+	test.Undeploy()
+}
+
+func (c *Command) cleanFlow(test *Test) {
+	defer c.addTest(test)
+
+	if !test.Unprotect() {
+		return
+	}
+	test.Undeploy()
+}
+
+func (c *Command) checkStatus() bool {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	return c.Report.Status == Passed
 }
 
 func (c *Command) addTest(test *Test) {
