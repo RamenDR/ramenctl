@@ -87,15 +87,6 @@ func (r *Report) AddCleanup(ok bool) {
 	r.addStep(step)
 }
 
-func (r *Report) findStep(name string) *Step {
-	for _, step := range r.Steps {
-		if step.Name == name {
-			return step
-		}
-	}
-	return nil
-}
-
 // AddTest records a completed test. A failed test mark the test step and the report as failed.
 func (r *Report) AddTest(t *Test) {
 	var step *Step
@@ -125,6 +116,15 @@ func (r *Report) AddTest(t *Test) {
 			r.Status = Passed
 		}
 	}
+}
+
+func (r *Report) findStep(name string) *Step {
+	for _, step := range r.Steps {
+		if step.Name == name {
+			return step
+		}
+	}
+	return nil
 }
 
 func (r *Report) addStep(step *Step) {
