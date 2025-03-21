@@ -20,7 +20,7 @@ func Clean(configFile string, outputDir string) error {
 		return err
 	}
 
-	if err := cleanEnvironment(cmd); err != nil {
+	if err := cmd.Cleanup(); err != nil {
 		return err
 	}
 

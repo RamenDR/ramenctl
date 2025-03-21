@@ -4,10 +4,14 @@
 package test
 
 import (
+	"fmt"
+
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	"github.com/ramendr/ramen/e2e/util"
 
 	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/console"
 )
 
 // Command is a ramenctl test command.
@@ -36,4 +40,26 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
 	}, nil
+}
+
+func (c *Command) Setup() error {
+	console.Progress("Setup environment")
+	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
+		err := fmt.Errorf("failed to setup environment: %w", err)
+		c.Logger.Error(err)
+		return err
+	}
+	console.Completed("Environment setup")
+	return nil
+}
+
+func (c *Command) Cleanup() error {
+	console.Progress("Clean environment")
+	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
+		err := fmt.Errorf("failed to clean environment: %w", err)
+		c.Logger.Error(err)
+		return err
+	}
+	console.Completed("Environment cleaned")
+	return nil
 }

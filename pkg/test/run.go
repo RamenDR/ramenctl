@@ -11,7 +11,7 @@ func Run(configFile string, outputDir string) error {
 
 	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
 	// as is for inspection.
-	if err := setupEnvironment(cmd); err != nil {
+	if err := cmd.Setup(); err != nil {
 		return err
 	}
 
