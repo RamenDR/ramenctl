@@ -77,6 +77,7 @@ func (c *Command) Cleanup() bool {
 }
 
 func (c *Command) RunTest(test *Test) bool {
+	console.Progress("Run tests")
 	defer c.addTest(test)
 	if !test.Deploy() {
 		return false
@@ -100,6 +101,7 @@ func (c *Command) RunTest(test *Test) bool {
 }
 
 func (c *Command) CleanTest(test *Test) bool {
+	console.Progress("Clean tests")
 	defer c.addTest(test)
 	if !test.Unprotect() {
 		return false

@@ -46,7 +46,6 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 }
 
 func (t *Test) Deploy() bool {
-	console.Progress("Deploy application %q", t.Name())
 	if err := t.Deployer().Deploy(t.Context); err != nil {
 		err := fmt.Errorf("failed to deploy application %q: %w", t.Name(), err)
 		t.Fail(err)
@@ -57,7 +56,6 @@ func (t *Test) Deploy() bool {
 }
 
 func (t *Test) Undeploy() bool {
-	console.Progress("Undeploy application %q", t.Name())
 	if err := t.Deployer().Undeploy(t.Context); err != nil {
 		err := fmt.Errorf("failed to undeploy application %q: %w", t.Name(), err)
 		t.Fail(err)
@@ -68,7 +66,6 @@ func (t *Test) Undeploy() bool {
 }
 
 func (t *Test) Protect() bool {
-	console.Progress("Protect application %q", t.Name())
 	if err := dractions.EnableProtection(t.Context); err != nil {
 		err := fmt.Errorf("failed to protect application %q: %w", t.Name(), err)
 		t.Fail(err)
@@ -79,7 +76,6 @@ func (t *Test) Protect() bool {
 }
 
 func (t *Test) Unprotect() bool {
-	console.Progress("Unprotect application %q", t.Name())
 	if err := dractions.DisableProtection(t.Context); err != nil {
 		err := fmt.Errorf("failed to unprotect application %q: %w", t.Name(), err)
 		t.Fail(err)
@@ -90,7 +86,6 @@ func (t *Test) Unprotect() bool {
 }
 
 func (t *Test) Failover() bool {
-	console.Progress("Failover application %q", t.Name())
 	if err := dractions.Failover(t.Context); err != nil {
 		err := fmt.Errorf("failed to failover application %q: %w", t.Name(), err)
 		t.Fail(err)
@@ -101,7 +96,6 @@ func (t *Test) Failover() bool {
 }
 
 func (t *Test) Relocate() bool {
-	console.Progress("Relocate application %q", t.Name())
 	if err := dractions.Relocate(t.Context); err != nil {
 		err := fmt.Errorf("failed to relocate application %q: %w", t.Name(), err)
 		t.Fail(err)
