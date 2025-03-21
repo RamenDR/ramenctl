@@ -21,7 +21,6 @@ var TestRunCmd = &cobra.Command{
 		if err := test.Run(configFile, outputDir()); err != nil {
 			console.Fatal(err)
 		}
-		console.Completed("Test run completed successfully")
 	},
 }
 
@@ -32,7 +31,6 @@ var TestCleanCmd = &cobra.Command{
 		if err := test.Clean(configFile, outputDir()); err != nil {
 			console.Fatal(err)
 		}
-		console.Completed("Test clean completed successfully")
 	},
 }
 
