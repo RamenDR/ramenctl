@@ -63,3 +63,35 @@ func (c *Command) Cleanup() error {
 	console.Completed("Environment cleaned")
 	return nil
 }
+
+func (c *Command) RunTest(test *Test) error {
+	if err := test.Deploy(); err != nil {
+		return err
+	}
+	if err := test.Protect(); err != nil {
+		return err
+	}
+	if err := test.Failover(); err != nil {
+		return err
+	}
+	if err := test.Relocate(); err != nil {
+		return err
+	}
+	if err := test.Unprotect(); err != nil {
+		return err
+	}
+	if err := test.Undeploy(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Command) CleanTest(test *Test) error {
+	if err := test.Unprotect(); err != nil {
+		return err
+	}
+	if err := test.Undeploy(); err != nil {
+		return err
+	}
+	return nil
+}

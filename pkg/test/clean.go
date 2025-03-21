@@ -11,12 +11,7 @@ func Clean(configFile string, outputDir string) error {
 
 	// We want to run all tests in parallel, but for now lets run one test.
 	test := newTest(cmd.Config.Tests[0], cmd)
-
-	if err := test.Unprotect(); err != nil {
-		return err
-	}
-
-	if err := test.Undeploy(); err != nil {
+	if err := cmd.CleanTest(test); err != nil {
 		return err
 	}
 
