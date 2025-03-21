@@ -4,7 +4,6 @@
 package test
 
 import (
-	"errors"
 	"fmt"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -24,6 +23,9 @@ type Command struct {
 
 	// PCCSpecs maps pvscpec name to pvcspec.
 	PVCSpecs map[string]types.PVCSpecConfig
+
+	// Command report, stored at the output directory on completion.
+	Report *Report
 }
 
 // newCommand return a new test command.
@@ -40,6 +42,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		Command:         cmd,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
+		Report:          NewReport(name),
 	}, nil
 }
 
@@ -49,9 +52,11 @@ func (c *Command) Setup() bool {
 		err := fmt.Errorf("failed to setup environment: %w", err)
 		console.Error(err)
 		c.Logger.Error(err)
+		c.Report.AddSetup(false)
 		return false
 	}
 	console.Completed("Environment setup")
+	c.Report.AddSetup(true)
 	return true
 }
 
@@ -61,13 +66,16 @@ func (c *Command) Cleanup() bool {
 		err := fmt.Errorf("failed to clean environment: %w", err)
 		console.Error(err)
 		c.Logger.Error(err)
+		c.Report.AddCleanup(false)
 		return false
 	}
 	console.Completed("Environment cleaned")
+	c.Report.AddCleanup(true)
 	return true
 }
 
 func (c *Command) RunTest(test *Test) bool {
+	defer c.Report.AddTest(test)
 	if !test.Deploy() {
 		return false
 	}
@@ -90,6 +98,7 @@ func (c *Command) RunTest(test *Test) bool {
 }
 
 func (c *Command) CleanTest(test *Test) bool {
+	defer c.Report.AddTest(test)
 	if !test.Unprotect() {
 		return false
 	}
@@ -100,9 +109,17 @@ func (c *Command) CleanTest(test *Test) bool {
 }
 
 func (c *Command) Failed() error {
-	return errors.New("failed")
+	if err := c.WriteReport(c.Report); err != nil {
+		console.Error(err)
+	}
+	return fmt.Errorf("failed (%d passed, %d failed, %d skipped)",
+		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
 }
 
 func (c *Command) Passed() {
-	console.Completed("passed")
+	if err := c.WriteReport(c.Report); err != nil {
+		console.Error(err)
+	}
+	console.Completed("passed (%d passed, %d failed, %d skipped)",
+		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
 }
