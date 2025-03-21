@@ -5,6 +5,7 @@ package test
 
 import (
 	"fmt"
+	"sync"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
@@ -25,6 +26,7 @@ type Command struct {
 	PVCSpecs map[string]types.PVCSpecConfig
 
 	// Command report, stored at the output directory on completion.
+	mutex  sync.Mutex
 	Report *Report
 }
 
@@ -75,7 +77,7 @@ func (c *Command) Cleanup() bool {
 }
 
 func (c *Command) RunTest(test *Test) bool {
-	defer c.Report.AddTest(test)
+	defer c.addTest(test)
 	if !test.Deploy() {
 		return false
 	}
@@ -98,7 +100,7 @@ func (c *Command) RunTest(test *Test) bool {
 }
 
 func (c *Command) CleanTest(test *Test) bool {
-	defer c.Report.AddTest(test)
+	defer c.addTest(test)
 	if !test.Unprotect() {
 		return false
 	}
@@ -122,4 +124,10 @@ func (c *Command) Passed() {
 	}
 	console.Completed("passed (%d passed, %d failed, %d skipped)",
 		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
+}
+
+func (c *Command) addTest(test *Test) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.Report.AddTest(test)
 }
