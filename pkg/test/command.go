@@ -52,7 +52,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 }
 
 func (c *Command) Setup() bool {
-	console.Progress("Setup environment")
+	console.Step("Setup environment")
 	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
 		err := fmt.Errorf("failed to setup environment: %w", err)
 		console.Error(err)
@@ -60,13 +60,13 @@ func (c *Command) Setup() bool {
 		c.Report.AddSetup(false)
 		return false
 	}
-	console.Completed("Environment setup")
+	console.Pass("Environment setup")
 	c.Report.AddSetup(true)
 	return true
 }
 
 func (c *Command) Cleanup() bool {
-	console.Progress("Clean environment")
+	console.Step("Clean environment")
 	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
 		err := fmt.Errorf("failed to clean environment: %w", err)
 		console.Error(err)
@@ -74,18 +74,18 @@ func (c *Command) Cleanup() bool {
 		c.Report.AddCleanup(false)
 		return false
 	}
-	console.Completed("Environment cleaned")
+	console.Pass("Environment cleaned")
 	c.Report.AddCleanup(true)
 	return true
 }
 
 func (c *Command) RunTests() bool {
-	console.Progress("Run tests")
+	console.Step("Run tests")
 	return c.runFlowFunc(c.runFlow)
 }
 
 func (c *Command) CleanTests() bool {
-	console.Progress("Clean tests")
+	console.Step("Clean tests")
 	return c.runFlowFunc(c.cleanFlow)
 }
 

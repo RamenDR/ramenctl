@@ -51,7 +51,7 @@ func (t *Test) Deploy() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q deployed", t.Name())
+	console.Pass("Application %q deployed", t.Name())
 	return true
 }
 
@@ -61,7 +61,7 @@ func (t *Test) Undeploy() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q undeployed", t.Name())
+	console.Pass("Application %q undeployed", t.Name())
 	return true
 }
 
@@ -71,7 +71,7 @@ func (t *Test) Protect() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q protected", t.Name())
+	console.Pass("Application %q protected", t.Name())
 	return true
 }
 
@@ -81,7 +81,7 @@ func (t *Test) Unprotect() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q unprotected", t.Name())
+	console.Pass("Application %q unprotected", t.Name())
 	return true
 }
 
@@ -91,7 +91,7 @@ func (t *Test) Failover() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q failed over", t.Name())
+	console.Pass("Application %q failed over", t.Name())
 	return true
 }
 
@@ -101,7 +101,7 @@ func (t *Test) Relocate() bool {
 		t.Fail(err)
 		return false
 	}
-	console.Completed("Application %q relocated", t.Name())
+	console.Pass("Application %q relocated", t.Name())
 	return true
 }
 
