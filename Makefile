@@ -24,5 +24,8 @@ ramenctl:
 examples:
 	go build -o examples/odf examples/odf.go
 
+test:
+	go test -v ./...
+
 clean:
 	rm -f ramenctl examples/odf
