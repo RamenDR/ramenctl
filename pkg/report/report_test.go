@@ -26,15 +26,36 @@ func TestHost(t *testing.T) {
 	}
 }
 
-func TestRamenctlDefault(t *testing.T) {
-	r := report.New()
-	expected := report.Ramenctl{
-		Version: build.Version,
-		Commit:  build.Commit,
-	}
-	if !reflect.DeepEqual(r.Ramenctl, expected) {
-		t.Fatalf("expected host %+v, got %+v", expected, r.Ramenctl)
-	}
+func TestBuildInfo(t *testing.T) {
+	savedVersion := build.Version
+	savedCommit := build.Commit
+	defer func() {
+		build.Version = savedVersion
+		build.Commit = savedCommit
+	}()
+	t.Run("available", func(t *testing.T) {
+		build.Version = "fake-version"
+		build.Commit = "fake-commit"
+		r := report.New()
+		if r.Ramenctl == nil {
+			t.Fatalf("ramenctl omitted")
+		}
+		expected := &report.Ramenctl{
+			Version: build.Version,
+			Commit:  build.Commit,
+		}
+		if !reflect.DeepEqual(r.Ramenctl, expected) {
+			t.Fatalf("expected ramenctl %+v, got %+v", expected, r.Ramenctl)
+		}
+	})
+	t.Run("missing", func(t *testing.T) {
+		build.Version = ""
+		build.Commit = ""
+		r := report.New()
+		if r.Ramenctl != nil {
+			t.Fatalf("ramenctl not omitted: %+v", r.Ramenctl)
+		}
+	})
 }
 
 func TestRoundtrip(t *testing.T) {
