@@ -16,16 +16,16 @@ type Host struct {
 	Cpus int    `json:"cpus"`
 }
 
-// Ramenctl describes ramenctl.
-type Ramenctl struct {
+// Build describes ramenctl build.
+type Build struct {
 	Version string `json:"version,omitempty"`
 	Commit  string `json:"commit,omitempty"`
 }
 
 // Report created by ramenctl command.
 type Report struct {
-	Host     Host      `json:"host"`
-	Ramenctl *Ramenctl `json:"ramenctl,omitempty"`
+	Host  Host   `json:"host"`
+	Build *Build `json:"build,omitempty"`
 }
 
 // New create a new generic report. Commands embed the report in the command report.
@@ -38,7 +38,7 @@ func New() *Report {
 		},
 	}
 	if build.Version != "" || build.Commit != "" {
-		r.Ramenctl = &Ramenctl{
+		r.Build = &Build{
 			Version: build.Version,
 			Commit:  build.Commit,
 		}

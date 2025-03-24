@@ -37,23 +37,23 @@ func TestBuildInfo(t *testing.T) {
 		build.Version = "fake-version"
 		build.Commit = "fake-commit"
 		r := report.New()
-		if r.Ramenctl == nil {
-			t.Fatalf("ramenctl omitted")
+		if r.Build == nil {
+			t.Fatalf("build info omitted")
 		}
-		expected := &report.Ramenctl{
+		expected := &report.Build{
 			Version: build.Version,
 			Commit:  build.Commit,
 		}
-		if !reflect.DeepEqual(r.Ramenctl, expected) {
-			t.Fatalf("expected ramenctl %+v, got %+v", expected, r.Ramenctl)
+		if !reflect.DeepEqual(r.Build, expected) {
+			t.Fatalf("expected build info %+v, got %+v", expected, r.Build)
 		}
 	})
 	t.Run("missing", func(t *testing.T) {
 		build.Version = ""
 		build.Commit = ""
 		r := report.New()
-		if r.Ramenctl != nil {
-			t.Fatalf("ramenctl not omitted: %+v", r.Ramenctl)
+		if r.Build != nil {
+			t.Fatalf("build info not omitted: %+v", r.Build)
 		}
 	})
 }
