@@ -19,7 +19,7 @@ ldflags := -X '$(build).Version=$(version)' \
 all: ramenctl examples
 
 ramenctl:
-	go build -ldflags="$(ldflags)" -o $@ cmd/main.go
+	CGO_ENABLED=0 go build -ldflags="$(ldflags)" -o $@ cmd/main.go
 
 examples:
 	go build -o examples/odf examples/odf.go
