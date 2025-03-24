@@ -10,6 +10,7 @@ import (
 
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramenctl/pkg/build"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -27,8 +28,10 @@ func TestHost(t *testing.T) {
 
 func TestRamenctlDefault(t *testing.T) {
 	r := report.New()
-	// For the tests we always have empty build info since build info is added when building an executable.
-	expected := report.Ramenctl{}
+	expected := report.Ramenctl{
+		Version: build.Version,
+		Commit:  build.Commit,
+	}
 	if !reflect.DeepEqual(r.Ramenctl, expected) {
 		t.Fatalf("expected host %+v, got %+v", expected, r.Ramenctl)
 	}

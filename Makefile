@@ -25,7 +25,7 @@ examples:
 	go build -o examples/odf examples/odf.go
 
 test:
-	go test -v ./...
+	go test -ldflags="$(ldflags)" -v ./...
 
 clean:
 	rm -f ramenctl examples/odf
