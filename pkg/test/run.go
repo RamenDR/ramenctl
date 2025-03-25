@@ -9,6 +9,10 @@ func Run(configFile string, outputDir string) error {
 		return err
 	}
 
+	if !cmd.Validate() {
+		return cmd.Failed()
+	}
+
 	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
 	// as is for inspection.
 	if !cmd.Setup() {

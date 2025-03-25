@@ -10,6 +10,7 @@ import (
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/util"
+	"github.com/ramendr/ramen/e2e/validate"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
@@ -49,6 +50,18 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
 		Report:          NewReport(name),
 	}, nil
+}
+
+func (c *Command) Validate() bool {
+	console.Step("Validate config")
+	if err := validate.TestConfig(c.Env, c.Config, c.Logger); err != nil {
+		err := fmt.Errorf("failed to validate config: %w", err)
+		console.Error(err)
+		c.Logger.Error(err)
+		return false
+	}
+	console.Pass("Config validated")
+	return true
 }
 
 func (c *Command) Setup() bool {

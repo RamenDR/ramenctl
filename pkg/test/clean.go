@@ -9,6 +9,10 @@ func Clean(configFile string, outputDir string) error {
 		return err
 	}
 
+	if !cmd.Validate() {
+		return cmd.Failed()
+	}
+
 	if !cmd.CleanTests() {
 		return cmd.Failed()
 	}
