@@ -22,9 +22,9 @@ func Pass(format string, args ...any) {
 	fmt.Printf("   ✅ "+format+"\n", args...)
 }
 
-// Fail log single operation error.
-func Error(err error) {
-	fmt.Fprintf(os.Stderr, "   ❌ %s\n", err)
+// Error logs single operation error.
+func Error(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, "   ❌ "+format+"\n", args...)
 }
 
 // Completed logs command completion.

@@ -47,8 +47,8 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 func (t *Test) Deploy() bool {
 	if err := t.Deployer().Deploy(t.Context); err != nil {
-		err := fmt.Errorf("failed to deploy application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to deploy application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q deployed", t.Name())
@@ -57,8 +57,8 @@ func (t *Test) Deploy() bool {
 
 func (t *Test) Undeploy() bool {
 	if err := t.Deployer().Undeploy(t.Context); err != nil {
-		err := fmt.Errorf("failed to undeploy application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to undeploy application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q undeployed", t.Name())
@@ -67,8 +67,8 @@ func (t *Test) Undeploy() bool {
 
 func (t *Test) Protect() bool {
 	if err := dractions.EnableProtection(t.Context); err != nil {
-		err := fmt.Errorf("failed to protect application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to protect application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q protected", t.Name())
@@ -77,8 +77,8 @@ func (t *Test) Protect() bool {
 
 func (t *Test) Unprotect() bool {
 	if err := dractions.DisableProtection(t.Context); err != nil {
-		err := fmt.Errorf("failed to unprotect application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to unprotect application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q unprotected", t.Name())
@@ -87,8 +87,8 @@ func (t *Test) Unprotect() bool {
 
 func (t *Test) Failover() bool {
 	if err := dractions.Failover(t.Context); err != nil {
-		err := fmt.Errorf("failed to failover application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to failover application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q failed over", t.Name())
@@ -97,16 +97,16 @@ func (t *Test) Failover() bool {
 
 func (t *Test) Relocate() bool {
 	if err := dractions.Relocate(t.Context); err != nil {
-		err := fmt.Errorf("failed to relocate application %q: %w", t.Name(), err)
-		t.Fail(err)
+		msg := fmt.Sprintf("failed to relocate application %q", t.Name())
+		t.fail(msg, err)
 		return false
 	}
 	console.Pass("Application %q relocated", t.Name())
 	return true
 }
 
-func (t *Test) Fail(err error) {
-	console.Error(err)
-	t.Logger().Error(err)
+func (t *Test) fail(msg string, err error) {
+	console.Error(msg)
+	t.Logger().Errorf("%s: %s", msg, err)
 	t.Status = Failed
 }

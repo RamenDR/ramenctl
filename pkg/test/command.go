@@ -55,9 +55,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 func (c *Command) Validate() bool {
 	console.Step("Validate config")
 	if err := validate.TestConfig(c.Env, c.Config, c.Logger); err != nil {
-		err := fmt.Errorf("failed to validate config: %w", err)
-		console.Error(err)
-		c.Logger.Error(err)
+		c.fail("failed to validate config", err)
 		return false
 	}
 	console.Pass("Config validated")
@@ -67,9 +65,7 @@ func (c *Command) Validate() bool {
 func (c *Command) Setup() bool {
 	console.Step("Setup environment")
 	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
-		err := fmt.Errorf("failed to setup environment: %w", err)
-		console.Error(err)
-		c.Logger.Error(err)
+		c.fail("failed to setup environment", err)
 		c.Report.AddSetup(false)
 		return false
 	}
@@ -81,9 +77,7 @@ func (c *Command) Setup() bool {
 func (c *Command) Cleanup() bool {
 	console.Step("Clean environment")
 	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
-		err := fmt.Errorf("failed to clean environment: %w", err)
-		console.Error(err)
-		c.Logger.Error(err)
+		c.fail("failed to clean environment", err)
 		c.Report.AddCleanup(false)
 		return false
 	}
@@ -104,7 +98,7 @@ func (c *Command) CleanTests() bool {
 
 func (c *Command) Failed() error {
 	if err := c.WriteReport(c.Report); err != nil {
-		console.Error(err)
+		console.Error("failed to write report: %s", err)
 	}
 	return fmt.Errorf("failed (%d passed, %d failed, %d skipped)",
 		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
@@ -112,10 +106,15 @@ func (c *Command) Failed() error {
 
 func (c *Command) Passed() {
 	if err := c.WriteReport(c.Report); err != nil {
-		console.Error(err)
+		console.Error("failed to write report: %s", err)
 	}
 	console.Completed("passed (%d passed, %d failed, %d skipped)",
 		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
+}
+
+func (c *Command) fail(msg string, err error) {
+	console.Error(msg)
+	c.Logger.Error("%s: %s", msg, err)
 }
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
