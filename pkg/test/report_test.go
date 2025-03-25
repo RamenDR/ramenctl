@@ -340,6 +340,57 @@ func TestReportCleanTestFailed(t *testing.T) {
 	checkRoundtrip(t, r)
 }
 
+func TestReportCleanFailed(t *testing.T) {
+	r := test.NewReport("test-clean")
+
+	rbdTest := &test.Test{
+		Config: types.TestConfig{
+			Workload: "deploy",
+			Deployer: "appset",
+			PVCSpec:  "rbd",
+		},
+		Status: test.Passed,
+	}
+	r.AddTest(rbdTest)
+	if r.Status != test.Passed {
+		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	}
+
+	r.AddCleanup(false)
+	if r.Status != test.Failed {
+		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	}
+
+	// We should have a passed tests and failed cleanup steps.
+	if len(r.Steps) != 2 {
+		t.Errorf("unexpected steps %+v", r.Steps)
+	}
+
+	// All tests passed, so the tests step must be passed.
+	tests := r.Steps[0]
+	if tests.Name != test.TestsStep {
+		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	}
+	if tests.Status != test.Passed {
+		t.Errorf("expected step status %q, got %q", test.Passed, tests.Status)
+	}
+
+	// The cleanup step failed, the step must be passed.
+	cleanup := r.Steps[1]
+	failedCleanup := &test.Step{Name: test.CleanupStep, Status: test.Failed}
+	if !reflect.DeepEqual(cleanup, failedCleanup) {
+		t.Fatalf("expected setup %+v, got %+v", cleanup, failedCleanup)
+	}
+
+	// Counts updated.
+	if r.Summary.Passed != 1 || r.Summary.Failed != 0 || r.Summary.Skipped != 0 {
+		t.Errorf("unexpected summary: %+v", r.Summary)
+	}
+
+	// We can marshal and unmarshal the report
+	checkRoundtrip(t, r)
+}
+
 func TestReportCleanAllPassed(t *testing.T) {
 	r := test.NewReport("test-clean")
 
