@@ -53,12 +53,18 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 }
 
 func (c *Command) Validate() bool {
+	step := &Step{Name: ValidateStep}
+	defer c.Report.AddStep(step)
+
 	console.Step("Validate config")
 	if err := validate.TestConfig(c.Env, c.Config, c.Logger); err != nil {
 		c.fail("failed to validate config", err)
+		step.Status = Failed
 		return false
 	}
+
 	console.Pass("Config validated")
+	step.Status = Passed
 	return true
 }
 

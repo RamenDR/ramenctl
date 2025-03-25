@@ -18,9 +18,10 @@ const (
 )
 
 const (
-	SetupStep   = "setup"
-	TestsStep   = "tests"
-	CleanupStep = "cleanup"
+	ValidateStep = "validate"
+	SetupStep    = "setup"
+	TestsStep    = "tests"
+	CleanupStep  = "cleanup"
 )
 
 // A step is a test command step. The setup and cleanup steps are modeled as step without tests.
