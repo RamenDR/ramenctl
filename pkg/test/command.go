@@ -63,26 +63,34 @@ func (c *Command) Validate() bool {
 }
 
 func (c *Command) Setup() bool {
+	step := &Step{Name: SetupStep}
+	defer c.Report.AddStep(step)
+
 	console.Step("Setup environment")
 	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
 		c.fail("failed to setup environment", err)
-		c.Report.AddSetup(false)
+		step.Status = Failed
 		return false
 	}
+
 	console.Pass("Environment setup")
-	c.Report.AddSetup(true)
+	step.Status = Passed
 	return true
 }
 
 func (c *Command) Cleanup() bool {
+	step := &Step{Name: CleanupStep}
+	defer c.Report.AddStep(step)
+
 	console.Step("Clean environment")
 	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
 		c.fail("failed to clean environment", err)
-		c.Report.AddCleanup(false)
+		step.Status = Failed
 		return false
 	}
+
 	console.Pass("Environment cleaned")
-	c.Report.AddCleanup(true)
+	step.Status = Passed
 	return true
 }
 

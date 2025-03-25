@@ -4,6 +4,8 @@
 package test
 
 import (
+	"fmt"
+
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -59,32 +61,21 @@ func NewReport(commandName string) *Report {
 	}
 }
 
-// AddSetup record setup result. A failed setup marks the report as failed.
-func (r *Report) AddSetup(ok bool) {
-	if r.findStep(SetupStep) != nil {
-		panic("already set up")
+// AddStep adds a step to the report.
+func (r *Report) AddStep(step *Step) {
+	if r.findStep(step.Name) != nil {
+		panic(fmt.Sprintf("step %q exists", step.Name))
 	}
-	step := &Step{Name: SetupStep}
-	if ok {
-		step.Status = Passed
-	} else {
-		step.Status = Failed
-	}
-	r.addStep(step)
-}
+	r.Steps = append(r.Steps, step)
 
-// AddCleanup records a cleanup result. A failed cleanup marks the report as failed.
-func (r *Report) AddCleanup(ok bool) {
-	if r.findStep(CleanupStep) != nil {
-		panic("already cleaned up")
+	switch step.Status {
+	case Passed, Skipped:
+		if r.Status == "" {
+			r.Status = Passed
+		}
+	case Failed:
+		r.Status = Failed
 	}
-	step := &Step{Name: CleanupStep}
-	if ok {
-		step.Status = Passed
-	} else {
-		step.Status = Failed
-	}
-	r.addStep(step)
 }
 
 // AddTest records a completed test. A failed test mark the test step and the report as failed.
@@ -94,7 +85,7 @@ func (r *Report) AddTest(t *Test) {
 	// To make it easy to use, we create the tests step automaticlaly when adding the first test.
 	if len(r.Steps) == 0 || r.Steps[len(r.Steps)-1].Name != TestsStep {
 		step = &Step{Name: TestsStep}
-		r.addStep(step)
+		r.AddStep(step)
 	} else {
 		step = r.Steps[len(r.Steps)-1]
 	}
@@ -125,19 +116,6 @@ func (r *Report) findStep(name string) *Step {
 		}
 	}
 	return nil
-}
-
-func (r *Report) addStep(step *Step) {
-	r.Steps = append(r.Steps, step)
-
-	switch step.Status {
-	case Passed, Skipped:
-		if r.Status == "" {
-			r.Status = Passed
-		}
-	case Failed:
-		r.Status = Failed
-	}
 }
 
 // AddTest records a completed test. A failed test marks the step as failed.

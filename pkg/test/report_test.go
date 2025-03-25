@@ -40,7 +40,8 @@ func TestReportEmpty(t *testing.T) {
 
 func TestReportRunSetupFailed(t *testing.T) {
 	r := test.NewReport("test-run")
-	r.AddSetup(false)
+	step := &test.Step{Name: test.SetupStep, Status: test.Failed}
+	r.AddStep(step)
 
 	// Setup failed, so entire report should be failed.
 	if r.Status != test.Failed {
@@ -67,9 +68,9 @@ func TestReportRunSetupFailed(t *testing.T) {
 
 func TestReportRunSetupPassed(t *testing.T) {
 	r := test.NewReport("test-run")
-	r.AddSetup(true)
 
-	// Setup succeeded, so entire report should be passed.
+	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	r.AddStep(step)
 	if r.Status != test.Passed {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
@@ -94,7 +95,9 @@ func TestReportRunSetupPassed(t *testing.T) {
 
 func TestReportRunTestFailed(t *testing.T) {
 	r := test.NewReport("test-run")
-	r.AddSetup(true)
+
+	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	r.AddStep(step)
 	if r.Status != test.Passed {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
@@ -179,7 +182,9 @@ func TestReportRunTestFailed(t *testing.T) {
 
 func TestReportRunAllPassed(t *testing.T) {
 	r := test.NewReport("test-run")
-	r.AddSetup(true)
+
+	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	r.AddStep(step)
 	if r.Status != test.Passed {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
@@ -356,7 +361,8 @@ func TestReportCleanFailed(t *testing.T) {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
 
-	r.AddCleanup(false)
+	step := &test.Step{Name: test.CleanupStep, Status: test.Failed}
+	r.AddStep(step)
 	if r.Status != test.Failed {
 		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
 	}
@@ -420,7 +426,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
 
-	r.AddCleanup(true)
+	step := &test.Step{Name: test.CleanupStep, Status: test.Passed}
+	r.AddStep(step)
 	if r.Status != test.Passed {
 		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
 	}
