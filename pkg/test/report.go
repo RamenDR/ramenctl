@@ -25,7 +25,7 @@ const (
 type Step struct {
 	Name   string   `json:"name"`
 	Status Status   `json:"status,omitempty"`
-	Tests  []Result `json:"tests,omitempty"`
+	Items  []Result `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -149,7 +149,7 @@ func (s *Step) AddTest(t *Test) {
 		Status:   t.Status,
 	}
 
-	s.Tests = append(s.Tests, result)
+	s.Items = append(s.Items, result)
 
 	switch t.Status {
 	case Passed, Skipped:

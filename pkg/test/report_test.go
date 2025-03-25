@@ -144,8 +144,8 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	// The tests setup must have 2 results.
-	if len(tests.Tests) != 2 {
-		t.Errorf("unexpected tests %+v", r.Steps[1].Tests)
+	if len(tests.Items) != 2 {
+		t.Errorf("unexpected tests %+v", r.Steps[1].Items)
 	}
 
 	failedResult := test.Result{
@@ -154,8 +154,8 @@ func TestReportRunTestFailed(t *testing.T) {
 		PVCSpec:  failedTest.Config.PVCSpec,
 		Status:   failedTest.Status,
 	}
-	if tests.Tests[0] != failedResult {
-		t.Errorf("expected result %+v, got %+v", failedResult, tests.Tests[0])
+	if tests.Items[0] != failedResult {
+		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[0])
 	}
 
 	passedResult := test.Result{
@@ -164,8 +164,8 @@ func TestReportRunTestFailed(t *testing.T) {
 		PVCSpec:  passedTest.Config.PVCSpec,
 		Status:   passedTest.Status,
 	}
-	if tests.Tests[1] != passedResult {
-		t.Errorf("expected result %+v, got %+v", failedResult, tests.Tests[1])
+	if tests.Items[1] != passedResult {
+		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[1])
 	}
 
 	// Counts updated.
@@ -230,8 +230,8 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	// The tests setup must have 2 passed results.
-	if len(tests.Tests) != 2 {
-		t.Errorf("unexpected tests %+v", tests.Tests)
+	if len(tests.Items) != 2 {
+		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
 	rbdResult := test.Result{
@@ -240,8 +240,8 @@ func TestReportRunAllPassed(t *testing.T) {
 		PVCSpec:  rbdTest.Config.PVCSpec,
 		Status:   rbdTest.Status,
 	}
-	if tests.Tests[0] != rbdResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[0])
+	if tests.Items[0] != rbdResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := test.Result{
@@ -250,8 +250,8 @@ func TestReportRunAllPassed(t *testing.T) {
 		PVCSpec:  cephfsTest.Config.PVCSpec,
 		Status:   cephfsTest.Status,
 	}
-	if tests.Tests[1] != cephfsResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[1])
+	if tests.Items[1] != cephfsResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
 	}
 
 	// Counts updated.
@@ -307,8 +307,8 @@ func TestReportCleanTestFailed(t *testing.T) {
 	}
 
 	// The tests setup must have 2 results.
-	if len(tests.Tests) != 2 {
-		t.Errorf("unexpected tests %+v", tests.Tests)
+	if len(tests.Items) != 2 {
+		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
 	rbdResult := test.Result{
@@ -317,8 +317,8 @@ func TestReportCleanTestFailed(t *testing.T) {
 		PVCSpec:  rbdTest.Config.PVCSpec,
 		Status:   rbdTest.Status,
 	}
-	if tests.Tests[0] != rbdResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[0])
+	if tests.Items[0] != rbdResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := test.Result{
@@ -327,8 +327,8 @@ func TestReportCleanTestFailed(t *testing.T) {
 		PVCSpec:  cephfsTest.Config.PVCSpec,
 		Status:   cephfsTest.Status,
 	}
-	if tests.Tests[1] != cephfsResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[1])
+	if tests.Items[1] != cephfsResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
 	}
 
 	// Counts updated.
@@ -389,8 +389,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	// The tests setup must have 2 passed results.
-	if len(tests.Tests) != 2 {
-		t.Errorf("unexpected tests %+v", tests.Tests)
+	if len(tests.Items) != 2 {
+		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
 	rbdResult := test.Result{
@@ -399,8 +399,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 		PVCSpec:  rbdTest.Config.PVCSpec,
 		Status:   rbdTest.Status,
 	}
-	if tests.Tests[0] != rbdResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[0])
+	if tests.Items[0] != rbdResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := test.Result{
@@ -409,8 +409,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 		PVCSpec:  cephfsTest.Config.PVCSpec,
 		Status:   cephfsTest.Status,
 	}
-	if tests.Tests[1] != cephfsResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Tests[1])
+	if tests.Items[1] != cephfsResult {
+		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
 	}
 
 	// The cleanup step passed, the step must be passed.
