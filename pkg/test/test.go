@@ -17,8 +17,8 @@ import (
 // Test perform DR opetaions for testing DR flow.
 type Test struct {
 	types.Context
-	Config types.TestConfig
 	Status Status
+	Config *Config
 }
 
 // newTest creates a test from test configuration and command context.
@@ -40,8 +40,12 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 	return &Test{
 		Context: newContext(workload, deployer, cmd),
-		Config:  tc,
 		Status:  Passed,
+		Config: &Config{
+			Workload: tc.Workload,
+			Deployer: tc.Deployer,
+			PVCSpec:  tc.PVCSpec,
+		},
 	}
 }
 

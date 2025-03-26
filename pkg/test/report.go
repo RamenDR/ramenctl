@@ -38,12 +38,18 @@ type Summary struct {
 	Skipped int `json:"skipped"`
 }
 
-// Result describes a single test result.
-type Result struct {
+// Test config supporting yaml marshaling, unlike ramen/e2e/types.TestConfig
+// See https://github.com/RamenDR/ramen/issues/1968
+type Config struct {
 	Workload string `json:"workload"`
 	Deployer string `json:"deployer"`
 	PVCSpec  string `json:"pvcSpec"`
-	Status   Status `json:"status,omitempty"`
+}
+
+// Result describes a single test result.
+type Result struct {
+	Config *Config `json:"config"`
+	Status Status  `json:"status,omitempty"`
 }
 
 // Report created by test sub commands.
@@ -122,10 +128,8 @@ func (r *Report) findStep(name string) *Step {
 // AddTest records a completed test. A failed test marks the step as failed.
 func (s *Step) AddTest(t *Test) {
 	result := Result{
-		Workload: t.Config.Workload,
-		Deployer: t.Config.Deployer,
-		PVCSpec:  t.Config.PVCSpec,
-		Status:   t.Status,
+		Config: t.Config,
+		Status: t.Status,
 	}
 
 	s.Items = append(s.Items, result)

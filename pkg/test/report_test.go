@@ -9,7 +9,6 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -102,7 +101,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	failedTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -115,7 +114,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	passedTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -151,20 +150,16 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	failedResult := Result{
-		Workload: failedTest.Config.Workload,
-		Deployer: failedTest.Config.Deployer,
-		PVCSpec:  failedTest.Config.PVCSpec,
-		Status:   failedTest.Status,
+		Config: failedTest.Config,
+		Status: failedTest.Status,
 	}
 	if tests.Items[0] != failedResult {
 		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[0])
 	}
 
 	passedResult := Result{
-		Workload: passedTest.Config.Workload,
-		Deployer: passedTest.Config.Deployer,
-		PVCSpec:  passedTest.Config.PVCSpec,
-		Status:   passedTest.Status,
+		Config: passedTest.Config,
+		Status: passedTest.Status,
 	}
 	if tests.Items[1] != passedResult {
 		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[1])
@@ -189,7 +184,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	rbdTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -202,7 +197,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -239,20 +234,16 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	rbdResult := Result{
-		Workload: rbdTest.Config.Workload,
-		Deployer: rbdTest.Config.Deployer,
-		PVCSpec:  rbdTest.Config.PVCSpec,
-		Status:   rbdTest.Status,
+		Config: rbdTest.Config,
+		Status: rbdTest.Status,
 	}
 	if tests.Items[0] != rbdResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := Result{
-		Workload: cephfsTest.Config.Workload,
-		Deployer: cephfsTest.Config.Deployer,
-		PVCSpec:  cephfsTest.Config.PVCSpec,
-		Status:   cephfsTest.Status,
+		Config: cephfsTest.Config,
+		Status: cephfsTest.Status,
 	}
 	if tests.Items[1] != cephfsResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
@@ -271,7 +262,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -284,7 +275,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -316,20 +307,16 @@ func TestReportCleanTestFailed(t *testing.T) {
 	}
 
 	rbdResult := Result{
-		Workload: rbdTest.Config.Workload,
-		Deployer: rbdTest.Config.Deployer,
-		PVCSpec:  rbdTest.Config.PVCSpec,
-		Status:   rbdTest.Status,
+		Config: rbdTest.Config,
+		Status: rbdTest.Status,
 	}
 	if tests.Items[0] != rbdResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := Result{
-		Workload: cephfsTest.Config.Workload,
-		Deployer: cephfsTest.Config.Deployer,
-		PVCSpec:  cephfsTest.Config.PVCSpec,
-		Status:   cephfsTest.Status,
+		Config: cephfsTest.Config,
+		Status: cephfsTest.Status,
 	}
 	if tests.Items[1] != cephfsResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
@@ -348,7 +335,7 @@ func TestReportCleanFailed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -400,7 +387,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -413,7 +400,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Config: types.TestConfig{
+		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -451,20 +438,16 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	rbdResult := Result{
-		Workload: rbdTest.Config.Workload,
-		Deployer: rbdTest.Config.Deployer,
-		PVCSpec:  rbdTest.Config.PVCSpec,
-		Status:   rbdTest.Status,
+		Config: rbdTest.Config,
+		Status: rbdTest.Status,
 	}
 	if tests.Items[0] != rbdResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
 	cephfsResult := Result{
-		Workload: cephfsTest.Config.Workload,
-		Deployer: cephfsTest.Config.Deployer,
-		PVCSpec:  cephfsTest.Config.PVCSpec,
-		Status:   cephfsTest.Status,
+		Config: cephfsTest.Config,
+		Status: cephfsTest.Status,
 	}
 	if tests.Items[1] != cephfsResult {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
