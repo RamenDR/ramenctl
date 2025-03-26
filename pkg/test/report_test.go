@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package test_test
+package test
 
 import (
 	"reflect"
@@ -11,11 +11,10 @@ import (
 
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramenctl/pkg/report"
-	"github.com/ramendr/ramenctl/pkg/test"
 )
 
 func TestReportEmpty(t *testing.T) {
-	r := test.NewReport("test-run")
+	r := NewReport("test-run")
 
 	// Host and ramenctl info is ready.
 	expectedReport := report.New()
@@ -39,20 +38,20 @@ func TestReportEmpty(t *testing.T) {
 }
 
 func TestReportRunSetupFailed(t *testing.T) {
-	r := test.NewReport("test-run")
-	step := &test.Step{Name: test.SetupStep, Status: test.Failed}
+	r := NewReport("test-run")
+	step := &Step{Name: SetupStep, Status: Failed}
 	r.AddStep(step)
 
 	// Setup failed, so entire report should be failed.
-	if r.Status != test.Failed {
-		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	if r.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
 
 	// Setup failed, we should see the failed step.
 	if len(r.Steps) != 1 {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
-	failedSetup := &test.Step{Name: test.SetupStep, Status: test.Failed}
+	failedSetup := &Step{Name: SetupStep, Status: Failed}
 	if !reflect.DeepEqual(r.Steps[0], failedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", r.Steps[0], failedSetup)
 	}
@@ -67,19 +66,19 @@ func TestReportRunSetupFailed(t *testing.T) {
 }
 
 func TestReportRunSetupPassed(t *testing.T) {
-	r := test.NewReport("test-run")
+	r := NewReport("test-run")
 
-	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
 	// Setup succeeded, we should see the successful step.
 	if len(r.Steps) != 1 {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
-	passedSetup := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	passedSetup := &Step{Name: SetupStep, Status: Passed}
 	if !reflect.DeepEqual(r.Steps[0], passedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", r.Steps[0], passedSetup)
 	}
@@ -94,38 +93,38 @@ func TestReportRunSetupPassed(t *testing.T) {
 }
 
 func TestReportRunTestFailed(t *testing.T) {
-	r := test.NewReport("test-run")
+	r := NewReport("test-run")
 
-	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	failedTest := &test.Test{
+	failedTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
 		},
-		Status: test.Failed,
+		Status: Failed,
 	}
 	r.AddTest(failedTest)
-	if r.Status != test.Failed {
-		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	if r.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
 
-	passedTest := &test.Test{
+	passedTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(passedTest)
-	if r.Status != test.Failed {
-		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	if r.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
 
 	// We should have a passed setup step, and failed tests step.
@@ -133,17 +132,17 @@ func TestReportRunTestFailed(t *testing.T) {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
 	setup := r.Steps[0]
-	passedSetup := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	passedSetup := &Step{Name: SetupStep, Status: Passed}
 	if !reflect.DeepEqual(setup, passedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", setup, passedSetup)
 	}
 	// One test failed, so the tests step must be failed.
 	tests := r.Steps[1]
-	if tests.Name != test.TestsStep {
-		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	if tests.Name != TestsStep {
+		t.Errorf("expected step name %q, got %q", TestsStep, tests.Name)
 	}
-	if tests.Status != test.Failed {
-		t.Errorf("expected step status %q, got %q", test.Failed, tests.Status)
+	if tests.Status != Failed {
+		t.Errorf("expected step status %q, got %q", Failed, tests.Status)
 	}
 
 	// The tests setup must have 2 results.
@@ -151,7 +150,7 @@ func TestReportRunTestFailed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", r.Steps[1].Items)
 	}
 
-	failedResult := test.Result{
+	failedResult := Result{
 		Workload: failedTest.Config.Workload,
 		Deployer: failedTest.Config.Deployer,
 		PVCSpec:  failedTest.Config.PVCSpec,
@@ -161,7 +160,7 @@ func TestReportRunTestFailed(t *testing.T) {
 		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[0])
 	}
 
-	passedResult := test.Result{
+	passedResult := Result{
 		Workload: passedTest.Config.Workload,
 		Deployer: passedTest.Config.Deployer,
 		PVCSpec:  passedTest.Config.PVCSpec,
@@ -181,38 +180,38 @@ func TestReportRunTestFailed(t *testing.T) {
 }
 
 func TestReportRunAllPassed(t *testing.T) {
-	r := test.NewReport("test-run")
+	r := NewReport("test-run")
 
-	step := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	rbdTest := &test.Test{
+	rbdTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(rbdTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	cephfsTest := &test.Test{
+	cephfsTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(cephfsTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
 	// We should have a passed setup and tests steps.
@@ -220,18 +219,18 @@ func TestReportRunAllPassed(t *testing.T) {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
 	setup := r.Steps[0]
-	passedSetup := &test.Step{Name: test.SetupStep, Status: test.Passed}
+	passedSetup := &Step{Name: SetupStep, Status: Passed}
 	if !reflect.DeepEqual(setup, passedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", setup, passedSetup)
 	}
 
 	// All tests passed, so the tests step must be passed.
 	tests := r.Steps[1]
-	if tests.Name != test.TestsStep {
-		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	if tests.Name != TestsStep {
+		t.Errorf("expected step name %q, got %q", TestsStep, tests.Name)
 	}
-	if tests.Status != test.Passed {
-		t.Errorf("expected step status %q, got %q", test.Passed, tests.Status)
+	if tests.Status != Passed {
+		t.Errorf("expected step status %q, got %q", Passed, tests.Status)
 	}
 
 	// The tests setup must have 2 passed results.
@@ -239,7 +238,7 @@ func TestReportRunAllPassed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := test.Result{
+	rbdResult := Result{
 		Workload: rbdTest.Config.Workload,
 		Deployer: rbdTest.Config.Deployer,
 		PVCSpec:  rbdTest.Config.PVCSpec,
@@ -249,7 +248,7 @@ func TestReportRunAllPassed(t *testing.T) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := test.Result{
+	cephfsResult := Result{
 		Workload: cephfsTest.Config.Workload,
 		Deployer: cephfsTest.Config.Deployer,
 		PVCSpec:  cephfsTest.Config.PVCSpec,
@@ -269,32 +268,32 @@ func TestReportRunAllPassed(t *testing.T) {
 }
 
 func TestReportCleanTestFailed(t *testing.T) {
-	r := test.NewReport("test-clean")
+	r := NewReport("test-clean")
 
-	rbdTest := &test.Test{
+	rbdTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(rbdTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	cephfsTest := &test.Test{
+	cephfsTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
 		},
-		Status: test.Failed,
+		Status: Failed,
 	}
 	r.AddTest(cephfsTest)
-	if r.Status != test.Failed {
-		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	if r.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
 
 	// We should have a failed tests step.
@@ -304,11 +303,11 @@ func TestReportCleanTestFailed(t *testing.T) {
 
 	// One test failed, so the tests step must be failed.
 	tests := r.Steps[0]
-	if tests.Name != test.TestsStep {
-		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	if tests.Name != TestsStep {
+		t.Errorf("expected step name %q, got %q", TestsStep, tests.Name)
 	}
-	if tests.Status != test.Failed {
-		t.Errorf("expected step status %q, got %q", test.Failed, tests.Status)
+	if tests.Status != Failed {
+		t.Errorf("expected step status %q, got %q", Failed, tests.Status)
 	}
 
 	// The tests setup must have 2 results.
@@ -316,7 +315,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := test.Result{
+	rbdResult := Result{
 		Workload: rbdTest.Config.Workload,
 		Deployer: rbdTest.Config.Deployer,
 		PVCSpec:  rbdTest.Config.PVCSpec,
@@ -326,7 +325,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := test.Result{
+	cephfsResult := Result{
 		Workload: cephfsTest.Config.Workload,
 		Deployer: cephfsTest.Config.Deployer,
 		PVCSpec:  cephfsTest.Config.PVCSpec,
@@ -346,25 +345,25 @@ func TestReportCleanTestFailed(t *testing.T) {
 }
 
 func TestReportCleanFailed(t *testing.T) {
-	r := test.NewReport("test-clean")
+	r := NewReport("test-clean")
 
-	rbdTest := &test.Test{
+	rbdTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(rbdTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	step := &test.Step{Name: test.CleanupStep, Status: test.Failed}
+	step := &Step{Name: CleanupStep, Status: Failed}
 	r.AddStep(step)
-	if r.Status != test.Failed {
-		t.Errorf("expected status %q, got %q", test.Failed, r.Status)
+	if r.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
 
 	// We should have a passed tests and failed cleanup steps.
@@ -374,16 +373,16 @@ func TestReportCleanFailed(t *testing.T) {
 
 	// All tests passed, so the tests step must be passed.
 	tests := r.Steps[0]
-	if tests.Name != test.TestsStep {
-		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	if tests.Name != TestsStep {
+		t.Errorf("expected step name %q, got %q", TestsStep, tests.Name)
 	}
-	if tests.Status != test.Passed {
-		t.Errorf("expected step status %q, got %q", test.Passed, tests.Status)
+	if tests.Status != Passed {
+		t.Errorf("expected step status %q, got %q", Passed, tests.Status)
 	}
 
 	// The cleanup step failed, the step must be passed.
 	cleanup := r.Steps[1]
-	failedCleanup := &test.Step{Name: test.CleanupStep, Status: test.Failed}
+	failedCleanup := &Step{Name: CleanupStep, Status: Failed}
 	if !reflect.DeepEqual(cleanup, failedCleanup) {
 		t.Fatalf("expected setup %+v, got %+v", cleanup, failedCleanup)
 	}
@@ -398,38 +397,38 @@ func TestReportCleanFailed(t *testing.T) {
 }
 
 func TestReportCleanAllPassed(t *testing.T) {
-	r := test.NewReport("test-clean")
+	r := NewReport("test-clean")
 
-	rbdTest := &test.Test{
+	rbdTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(rbdTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	cephfsTest := &test.Test{
+	cephfsTest := &Test{
 		Config: types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
 		},
-		Status: test.Passed,
+		Status: Passed,
 	}
 	r.AddTest(cephfsTest)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	step := &test.Step{Name: test.CleanupStep, Status: test.Passed}
+	step := &Step{Name: CleanupStep, Status: Passed}
 	r.AddStep(step)
-	if r.Status != test.Passed {
-		t.Errorf("expected status %q, got %q", test.Passed, r.Status)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
 	// We should have a passed tests and cleanup steps.
@@ -439,11 +438,11 @@ func TestReportCleanAllPassed(t *testing.T) {
 
 	// All tests passed, so the tests step must be passed.
 	tests := r.Steps[0]
-	if tests.Name != test.TestsStep {
-		t.Errorf("expected step name %q, got %q", test.TestsStep, tests.Name)
+	if tests.Name != TestsStep {
+		t.Errorf("expected step name %q, got %q", TestsStep, tests.Name)
 	}
-	if tests.Status != test.Passed {
-		t.Errorf("expected step status %q, got %q", test.Passed, tests.Status)
+	if tests.Status != Passed {
+		t.Errorf("expected step status %q, got %q", Passed, tests.Status)
 	}
 
 	// The tests setup must have 2 passed results.
@@ -451,7 +450,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := test.Result{
+	rbdResult := Result{
 		Workload: rbdTest.Config.Workload,
 		Deployer: rbdTest.Config.Deployer,
 		PVCSpec:  rbdTest.Config.PVCSpec,
@@ -461,7 +460,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := test.Result{
+	cephfsResult := Result{
 		Workload: cephfsTest.Config.Workload,
 		Deployer: cephfsTest.Config.Deployer,
 		PVCSpec:  cephfsTest.Config.PVCSpec,
@@ -473,7 +472,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 
 	// The cleanup step passed, the step must be passed.
 	cleanup := r.Steps[1]
-	passedCleanup := &test.Step{Name: test.CleanupStep, Status: test.Passed}
+	passedCleanup := &Step{Name: CleanupStep, Status: Passed}
 	if !reflect.DeepEqual(cleanup, passedCleanup) {
 		t.Fatalf("expected setup %+v, got %+v", cleanup, passedCleanup)
 	}
@@ -487,13 +486,13 @@ func TestReportCleanAllPassed(t *testing.T) {
 	checkRoundtrip(t, r)
 }
 
-func checkRoundtrip(t *testing.T, r1 *test.Report) {
+func checkRoundtrip(t *testing.T, r1 *Report) {
 	// We must be able to marshal and unmarshal the report
 	b, err := yaml.Marshal(r1)
 	if err != nil {
 		t.Fatalf("failed to marshal report: %s", err)
 	}
-	r2 := &test.Report{}
+	r2 := &Report{}
 	if err := yaml.Unmarshal(b, r2); err != nil {
 		t.Fatalf("failed to unmarshal report: %s", err)
 	}
