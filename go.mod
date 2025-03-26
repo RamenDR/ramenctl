@@ -7,7 +7,7 @@ go 1.23.0
 toolchain go1.23.4
 
 require (
-	github.com/ramendr/ramen/e2e v0.0.0-20250324144135-bae076b0fb56
+	github.com/ramendr/ramen/e2e v0.0.0-20250326144158-a155370cdec2
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 	sigs.k8s.io/yaml v1.4.0
