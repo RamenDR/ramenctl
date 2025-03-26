@@ -14,9 +14,9 @@ build := github.com/ramendr/ramenctl/pkg/build
 ldflags := -X '$(build).Version=$(version)' \
 		   -X '$(build).Commit=$(commit)'
 
-.PHONY: ramenctl examples
+.PHONY: ramenctl examples test clean
 
-all: ramenctl examples test clean
+all: ramenctl examples
 
 ramenctl:
 	CGO_ENABLED=0 go build -ldflags="$(ldflags)" -o $@ cmd/main.go
