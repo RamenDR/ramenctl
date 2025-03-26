@@ -14,7 +14,7 @@ import (
 )
 
 func TestReportEmpty(t *testing.T) {
-	r := NewReport("test-run")
+	r := newReport("test-run")
 
 	// Host and ramenctl info is ready.
 	expectedReport := report.New()
@@ -38,7 +38,7 @@ func TestReportEmpty(t *testing.T) {
 }
 
 func TestReportRunSetupFailed(t *testing.T) {
-	r := NewReport("test-run")
+	r := newReport("test-run")
 	step := &Step{Name: SetupStep, Status: Failed}
 	r.AddStep(step)
 
@@ -66,7 +66,7 @@ func TestReportRunSetupFailed(t *testing.T) {
 }
 
 func TestReportRunSetupPassed(t *testing.T) {
-	r := NewReport("test-run")
+	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -93,7 +93,7 @@ func TestReportRunSetupPassed(t *testing.T) {
 }
 
 func TestReportRunTestFailed(t *testing.T) {
-	r := NewReport("test-run")
+	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -180,7 +180,7 @@ func TestReportRunTestFailed(t *testing.T) {
 }
 
 func TestReportRunAllPassed(t *testing.T) {
-	r := NewReport("test-run")
+	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -268,7 +268,7 @@ func TestReportRunAllPassed(t *testing.T) {
 }
 
 func TestReportCleanTestFailed(t *testing.T) {
-	r := NewReport("test-clean")
+	r := newReport("test-clean")
 
 	rbdTest := &Test{
 		Config: types.TestConfig{
@@ -345,7 +345,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 }
 
 func TestReportCleanFailed(t *testing.T) {
-	r := NewReport("test-clean")
+	r := newReport("test-clean")
 
 	rbdTest := &Test{
 		Config: types.TestConfig{
@@ -397,7 +397,7 @@ func TestReportCleanFailed(t *testing.T) {
 }
 
 func TestReportCleanAllPassed(t *testing.T) {
-	r := NewReport("test-clean")
+	r := newReport("test-clean")
 
 	rbdTest := &Test{
 		Config: types.TestConfig{

@@ -55,7 +55,7 @@ type Report struct {
 	Status  Status  `json:"status,omitempty"`
 }
 
-func NewReport(commandName string) *Report {
+func newReport(commandName string) *Report {
 	return &Report{
 		Report: report.New(),
 		Name:   commandName,
