@@ -101,6 +101,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	failedTest := &Test{
+		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -114,6 +115,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	passedTest := &Test{
+		Context: &Context{name: "appset-deploy-cephfs"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -149,20 +151,22 @@ func TestReportRunTestFailed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", r.Steps[1].Items)
 	}
 
-	failedResult := Result{
+	failedResult := &Step{
+		Name:   failedTest.Name(),
 		Config: failedTest.Config,
 		Status: failedTest.Status,
 	}
-	if tests.Items[0] != failedResult {
+	if !reflect.DeepEqual(tests.Items[0], failedResult) {
 		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[0])
 	}
 
-	passedResult := Result{
+	passedResult := &Step{
+		Name:   passedTest.Name(),
 		Config: passedTest.Config,
 		Status: passedTest.Status,
 	}
-	if tests.Items[1] != passedResult {
-		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[1])
+	if !reflect.DeepEqual(tests.Items[1], passedResult) {
+		t.Errorf("expected result %+v, got %+v", passedResult, tests.Items[1])
 	}
 
 	// Counts updated.
@@ -184,6 +188,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	rbdTest := &Test{
+		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -197,6 +202,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
+		Context: &Context{name: "appset-deploy-cephfs"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -233,19 +239,21 @@ func TestReportRunAllPassed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := Result{
+	rbdResult := &Step{
+		Name:   rbdTest.Name(),
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if tests.Items[0] != rbdResult {
+	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := Result{
+	cephfsResult := &Step{
+		Name:   cephfsTest.Name(),
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if tests.Items[1] != cephfsResult {
+	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
 	}
 
@@ -262,6 +270,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
+		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -275,6 +284,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
+		Context: &Context{name: "appset-deploy-cephfs"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -306,20 +316,22 @@ func TestReportCleanTestFailed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := Result{
+	rbdResult := &Step{
+		Name:   rbdTest.Name(),
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if tests.Items[0] != rbdResult {
+	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := Result{
+	cephfsResult := &Step{
+		Name:   cephfsTest.Name(),
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if tests.Items[1] != cephfsResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
+	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
+		t.Errorf("expected result %+v, got %+v", cephfsResult, tests.Items[1])
 	}
 
 	// Counts updated.
@@ -335,6 +347,7 @@ func TestReportCleanFailed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
+		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -387,6 +400,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
+		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -400,6 +414,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
+		Context: &Context{name: "appset-deploy-cephfs"},
 		Config: &Config{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -437,20 +452,22 @@ func TestReportCleanAllPassed(t *testing.T) {
 		t.Errorf("unexpected tests %+v", tests.Items)
 	}
 
-	rbdResult := Result{
+	rbdResult := &Step{
+		Name:   rbdTest.Name(),
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if tests.Items[0] != rbdResult {
+	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
-	cephfsResult := Result{
+	cephfsResult := &Step{
+		Name:   cephfsTest.Name(),
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if tests.Items[1] != cephfsResult {
-		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
+	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
+		t.Errorf("expected result %+v, got %+v", cephfsResult, tests.Items[1])
 	}
 
 	// The cleanup step passed, the step must be passed.

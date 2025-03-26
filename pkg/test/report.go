@@ -24,11 +24,12 @@ const (
 	CleanupStep  = "cleanup"
 )
 
-// A step is a test command step. The setup and cleanup steps are modeled as step without tests.
+// A step is a test command step.
 type Step struct {
-	Name   string   `json:"name"`
-	Status Status   `json:"status,omitempty"`
-	Items  []Result `json:"items,omitempty"`
+	Name   string  `json:"name"`
+	Status Status  `json:"status,omitempty"`
+	Config *Config `json:"config,omitempty"`
+	Items  []*Step `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -44,12 +45,6 @@ type Config struct {
 	Workload string `json:"workload"`
 	Deployer string `json:"deployer"`
 	PVCSpec  string `json:"pvcSpec"`
-}
-
-// Result describes a single test result.
-type Result struct {
-	Config *Config `json:"config"`
-	Status Status  `json:"status,omitempty"`
 }
 
 // Report created by test sub commands.
@@ -127,7 +122,8 @@ func (r *Report) findStep(name string) *Step {
 
 // AddTest records a completed test. A failed test marks the step as failed.
 func (s *Step) AddTest(t *Test) {
-	result := Result{
+	result := &Step{
+		Name:   t.Name(),
 		Config: t.Config,
 		Status: t.Status,
 	}
