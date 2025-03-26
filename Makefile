@@ -16,7 +16,7 @@ ldflags := -X '$(build).Version=$(version)' \
 
 .PHONY: ramenctl examples
 
-all: ramenctl examples
+all: ramenctl examples test clean
 
 ramenctl:
 	CGO_ENABLED=0 go build -ldflags="$(ldflags)" -o $@ cmd/main.go
