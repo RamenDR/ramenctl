@@ -14,10 +14,6 @@ clusters:
     name: {{.SecondaryName}}
     kubeconfig: {{.SecondaryKubeconfig}}
 
-## Kubernetes distribution
-# - Modify to specify your clusters kuberenetes distribution (k8s or ocp).
-distro: k8s
-
 ## Git repository for test command.
 # - Modify "url" to use your own Git repository.
 # - Modify "branch" to test a different branch.
