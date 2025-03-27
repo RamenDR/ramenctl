@@ -5,6 +5,8 @@ package test
 
 import (
 	"fmt"
+	"path/filepath"
+	"sort"
 	"sync"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
 // Command is a ramenctl test command.
@@ -26,8 +29,10 @@ type Command struct {
 	// PCCSpecs maps pvscpec name to pvcspec.
 	PVCSpecs map[string]types.PVCSpecConfig
 
+	// Tests to run or clean.
+	Tests []*Test
+
 	// Command report, stored at the output directory on completion.
-	mutex  sync.Mutex
 	Report *Report
 }
 
@@ -44,12 +49,19 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
 	cmd.Config.Channel.Namespace = "test-gitops"
 
-	return &Command{
+	testCmd := &Command{
 		Command:         cmd,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
 		Report:          newReport(name),
-	}, nil
+	}
+
+	for _, tc := range cmd.Config.Tests {
+		test := newTest(tc, testCmd)
+		testCmd.Tests = append(testCmd.Tests, test)
+	}
+
+	return testCmd, nil
 }
 
 func (c *Command) Validate() bool {
@@ -110,6 +122,13 @@ func (c *Command) CleanTests() bool {
 	return c.runFlowFunc(c.cleanFlow)
 }
 
+func (c *Command) GatherData() {
+	console.Step("Gather data")
+	namespaces := c.namespacesToGather()
+	outputDir := filepath.Join(c.OutputDir, c.Name+".gather")
+	gather.Namespaces(c.Env, namespaces, outputDir, c.Logger)
+}
+
 func (c *Command) Failed() error {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
@@ -133,8 +152,7 @@ func (c *Command) fail(msg string, err error) {
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
 	var wg sync.WaitGroup
-	for _, tc := range c.Config.Tests {
-		test := newTest(tc, c)
+	for _, test := range c.Tests {
 		wg.Add(1)
 		go func() {
 			f(test)
@@ -143,12 +161,14 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 	wg.Wait()
 
-	return c.checkStatus()
+	for _, test := range c.Tests {
+		c.Report.AddTest(test)
+	}
+
+	return c.Report.Status == Passed
 }
 
 func (c *Command) runFlow(test *Test) {
-	defer c.addTest(test)
-
 	if !test.Deploy() {
 		return
 	}
@@ -168,22 +188,33 @@ func (c *Command) runFlow(test *Test) {
 }
 
 func (c *Command) cleanFlow(test *Test) {
-	defer c.addTest(test)
-
 	if !test.Unprotect() {
 		return
 	}
 	test.Undeploy()
 }
 
-func (c *Command) checkStatus() bool {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	return c.Report.Status == Passed
-}
+func (c *Command) namespacesToGather() []string {
+	seen := map[string]struct{}{
+		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
+		c.Config.Namespaces.RamenHubNamespace:       struct{}{},
+		c.Config.Namespaces.RamenDRClusterNamespace: struct{}{},
+	}
 
-func (c *Command) addTest(test *Test) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.Report.AddTest(test)
+	// Add application resources for failed tests.
+	for _, test := range c.Tests {
+		if test.Status == Failed {
+			seen[test.AppNamespace()] = struct{}{}
+			seen[test.ManagementNamespace()] = struct{}{}
+		}
+	}
+
+	var namespaces []string
+	for ns := range seen {
+		namespaces = append(namespaces, ns)
+	}
+
+	sort.Strings(namespaces)
+
+	return namespaces
 }
