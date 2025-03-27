@@ -26,8 +26,10 @@ type Command struct {
 	// PCCSpecs maps pvscpec name to pvcspec.
 	PVCSpecs map[string]types.PVCSpecConfig
 
+	// Tests to run or clean.
+	Tests []*Test
+
 	// Command report, stored at the output directory on completion.
-	mutex  sync.Mutex
 	Report *Report
 }
 
@@ -44,12 +46,19 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
 	cmd.Config.Channel.Namespace = "test-gitops"
 
-	return &Command{
+	testCmd := &Command{
 		Command:         cmd,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
 		Report:          newReport(name),
-	}, nil
+	}
+
+	for _, tc := range cmd.Config.Tests {
+		test := newTest(tc, testCmd)
+		testCmd.Tests = append(testCmd.Tests, test)
+	}
+
+	return testCmd, nil
 }
 
 func (c *Command) Validate() bool {
@@ -133,8 +142,7 @@ func (c *Command) fail(msg string, err error) {
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
 	var wg sync.WaitGroup
-	for _, tc := range c.Config.Tests {
-		test := newTest(tc, c)
+	for _, test := range c.Tests {
 		wg.Add(1)
 		go func() {
 			f(test)
@@ -143,12 +151,14 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 	wg.Wait()
 
-	return c.checkStatus()
+	for _, test := range c.Tests {
+		c.Report.AddTest(test)
+	}
+
+	return c.Report.Status == Passed
 }
 
 func (c *Command) runFlow(test *Test) {
-	defer c.addTest(test)
-
 	if !test.Deploy() {
 		return
 	}
@@ -168,22 +178,8 @@ func (c *Command) runFlow(test *Test) {
 }
 
 func (c *Command) cleanFlow(test *Test) {
-	defer c.addTest(test)
-
 	if !test.Unprotect() {
 		return
 	}
 	test.Undeploy()
-}
-
-func (c *Command) checkStatus() bool {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	return c.Report.Status == Passed
-}
-
-func (c *Command) addTest(test *Test) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.Report.AddTest(test)
 }
