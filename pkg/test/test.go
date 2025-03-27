@@ -4,6 +4,7 @@
 package test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ramendr/ramen/e2e/deployers"
@@ -90,6 +91,12 @@ func (t *Test) Unprotect() bool {
 }
 
 func (t *Test) Failover() bool {
+	if true {
+		msg := fmt.Sprintf("failed to failover application %q", t.Name())
+		t.fail(msg, errors.New("fake error"))
+		return false
+	}
+
 	if err := dractions.Failover(t.Context); err != nil {
 		msg := fmt.Sprintf("failed to failover application %q", t.Name())
 		t.fail(msg, err)
