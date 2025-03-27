@@ -5,6 +5,8 @@ package test
 
 import (
 	"fmt"
+	"path/filepath"
+	"sort"
 	"sync"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
 // Command is a ramenctl test command.
@@ -119,6 +122,13 @@ func (c *Command) CleanTests() bool {
 	return c.runFlowFunc(c.cleanFlow)
 }
 
+func (c *Command) GatherData() {
+	console.Step("Gather data")
+	namespaces := c.namespacesToGather()
+	outputDir := filepath.Join(c.OutputDir, c.Name+".gather")
+	gather.Namespaces(c.Env, namespaces, outputDir, c.Logger)
+}
+
 func (c *Command) Failed() error {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
@@ -182,4 +192,29 @@ func (c *Command) cleanFlow(test *Test) {
 		return
 	}
 	test.Undeploy()
+}
+
+func (c *Command) namespacesToGather() []string {
+	seen := map[string]struct{}{
+		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
+		c.Config.Namespaces.RamenHubNamespace:       struct{}{},
+		c.Config.Namespaces.RamenDRClusterNamespace: struct{}{},
+	}
+
+	// Add application resources for failed tests.
+	for _, test := range c.Tests {
+		if test.Status == Failed {
+			seen[test.AppNamespace()] = struct{}{}
+			seen[test.ManagementNamespace()] = struct{}{}
+		}
+	}
+
+	var namespaces []string
+	for ns := range seen {
+		namespaces = append(namespaces, ns)
+	}
+
+	sort.Strings(namespaces)
+
+	return namespaces
 }
