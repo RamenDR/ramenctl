@@ -62,11 +62,8 @@ func ReadConfig(filename string) (*types.Config, error) {
 
 type Sample struct {
 	CommandName         string
-	HubName             string
 	HubKubeconfig       string
-	PrimaryName         string
 	PrimaryKubeconfig   string
-	SecondaryName       string
 	SecondaryKubeconfig string
 }
 
@@ -97,11 +94,8 @@ func createFile(name string, content []byte) error {
 func defaultSample(commandName string) *Sample {
 	return &Sample{
 		CommandName:         commandName,
-		HubName:             "hub",
 		HubKubeconfig:       "hub/config",
-		PrimaryName:         "primary",
 		PrimaryKubeconfig:   "primary/config",
-		SecondaryName:       "secondary",
 		SecondaryKubeconfig: "secondary/config",
 	}
 }

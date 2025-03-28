@@ -5,13 +5,10 @@
 #   clusters names and path to the kubeconfig file.
 clusters:
   hub:
-    name: {{.HubName}}
     kubeconfig: {{.HubKubeconfig}}
   c1:
-    name: {{.PrimaryName}}
     kubeconfig: {{.PrimaryKubeconfig}}
   c2:
-    name: {{.SecondaryName}}
     kubeconfig: {{.SecondaryKubeconfig}}
 
 ## Git repository for test command.

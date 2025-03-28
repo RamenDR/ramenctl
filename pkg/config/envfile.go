@@ -51,11 +51,8 @@ func sampleFromEnvFile(envFile, commandName string) (*Sample, error) {
 	}
 	return &Sample{
 		CommandName:         commandName,
-		HubName:             envConfig.Ramen.Hub,
 		HubKubeconfig:       envConfig.KubeconfigPath(envConfig.Ramen.Hub),
-		PrimaryName:         envConfig.Ramen.Clusters[0],
 		PrimaryKubeconfig:   envConfig.KubeconfigPath(envConfig.Ramen.Clusters[0]),
-		SecondaryName:       envConfig.Ramen.Clusters[1],
 		SecondaryKubeconfig: envConfig.KubeconfigPath(envConfig.Ramen.Clusters[1]),
 	}, nil
 }
