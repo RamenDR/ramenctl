@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+# yamllint disable rule:line-length
+---
+name: ramenctl
+
+# This workflow will run when developer push a topic branch to their
+# fork in github, minimizing noise for maintainers. This
+# workflow also runs on nightly basis at 12:00 AM (00:00 UTC)
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  # Constants
+  GO_VERSION: "1.23.0"
+defaults:
+  run:
+    shell: bash
+jobs:
+  golangci:
+    name: Golangci Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          # when the files to be extracted are already present,
+          # tar extraction in Golangci Lint fails with the "File exists"
+          # errors. These files appear to be present because of
+          # cache in setup-go, on disabling the cache we are no more seeing
+          # such error. Cache is to be enabled once the fix is available for
+          # this issue.
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+
+      - name: GolangCI Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
