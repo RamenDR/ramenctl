@@ -111,8 +111,8 @@ github.com/prometheus/procfs v0.15.1 h1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0leargg
 github.com/prometheus/procfs v0.15.1/go.mod h1:fB45yRUv8NstnjriLhBQLuOUt+WW4BsoGhij/e3PBqk=
 github.com/ramendr/ramen/api v0.0.0-20250313143647-8dd671566929 h1:yW5QWX4InhtZJd2KhBS57/1uIpRpFSMbg58Ac7wfKpo=
 github.com/ramendr/ramen/api v0.0.0-20250313143647-8dd671566929/go.mod h1:ZRq9Ep/AMWPB9U8bi2mxmcU5nYnmfuK5OY2NVwj4xdA=
-github.com/ramendr/ramen/e2e v0.0.0-20250327122433-da983c986e68 h1:LuJX/VNfg3FVQBhm5WQt2ymX6jtzXkgfUifpzmKMb1Y=
-github.com/ramendr/ramen/e2e v0.0.0-20250327122433-da983c986e68/go.mod h1:T0E9hZ6IoV0sfz0bC/JzZuLQVk9Hfzkabw7ZnMJgGrw=
+github.com/ramendr/ramen/e2e v0.0.0-20250329065458-d36833ab0386 h1:xhc9BhbcgtrE/K/gplYInnd4DkNltOHFIy5J853KyEw=
+github.com/ramendr/ramen/e2e v0.0.0-20250329065458-d36833ab0386/go.mod h1:T0E9hZ6IoV0sfz0bC/JzZuLQVk9Hfzkabw7ZnMJgGrw=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

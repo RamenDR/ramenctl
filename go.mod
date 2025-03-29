@@ -8,7 +8,7 @@ toolchain go1.23.4
 
 require (
 	github.com/nirs/kubectl-gather v0.7.0
-	github.com/ramendr/ramen/e2e v0.0.0-20250327122433-da983c986e68
+	github.com/ramendr/ramen/e2e v0.0.0-20250329065458-d36833ab0386
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 	k8s.io/client-go v0.31.1
