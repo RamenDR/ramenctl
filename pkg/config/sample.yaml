@@ -1,8 +1,8 @@
 ## {{.CommandName}} configuration file
 
 ## Clusters configuration.
-# - Modify clusters "kubeconfig" and "name" to match your hub and managed
-#   clusters names and path to the kubeconfig file.
+# - Modify clusters "kubeconfig" to match your hub and managed clusters
+#   kubeconfig files.
 clusters:
   hub:
     kubeconfig: {{.HubKubeconfig}}
