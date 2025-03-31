@@ -1,10 +1,10 @@
 module github.com/ramendr/ramenctl
 
-// Match kubectl-rook-ceph
+// Required minimum version, must be available in downstream builders.
 go 1.23.5
 
-// Match kubectl-rook-ceph
-toolchain go1.24.1
+// Recommended version: latest go 1.23 release.
+toolchain go1.23.7
 
 require (
 	github.com/nirs/kubectl-gather v0.7.0
