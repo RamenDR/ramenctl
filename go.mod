@@ -1,14 +1,14 @@
 module github.com/ramendr/ramenctl
 
 // Match kubectl-rook-ceph
-go 1.23.0
+go 1.23.5
 
 // Match kubectl-rook-ceph
-toolchain go1.23.4
+toolchain go1.24.1
 
 require (
 	github.com/nirs/kubectl-gather v0.7.0
-	github.com/ramendr/ramen/e2e v0.0.0-20250329065458-d36833ab0386
+	github.com/ramendr/ramen/e2e v0.0.0-20250403163436-dd4fa747d7f7
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 	k8s.io/client-go v0.31.1
@@ -61,7 +61,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.36.0 // indirect
-	golang.org/x/oauth2 v0.22.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
