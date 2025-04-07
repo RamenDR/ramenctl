@@ -76,9 +76,14 @@ $ ramenctl test run -o rdr-test
 
 Your system is ready for disaster recovery!
 
-## Status
+Please see [Documentation](#documentation) to learn more.
 
-The project is in early development.
+## Documentation
+
+Visit the docs below to learn about *ramenctl* commands:
+
+- [init](docs/init.md)
+- [test](docs/test.md)
 
 ## Contributing
 
