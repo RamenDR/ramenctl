@@ -42,8 +42,39 @@ sudo install ramenctl /usr/local/bin/
 rm ramenctl
 ```
 
+## Examples
 
+Create a configuration file for Regional DR test environment:
 
+```console
+$ ramenctl init --envfile ramen/test/envs/regional-dr.yaml
+```
+
+Run disaster recovery tests:
+
+```console
+$ ramenctl test run -o rdr-test
+⭐ Using report "rdr-test"
+⭐ Using config "config.yaml"
+
+🔎 Validate config ...
+   ✅ Config validated
+
+🔎 Setup environment ...
+   ✅ Environment setup
+
+🔎 Run tests ...
+   ✅ Application "appset-deploy-rbd" deployed
+   ✅ Application "appset-deploy-rbd" protected
+   ✅ Application "appset-deploy-rbd" failed over
+   ✅ Application "appset-deploy-rbd" relocated
+   ✅ Application "appset-deploy-rbd" unprotected
+   ✅ Application "appset-deploy-rbd" undeployed
+
+✅ passed (1 passed, 0 failed, 0 skipped)
+```
+
+Your system is ready for disaster recovery!
 
 ## Status
 
