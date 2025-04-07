@@ -5,6 +5,7 @@
 /ramenctl
 /examples/odf
 /config.yaml
+cover.out
 
 # Editor files
 /.zed

@@ -14,7 +14,7 @@ build := github.com/ramendr/ramenctl/pkg/build
 ldflags := -X '$(build).Version=$(version)' \
 		   -X '$(build).Commit=$(commit)'
 
-.PHONY: ramenctl examples test clean
+.PHONY: ramenctl examples test clean coverage
 
 all: ramenctl examples
 
@@ -25,7 +25,10 @@ examples:
 	go build -o examples/odf examples/odf.go
 
 test:
-	go test -ldflags="$(ldflags)" -v ./...
+	go test --coverprofile cover.out -ldflags="$(ldflags)" -v ./...
+
+coverage:
+	go tool cover -html=cover.out
 
 clean:
 	rm -f ramenctl examples/odf
