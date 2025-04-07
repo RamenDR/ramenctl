@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"path/filepath"
+
 	"sigs.k8s.io/yaml"
 )
 
@@ -42,17 +43,4 @@ func (e *EnvFile) KubeconfigPath(name string) string {
 		panic(err)
 	}
 	return filepath.Join(homeDir, ".config", "drenv", e.Name, "kubeconfigs", name)
-}
-
-func sampleFromEnvFile(envFile, commandName string) (*Sample, error) {
-	envConfig, err := ReadEnvFile(envFile)
-	if err != nil {
-		return nil, err
-	}
-	return &Sample{
-		CommandName:         commandName,
-		HubKubeconfig:       envConfig.KubeconfigPath(envConfig.Ramen.Hub),
-		PrimaryKubeconfig:   envConfig.KubeconfigPath(envConfig.Ramen.Clusters[0]),
-		SecondaryKubeconfig: envConfig.KubeconfigPath(envConfig.Ramen.Clusters[1]),
-	}, nil
 }

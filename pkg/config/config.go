@@ -99,3 +99,16 @@ func defaultSample(commandName string) *Sample {
 		SecondaryKubeconfig: "secondary/config",
 	}
 }
+
+func sampleFromEnvFile(envFile, commandName string) (*Sample, error) {
+	envConfig, err := ReadEnvFile(envFile)
+	if err != nil {
+		return nil, err
+	}
+	return &Sample{
+		CommandName:         commandName,
+		HubKubeconfig:       envConfig.KubeconfigPath(envConfig.Ramen.Hub),
+		PrimaryKubeconfig:   envConfig.KubeconfigPath(envConfig.Ramen.Clusters[0]),
+		SecondaryKubeconfig: envConfig.KubeconfigPath(envConfig.Ramen.Clusters[1]),
+	}, nil
+}
