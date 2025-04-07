@@ -25,8 +25,8 @@ The project provides:
 
 ## Installing
 
-Download the *ramenctl* executable for your operating system and
-architecture and install in the PATH.
+Download the *ramenctl* executable for your operating system and architecture
+and install in the PATH.
 
 To install the latest release on Linux and macOS, run:
 
