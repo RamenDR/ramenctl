@@ -101,14 +101,14 @@ func defaultSample(commandName string) *Sample {
 }
 
 func sampleFromEnvFile(envFile, commandName string) (*Sample, error) {
-	envConfig, err := ReadEnvFile(envFile)
+	env, err := ReadEnvFile(envFile)
 	if err != nil {
 		return nil, err
 	}
 	return &Sample{
 		CommandName:         commandName,
-		HubKubeconfig:       envConfig.KubeconfigPath(envConfig.Ramen.Hub),
-		PrimaryKubeconfig:   envConfig.KubeconfigPath(envConfig.Ramen.Clusters[0]),
-		SecondaryKubeconfig: envConfig.KubeconfigPath(envConfig.Ramen.Clusters[1]),
+		HubKubeconfig:       env.KubeconfigPath(env.Ramen.Hub),
+		PrimaryKubeconfig:   env.KubeconfigPath(env.Ramen.Clusters[0]),
+		SecondaryKubeconfig: env.KubeconfigPath(env.Ramen.Clusters[1]),
 	}, nil
 }
