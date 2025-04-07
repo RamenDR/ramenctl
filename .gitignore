@@ -9,3 +9,6 @@ cover.out
 
 # Editor files
 /.zed
+
+# Test results
+/.test
