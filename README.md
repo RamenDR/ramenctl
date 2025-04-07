@@ -14,6 +14,15 @@ disaster recovery environment we have at least 3 connected Kubernetes
 clusters with many components. The *ramenctl* project aims to make it
 easier to manage and troubleshoot this challenging environment.
 
+## Features
+
+The project provides:
+
+- The *ramenctl* command line tool, managing and troubleshooting ramen.
+- The *ramenctl* Go module for integrating the ramenctl commands in other
+  projects. This module is used to implement the
+  [odf dr](https://github.com/red-hat-storage/odf-cli/blob/main/docs/dr.md) command.
+
 ## Installing
 
 Download the *ramenctl* executable for your operating system and
@@ -33,13 +42,8 @@ sudo install ramenctl /usr/local/bin/
 rm ramenctl
 ```
 
-## Features
 
-The project will provides:
 
-- The *ramenctl* command line tool.
-- The *ramenctl* Go module for integrating the commands in other
-  projects.
 
 ## Status
 
