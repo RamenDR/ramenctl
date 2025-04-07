@@ -39,6 +39,7 @@ func init() {
 func addOutputFlag(c *cobra.Command) {
 	// The actual output directory is known only when running the command.
 	c.PersistentFlags().StringVarP(&userOutputDir, "output", "o", "", "report directory (default report.{timestamp})")
+	c.MarkPersistentFlagRequired("output")
 }
 
 func outputDir() string {
