@@ -19,11 +19,11 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 	var sample *Sample
 	if envFile != "" {
 		console.Info("Using envfile %q", envFile)
-		var err error
-		sample, err = sampleFromEnvFile(envFile, commandName)
+		env, err := ReadEnvFile(envFile)
 		if err != nil {
-			return fmt.Errorf("failed to load environment file: %w", err)
+			return fmt.Errorf("failed to read environment file: %w", err)
 		}
+		sample = sampleFromEnv(env, commandName)
 	} else {
 		sample = defaultSample(commandName)
 	}
