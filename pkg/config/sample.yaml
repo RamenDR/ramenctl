@@ -32,10 +32,10 @@ clusterSet: default
 # - Add new items for testing more storage types.
 PVCSpecs:
 - name: rbd
-  storageClassName: rook-ceph-block
+  storageClassName: {{.RBDStorageClassName}}
   accessModes: ReadWriteOnce
 - name: cephfs
-  storageClassName: rook-cephfs-fs1
+  storageClassName: {{.CephFSStorageClassName}}
   accessModes: ReadWriteMany
 
 ## Tests cases for test command.
