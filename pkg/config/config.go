@@ -23,7 +23,7 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 		if err != nil {
 			return fmt.Errorf("failed to read environment file: %w", err)
 		}
-		sample = sampleFromEnv(env, commandName)
+		sample = sampleFromEnv(commandName, env)
 	} else {
 		sample = defaultSample(commandName)
 	}

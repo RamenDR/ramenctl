@@ -40,7 +40,7 @@ func defaultSample(commandName string) *Sample {
 	}
 }
 
-func sampleFromEnv(env *EnvFile, commandName string) *Sample {
+func sampleFromEnv(commandName string, env *EnvFile) *Sample {
 	return &Sample{
 		CommandName:         commandName,
 		HubKubeconfig:       env.KubeconfigPath(env.Ramen.Hub),
