@@ -1,5 +1,26 @@
 # Testing disaster recovery with ramenctl
 
+## Table of contents
+
+1. [Issue](#issue)
+1. [Environment](#environment)
+1. [Resolution](#resolution)
+   1. [Preparing a configuration file](#preparing-a-configuration-file)
+      1. [Configure clusters](#configure-clusters)
+      1. [Configure drPolicy](#configure-drpolicy)
+      1. [Configure clusterSet](#configure-clusterset)
+      1. [Configure pvcSpecs](#configure-pvcspecs)
+      1. [Configure tests](#configure-tests)
+   1. [Running a test](#running-a-test)
+      1. [The test flow](#the-test-flow)
+      1. [The test report](#the-test-report)
+      1. [The test-run.yaml](#the-test-runyaml)
+      1. [The test-run.log](#the-test-runlog)
+   1. [Cleaning up](#cleaning-up)
+      1. [The clean flow](#the-clean-flow)
+   1. [Failed tests](#failed-tests)
+      1. [Inspecting gathered data](#inspecting-gathered-data)
+
 ## Issue
 
 How to test if disaster recovery works in my clusters? Deploying and configuring
