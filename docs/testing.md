@@ -549,7 +549,7 @@ secondary-cluster/namespaces/openshift-dr-system/pods/ramen-dr-cluster-operator-
 In this case the gathered data tells that ramen is not the root cause, and we
 need to inspect the storage.
 
-If more information is needded you can use the standard must-gather with ODF or
+If more information is needed you can use the standard must-gather with ODF or
 ACM images to do a full gather.
 
 When we finished to debug the failed test we need to cleanup up:
