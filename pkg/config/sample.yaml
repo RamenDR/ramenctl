@@ -30,7 +30,7 @@ clusterSet: default
 # - Modify items "storageclassname" to match the actual storage classes in the
 #   managed clusters.
 # - Add new items for testing more storage types.
-PVCSpecs:
+pvcSpecs:
 - name: rbd
   storageClassName: {{.RBDStorageClassName}}
   accessModes: ReadWriteOnce
