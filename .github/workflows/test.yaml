@@ -11,9 +11,8 @@ on:
       - main
 
 jobs:
-
   build-matrix:
-    name: Build binaries
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -33,5 +32,35 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      - name: Download modules
+        run: go mod download
       - name: Build binary
         run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} make
+
+  test-matrix:
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        # See https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        runner:
+          - ubuntu-24.04 # x86_64
+          - ubuntu-24.04-arm # arm64
+          - windows-latest # x86_64
+          - macos-13 # x86_64
+          - macos-15 # arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Create build tag
+        run: git tag latest
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Download modules
+        run: go mod download
+      - name: Run tests
+        run: make test
