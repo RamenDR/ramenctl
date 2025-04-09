@@ -149,6 +149,7 @@ func (s *Step) AddTest(t *Test) {
 		Name:   t.Name(),
 		Config: t.Config,
 		Status: t.Status,
+		Items:  t.Steps,
 	}
 
 	s.Items = append(s.Items, result)
