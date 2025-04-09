@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 
 	"sigs.k8s.io/yaml"
 
@@ -58,6 +59,14 @@ func TestBuildInfo(t *testing.T) {
 	})
 }
 
+func TestCreatedTime(t *testing.T) {
+	fakeTime(t)
+	r := report.New()
+	if r.Created != report.Now() {
+		t.Fatalf("expected %v, got %v", report.Now(), r.Created)
+	}
+}
+
 func TestRoundtrip(t *testing.T) {
 	r1 := report.New()
 	b, err := yaml.Marshal(r1)
@@ -71,4 +80,16 @@ func TestRoundtrip(t *testing.T) {
 	if !reflect.DeepEqual(r1, r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
+}
+
+var fakeNow = report.Now()
+
+func fakeTime(t *testing.T) {
+	savedNow := report.Now
+	report.Now = func() time.Time {
+		return fakeNow
+	}
+	t.Cleanup(func() {
+		report.Now = savedNow
+	})
 }

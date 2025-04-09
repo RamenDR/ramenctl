@@ -6,6 +6,7 @@ package test
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"sigs.k8s.io/yaml"
 
@@ -13,6 +14,7 @@ import (
 )
 
 func TestReportEmpty(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-run")
 
 	// Host and ramenctl info is ready.
@@ -37,6 +39,7 @@ func TestReportEmpty(t *testing.T) {
 }
 
 func TestReportRunSetupFailed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-run")
 	step := &Step{Name: SetupStep, Status: Failed}
 	r.AddStep(step)
@@ -65,6 +68,7 @@ func TestReportRunSetupFailed(t *testing.T) {
 }
 
 func TestReportRunSetupPassed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
@@ -92,6 +96,7 @@ func TestReportRunSetupPassed(t *testing.T) {
 }
 
 func TestReportRunTestFailed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
@@ -179,6 +184,7 @@ func TestReportRunTestFailed(t *testing.T) {
 }
 
 func TestReportRunAllPassed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-run")
 
 	step := &Step{Name: SetupStep, Status: Passed}
@@ -267,6 +273,7 @@ func TestReportRunAllPassed(t *testing.T) {
 }
 
 func TestReportCleanTestFailed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
@@ -344,6 +351,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 }
 
 func TestReportCleanFailed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
@@ -397,6 +405,7 @@ func TestReportCleanFailed(t *testing.T) {
 }
 
 func TestReportCleanAllPassed(t *testing.T) {
+	fakeTime(t)
 	r := newReport("test-clean")
 
 	rbdTest := &Test{
@@ -499,4 +508,16 @@ func checkRoundtrip(t *testing.T, r1 *Report) {
 	if !reflect.DeepEqual(r1, r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
+}
+
+var fakeNow = report.Now()
+
+func fakeTime(t *testing.T) {
+	savedNow := report.Now
+	report.Now = func() time.Time {
+		return fakeNow
+	}
+	t.Cleanup(func() {
+		report.Now = savedNow
+	})
 }
