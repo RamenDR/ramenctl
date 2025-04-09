@@ -4,8 +4,6 @@
 package commands
 
 import (
-	"time"
-
 	"github.com/spf13/cobra"
 
 	"github.com/ramendr/ramenctl/pkg/build"
@@ -15,8 +13,8 @@ var (
 	// configFile is shared by all commands, enabling access to all clusters.
 	configFile string
 
-	// userOutputDir is used by troubleshooting commands for creating a report.
-	userOutputDir string
+	// outputDir is used by troubleshooting commands for creating a report.
+	outputDir string
 )
 
 var RootCmd = &cobra.Command{
@@ -37,14 +35,6 @@ func init() {
 }
 
 func addOutputFlag(c *cobra.Command) {
-	// The actual output directory is known only when running the command.
-	c.PersistentFlags().StringVarP(&userOutputDir, "output", "o", "", "report directory (default report.{timestamp})")
+	c.PersistentFlags().StringVarP(&outputDir, "output", "o", "", "output directory")
 	c.MarkPersistentFlagRequired("output")
-}
-
-func outputDir() string {
-	if userOutputDir == "" {
-		return time.Now().Format("report.20060102150405")
-	}
-	return userOutputDir
 }
