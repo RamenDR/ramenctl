@@ -4,7 +4,6 @@
 package test
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ func TestReportEmpty(t *testing.T) {
 
 	// Host and ramenctl info is ready.
 	expectedReport := report.New()
-	if !reflect.DeepEqual(r.Report, expectedReport) {
+	if !r.Report.Equal(expectedReport) {
 		t.Errorf("expected report %+v, got %+v", expectedReport, r.Report)
 	}
 
@@ -54,13 +53,14 @@ func TestReportRunSetupFailed(t *testing.T) {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
 	failedSetup := &Step{Name: SetupStep, Status: Failed}
-	if !reflect.DeepEqual(r.Steps[0], failedSetup) {
+	if !r.Steps[0].Equal(failedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", r.Steps[0], failedSetup)
 	}
 
 	// No test run son counts should be zero.
-	if r.Summary.Passed != 0 || r.Summary.Failed != 0 || r.Summary.Skipped != 0 {
-		t.Errorf("unexpected summary: %+v", r.Summary)
+	expectedSummary := Summary{}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected summary %+v,  %+v", expectedSummary, r.Summary)
 	}
 
 	// We can marshal and unmarshal the report
@@ -82,13 +82,14 @@ func TestReportRunSetupPassed(t *testing.T) {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
 	passedSetup := &Step{Name: SetupStep, Status: Passed}
-	if !reflect.DeepEqual(r.Steps[0], passedSetup) {
-		t.Fatalf("expected setup %+v, got %+v", r.Steps[0], passedSetup)
+	if !r.Steps[0].Equal(passedSetup) {
+		t.Fatalf("expected setup %+v, got %+v", passedSetup, r.Steps[0])
 	}
 
 	// No test run son counts should be zero.
-	if r.Summary.Passed != 0 || r.Summary.Failed != 0 || r.Summary.Skipped != 0 {
-		t.Errorf("unexpected summary: %+v", r.Summary)
+	expectedSummary := Summary{}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
 	}
 
 	// We can marshal and unmarshal the report
@@ -139,8 +140,8 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 	setup := r.Steps[0]
 	passedSetup := &Step{Name: SetupStep, Status: Passed}
-	if !reflect.DeepEqual(setup, passedSetup) {
-		t.Fatalf("expected setup %+v, got %+v", setup, passedSetup)
+	if !setup.Equal(passedSetup) {
+		t.Fatalf("expected setup %+v, got %+v", passedSetup, setup)
 	}
 	// One test failed, so the tests step must be failed.
 	tests := r.Steps[1]
@@ -161,7 +162,7 @@ func TestReportRunTestFailed(t *testing.T) {
 		Config: failedTest.Config,
 		Status: failedTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[0], failedResult) {
+	if !tests.Items[0].Equal(failedResult) {
 		t.Errorf("expected result %+v, got %+v", failedResult, tests.Items[0])
 	}
 
@@ -170,13 +171,14 @@ func TestReportRunTestFailed(t *testing.T) {
 		Config: passedTest.Config,
 		Status: passedTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[1], passedResult) {
+	if !tests.Items[1].Equal(passedResult) {
 		t.Errorf("expected result %+v, got %+v", passedResult, tests.Items[1])
 	}
 
 	// Counts updated.
-	if r.Summary.Passed != 1 || r.Summary.Failed != 1 || r.Summary.Skipped != 0 {
-		t.Errorf("unexpected summary: %+v", r.Summary)
+	expectedSummary := Summary{Passed: 1, Failed: 1}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
 	}
 
 	// We can marshal and unmarshal the report
@@ -227,8 +229,8 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 	setup := r.Steps[0]
 	passedSetup := &Step{Name: SetupStep, Status: Passed}
-	if !reflect.DeepEqual(setup, passedSetup) {
-		t.Fatalf("expected setup %+v, got %+v", setup, passedSetup)
+	if !setup.Equal(passedSetup) {
+		t.Fatalf("expected setup %+v, got %+v", passedSetup, setup)
 	}
 
 	// All tests passed, so the tests step must be passed.
@@ -250,7 +252,7 @@ func TestReportRunAllPassed(t *testing.T) {
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
+	if !tests.Items[0].Equal(rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
@@ -259,7 +261,7 @@ func TestReportRunAllPassed(t *testing.T) {
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
+	if !tests.Items[1].Equal(cephfsResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[1])
 	}
 
@@ -328,7 +330,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
+	if !tests.Items[0].Equal(rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
@@ -337,7 +339,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
+	if !tests.Items[1].Equal(cephfsResult) {
 		t.Errorf("expected result %+v, got %+v", cephfsResult, tests.Items[1])
 	}
 
@@ -391,13 +393,14 @@ func TestReportCleanFailed(t *testing.T) {
 	// The cleanup step failed, the step must be passed.
 	cleanup := r.Steps[1]
 	failedCleanup := &Step{Name: CleanupStep, Status: Failed}
-	if !reflect.DeepEqual(cleanup, failedCleanup) {
+	if !cleanup.Equal(failedCleanup) {
 		t.Fatalf("expected setup %+v, got %+v", cleanup, failedCleanup)
 	}
 
 	// Counts updated.
-	if r.Summary.Passed != 1 || r.Summary.Failed != 0 || r.Summary.Skipped != 0 {
-		t.Errorf("unexpected summary: %+v", r.Summary)
+	expectedSummary := Summary{Passed: 1}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
 	}
 
 	// We can marshal and unmarshal the report
@@ -466,7 +469,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 		Config: rbdTest.Config,
 		Status: rbdTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[0], rbdResult) {
+	if !tests.Items[0].Equal(rbdResult) {
 		t.Errorf("expected result %+v, got %+v", rbdResult, tests.Items[0])
 	}
 
@@ -475,20 +478,21 @@ func TestReportCleanAllPassed(t *testing.T) {
 		Config: cephfsTest.Config,
 		Status: cephfsTest.Status,
 	}
-	if !reflect.DeepEqual(tests.Items[1], cephfsResult) {
+	if !tests.Items[1].Equal(cephfsResult) {
 		t.Errorf("expected result %+v, got %+v", cephfsResult, tests.Items[1])
 	}
 
 	// The cleanup step passed, the step must be passed.
 	cleanup := r.Steps[1]
 	passedCleanup := &Step{Name: CleanupStep, Status: Passed}
-	if !reflect.DeepEqual(cleanup, passedCleanup) {
+	if !cleanup.Equal(passedCleanup) {
 		t.Fatalf("expected setup %+v, got %+v", cleanup, passedCleanup)
 	}
 
 	// Counts updated.
-	if r.Summary.Passed != 2 || r.Summary.Failed != 0 || r.Summary.Skipped != 0 {
-		t.Errorf("unexpected summary: %+v", r.Summary)
+	expectedSummary := Summary{Passed: 2}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected %+v, got %+v", expectedSummary, r.Summary)
 	}
 
 	// We can marshal and unmarshal the report
@@ -505,7 +509,7 @@ func checkRoundtrip(t *testing.T, r1 *Report) {
 	if err := yaml.Unmarshal(b, r2); err != nil {
 		t.Fatalf("failed to unmarshal report: %s", err)
 	}
-	if !reflect.DeepEqual(r1, r2) {
+	if !r1.Equal(r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
 }

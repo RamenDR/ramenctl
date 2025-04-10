@@ -5,6 +5,7 @@ package test
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/ramendr/ramenctl/pkg/report"
 )
@@ -111,6 +112,28 @@ func (r *Report) AddTest(t *Test) {
 	}
 }
 
+// Equal return true if report is equal to other report.
+func (r *Report) Equal(o *Report) bool {
+	if o == nil {
+		return false
+	}
+	if !r.Report.Equal(o.Report) {
+		return false
+	}
+	if r.Name != o.Name {
+		return false
+	}
+	if r.Status != o.Status {
+		return false
+	}
+	if r.Summary != o.Summary {
+		return false
+	}
+	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
+		return a.Equal(b)
+	})
+}
+
 func (r *Report) findStep(name string) *Step {
 	for _, step := range r.Steps {
 		if step.Name == name {
@@ -138,4 +161,31 @@ func (s *Step) AddTest(t *Test) {
 	case Failed:
 		s.Status = Failed
 	}
+}
+
+// Equal return true if step is equal to other step.
+func (s *Step) Equal(o *Step) bool {
+	if o == nil {
+		return false
+	}
+	if s.Name != o.Name {
+		return false
+	}
+	if s.Status != o.Status {
+		return false
+	}
+	if s.Config != o.Config {
+		if s.Config == nil || o.Config == nil {
+			return false
+		}
+		if *s.Config != *o.Config {
+			return false
+		}
+	}
+	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
+		if a == nil {
+			return b == nil
+		}
+		return a.Equal(b)
+	})
 }
