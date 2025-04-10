@@ -4,7 +4,7 @@ module github.com/ramendr/ramenctl
 go 1.23.5
 
 // Recommended version: latest go 1.23 release.
-toolchain go1.23.7
+toolchain go1.23.8
 
 require (
 	github.com/nirs/kubectl-gather v0.7.0
