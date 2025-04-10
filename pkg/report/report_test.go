@@ -77,7 +77,7 @@ func TestRoundtrip(t *testing.T) {
 	if err := yaml.Unmarshal(b, r2); err != nil {
 		t.Fatalf("failed to unmarshal yaml: %s", err)
 	}
-	if !reflect.DeepEqual(r1, r2) {
+	if !r1.Equal(r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
 }

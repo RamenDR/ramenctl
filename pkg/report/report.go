@@ -52,6 +52,28 @@ func New() *Report {
 	return r
 }
 
+// Equal returns true if repoert is qual to other report.
+func (r *Report) Equal(o *Report) bool {
+	if o == nil {
+		return false
+	}
+	if r.Host != o.Host {
+		return false
+	}
+	if !r.Created.Equal(o.Created) {
+		return false
+	}
+	if r.Build != o.Build {
+		if r.Build == nil || o.Build == nil {
+			return false
+		}
+		if *r.Build != *o.Build {
+			return false
+		}
+	}
+	return true
+}
+
 // marshalableTime return a time value without monotonic time info. This makes it possible to marshal and unmarshal the
 // time value.
 func marshalableTime() time.Time {
