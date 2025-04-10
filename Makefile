@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: The RamenDR authors
 # SPDX-License-Identifier: Apache-2.0
 
+GO ?= go
+
 # v0.5.1 when building from tag (release)
 # v0.5.1-1-gcf79160 when building without tag (development)
 version := $(shell git describe --tags)
@@ -19,16 +21,16 @@ ldflags := -X '$(build).Version=$(version)' \
 all: ramenctl examples
 
 ramenctl:
-	CGO_ENABLED=0 go build -ldflags="$(ldflags)" cmd/ramenctl.go
+	CGO_ENABLED=0 $(GO) build -ldflags="$(ldflags)" cmd/ramenctl.go
 
 examples:
-	go build -o examples/odf examples/odf.go
+	$(GO) build -o examples/odf examples/odf.go
 
 test:
-	go test --coverprofile cover.out -ldflags="$(ldflags)" -v ./...
+	$(GO) test --coverprofile cover.out -ldflags="$(ldflags)" -v ./...
 
 coverage:
-	go tool cover -html=cover.out
+	$(GO) tool cover -html=cover.out
 
 clean:
 	rm -f ramenctl examples/odf
