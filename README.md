@@ -14,10 +14,19 @@ disaster recovery environment we have at least 3 connected Kubernetes
 clusters with many components. The *ramenctl* project aims to make it
 easier to manage and troubleshoot this challenging environment.
 
+## Features
+
+The project provides:
+
+- The *ramenctl* command line tool, managing and troubleshooting ramen.
+- The *ramenctl* Go module for integrating the ramenctl commands in other
+  projects. This module is used to implement the
+  [odf dr](https://github.com/red-hat-storage/odf-cli/blob/main/docs/dr.md) command.
+
 ## Installing
 
-Download the *ramenctl* executable for your operating system and
-architecture and install in the PATH.
+Download the *ramenctl* executable for your operating system and architecture
+and install in the PATH.
 
 To install the latest release on Linux and macOS, run:
 
@@ -33,17 +42,48 @@ sudo install ramenctl /usr/local/bin/
 rm ramenctl
 ```
 
-## Features
+## Examples
 
-The project will provides:
+Create a configuration file for Regional DR test environment:
 
-- The *ramenctl* command line tool.
-- The *ramenctl* Go module for integrating the commands in other
-  projects.
+```console
+$ ramenctl init --envfile ramen/test/envs/regional-dr.yaml
+```
 
-## Status
+Run disaster recovery tests:
 
-The project is in early development.
+```console
+$ ramenctl test run -o rdr-test
+⭐ Using report "rdr-test"
+⭐ Using config "config.yaml"
+
+🔎 Validate config ...
+   ✅ Config validated
+
+🔎 Setup environment ...
+   ✅ Environment setup
+
+🔎 Run tests ...
+   ✅ Application "appset-deploy-rbd" deployed
+   ✅ Application "appset-deploy-rbd" protected
+   ✅ Application "appset-deploy-rbd" failed over
+   ✅ Application "appset-deploy-rbd" relocated
+   ✅ Application "appset-deploy-rbd" unprotected
+   ✅ Application "appset-deploy-rbd" undeployed
+
+✅ passed (1 passed, 0 failed, 0 skipped)
+```
+
+Your system is ready for disaster recovery!
+
+Please see [Documentation](#documentation) to learn more.
+
+## Documentation
+
+Visit the docs below to learn about *ramenctl* commands:
+
+- [init](docs/init.md)
+- [test](docs/test.md)
 
 ## Contributing
 
