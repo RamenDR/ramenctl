@@ -16,7 +16,7 @@ build := github.com/ramendr/ramenctl/pkg/build
 ldflags := -X '$(build).Version=$(version)' \
 		   -X '$(build).Commit=$(commit)'
 
-.PHONY: ramenctl examples test clean coverage lint
+.PHONY: ramenctl examples test clean coverage lint fmt
 
 all: ramenctl examples
 
@@ -25,6 +25,9 @@ ramenctl:
 
 examples:
 	$(GO) build -o examples/odf examples/odf.go
+
+fmt:
+	gofmt -s -w $(shell find . -name '*.go')
 
 lint:
 	golangci-lint run ./...
