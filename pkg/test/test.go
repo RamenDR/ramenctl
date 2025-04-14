@@ -18,7 +18,7 @@ import (
 type Test struct {
 	types.Context
 	Status Status
-	Config *Config
+	Config *types.TestConfig
 	Steps  []*Step
 }
 
@@ -42,11 +42,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 	return &Test{
 		Context: newContext(workload, deployer, cmd),
 		Status:  Passed,
-		Config: &Config{
-			Workload: tc.Workload,
-			Deployer: tc.Deployer,
-			PVCSpec:  tc.PVCSpec,
-		},
+		Config:  &tc,
 	}
 }
 

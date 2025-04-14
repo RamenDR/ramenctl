@@ -9,6 +9,8 @@ import (
 
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramen/e2e/types"
+
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -108,7 +110,7 @@ func TestReportRunTestFailed(t *testing.T) {
 
 	failedTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -127,7 +129,7 @@ func TestReportRunTestFailed(t *testing.T) {
 
 	passedTest := &Test{
 		Context: &Context{name: "appset-deploy-cephfs"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -212,7 +214,7 @@ func TestReportRunAllPassed(t *testing.T) {
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -234,7 +236,7 @@ func TestReportRunAllPassed(t *testing.T) {
 
 	cephfsTest := &Test{
 		Context: &Context{name: "appset-deploy-cephfs"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -313,7 +315,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -331,7 +333,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 
 	cephfsTest := &Test{
 		Context: &Context{name: "appset-deploy-cephfs"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",
@@ -400,7 +402,7 @@ func TestReportCleanFailed(t *testing.T) {
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -459,7 +461,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "rbd",
@@ -477,7 +479,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 
 	cephfsTest := &Test{
 		Context: &Context{name: "appset-deploy-cephfs"},
-		Config: &Config{
+		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
 			PVCSpec:  "cephfs",

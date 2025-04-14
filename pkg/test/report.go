@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/ramendr/ramen/e2e/types"
+
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -27,10 +29,10 @@ const (
 
 // A step is a test command step.
 type Step struct {
-	Name   string  `json:"name"`
-	Status Status  `json:"status,omitempty"`
-	Config *Config `json:"config,omitempty"`
-	Items  []*Step `json:"items,omitempty"`
+	Name   string            `json:"name"`
+	Status Status            `json:"status,omitempty"`
+	Config *types.TestConfig `json:"config,omitempty"`
+	Items  []*Step           `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -38,14 +40,6 @@ type Summary struct {
 	Passed  int `json:"passed"`
 	Failed  int `json:"failed"`
 	Skipped int `json:"skipped"`
-}
-
-// Test config supporting yaml marshaling, unlike ramen/e2e/types.TestConfig
-// See https://github.com/RamenDR/ramen/issues/1968
-type Config struct {
-	Workload string `json:"workload"`
-	Deployer string `json:"deployer"`
-	PVCSpec  string `json:"pvcSpec"`
 }
 
 // Report created by test sub commands.
