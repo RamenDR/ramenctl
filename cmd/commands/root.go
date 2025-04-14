@@ -35,6 +35,7 @@ func init() {
 }
 
 func addOutputFlag(c *cobra.Command) {
-	c.PersistentFlags().StringVarP(&outputDir, "output", "o", "", "output directory")
-	c.MarkPersistentFlagRequired("output")
+	const name = "output"
+	c.PersistentFlags().StringVarP(&outputDir, name, "o", "", "output directory")
+	_ = c.MarkPersistentFlagRequired(name)
 }
