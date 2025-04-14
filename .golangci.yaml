@@ -1,0 +1,36 @@
+version: "2"
+linters:
+  enable:
+    - goconst
+    - gocritic
+    - gosec
+    - misspell
+    - nolintlint
+    - staticcheck
+    - unconvert
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+  settings:
+    gosec:
+      config:
+        # Maximum allowed permissions mode for os.WriteFile (default 0600)
+        G306: "0640"
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
