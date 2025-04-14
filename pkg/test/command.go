@@ -197,8 +197,8 @@ func (c *Command) cleanFlow(test *Test) {
 func (c *Command) namespacesToGather() []string {
 	seen := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
-		c.Config.Namespaces.RamenHubNamespace:       struct{}{},
-		c.Config.Namespaces.RamenDRClusterNamespace: struct{}{},
+		c.Config.Namespaces.RamenHubNamespace:       {},
+		c.Config.Namespaces.RamenDRClusterNamespace: {},
 	}
 
 	// Add application resources for failed tests.
