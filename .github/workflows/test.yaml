@@ -42,7 +42,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Create build tag
-        run: git tag latest
+        run: git tag build-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Setup go
         uses: actions/setup-go@v5
         with:
@@ -52,6 +52,13 @@ jobs:
         run: go mod download
       - name: Build binary
         run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} make
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ramenctl-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ramenctl*
+          retention-days: 15
+          compression-level: 9
 
   test-matrix:
     name: Test
