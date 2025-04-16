@@ -280,8 +280,8 @@ $ ramenctl test clean -o ramenctl-test
    ✅ Config validated
 
 🔎 Clean tests ...
-   ✅ Application "appset-deploy-rbd" unprotected
    ✅ Application "appset-deploy-rbd" undeployed
+   ✅ Application "appset-deploy-rbd" unprotected
 
 🔎 Clean environment ...
    ✅ Environment cleaned
@@ -303,14 +303,14 @@ ramenctl-test
 
 #### The clean flow
 
-When runnning the clean command *ramenctl* deletes all the tests applications
+When running the clean command *ramenctl* deletes all the tests applications
 specified in the configuration file and cleans up the clusters.
 
 For every test specified in the configuration file perform the following steps:
+1. **undeploy**: Undeploy the application from the managed clusters and wait
+   until the application is deleted.
 1. **unprotect**: Delete the *drpc* resource for the application and wait
    until the *drpc* is deleted.
-2. **undeploy**: Undeploy the application from the managed clusters and wait
-   until the application is deleted.
 
 Cleaning up the clusters includes:
 1. Delete the channel and the namespace "test-gitops" on the hub cluster.
@@ -318,8 +318,8 @@ Cleaning up the clusters includes:
 ### Failed tests
 
 When a test fails, the test command gathers data related to the failed tests in
-the ouput directory. The gathered data can help you or develpers to diagnose the
-issue.
+the output directory. The gathered data can help you or developers to diagnose
+the issue.
 
 The following example shows a test run with a failed test, and how to inspect
 the failure.
@@ -563,8 +563,8 @@ $ ramenctl test clean -o example-failure
    ✅ Config validated
 
 🔎 Clean tests ...
-   ✅ Application "appset-deploy-rbd" unprotected
    ✅ Application "appset-deploy-rbd" undeployed
+   ✅ Application "appset-deploy-rbd" unprotected
 
 🔎 Clean environment ...
    ✅ Environment cleaned

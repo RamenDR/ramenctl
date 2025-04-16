@@ -188,10 +188,15 @@ func (c *Command) runFlow(test *Test) {
 }
 
 func (c *Command) cleanFlow(test *Test) {
-	if !test.Unprotect() {
+	// Deleting the application also deletes the placement which trigger DRPC deletion in ramen. This is also less
+	// likely to get stuck because of rbd-mirroing issues.
+	// https://github.com/RamenDR/ramenctl/issues/112
+	if !test.Undeploy() {
 		return
 	}
-	test.Undeploy()
+	// Undeploy does not wait until the DRPC is deleted in all cases. We call unprotect to ensure that the DRPC is
+	// deleted when the clean flow completes.
+	test.Unprotect()
 }
 
 func (c *Command) namespacesToGather() []string {
