@@ -322,8 +322,8 @@ func TestReportCleanTestFailed(t *testing.T) {
 		},
 		Status: Passed,
 		Steps: []*Step{
-			{Name: "unprotect", Status: Passed},
 			{Name: "undeploy", Status: Passed},
+			{Name: "unprotect", Status: Passed},
 		},
 	}
 	r.AddTest(rbdTest)
@@ -340,6 +340,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 		},
 		Status: Failed,
 		Steps: []*Step{
+			{Name: "undeploy", Status: Passed},
 			{Name: "unprotect", Status: Failed},
 		},
 	}
@@ -409,8 +410,8 @@ func TestReportCleanFailed(t *testing.T) {
 		},
 		Status: Passed,
 		Steps: []*Step{
-			{Name: "unprotect", Status: Passed},
 			{Name: "undeploy", Status: Passed},
+			{Name: "unprotect", Status: Passed},
 		},
 	}
 	r.AddTest(rbdTest)
@@ -468,8 +469,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 		},
 		Status: Passed,
 		Steps: []*Step{
-			{Name: "unprotect", Status: Passed},
 			{Name: "undeploy", Status: Passed},
+			{Name: "unprotect", Status: Passed},
 		},
 	}
 	r.AddTest(rbdTest)
@@ -486,8 +487,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 		},
 		Status: Passed,
 		Steps: []*Step{
-			{Name: "unprotect", Status: Passed},
 			{Name: "undeploy", Status: Passed},
+			{Name: "unprotect", Status: Passed},
 		},
 	}
 	r.AddTest(cephfsTest)

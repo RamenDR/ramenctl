@@ -90,8 +90,8 @@ $ ramenctl test clean -o test
    ✅ Config validated
 
 🔎 Clean tests ...
-   ✅ Application "appset-deploy-rbd" unprotected
    ✅ Application "appset-deploy-rbd" undeployed
+   ✅ Application "appset-deploy-rbd" unprotected
 
 🔎 Clean environment ...
    ✅ Environment cleaned
