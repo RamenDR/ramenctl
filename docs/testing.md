@@ -164,7 +164,7 @@ To clean up after the test use the [clean](#cleaning-up) command.
 
 #### The test flow
 
-When runnning the run command *ramenctl* prepares the clusters for the tests and
+When running the run command *ramenctl* prepares the clusters for the tests and
 run all tests specified in the configuration file.
 
 Preparing the clusters includes:
@@ -172,7 +172,7 @@ Preparing the clusters includes:
    https://github.com/RamenDR/ocm-ramen-samples.
 
 For every test specified in the configuration file perform the following steps:
-1. **deploy**: Deploy the application in namesapce
+1. **deploy**: Deploy the application in namespace
    "test-{deployer}-{workload}-{pvcSpec}" in the primary cluster.
 1. **protect**: Create a *drpc* resource for the application and wait until the
    application is protected.
