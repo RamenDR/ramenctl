@@ -133,16 +133,14 @@ func (c *Command) Failed() error {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	return fmt.Errorf("failed (%d passed, %d failed, %d skipped)",
-		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
+	return fmt.Errorf("%s (%s)", c.Report.Status, c.Report.Summary)
 }
 
 func (c *Command) Passed() {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	console.Completed("passed (%d passed, %d failed, %d skipped)",
-		c.Report.Summary.Passed, c.Report.Summary.Failed, c.Report.Summary.Skipped)
+	console.Completed("%s (%s)", c.Report.Status, c.Report.Summary)
 }
 
 func (c *Command) fail(msg string, err error) {

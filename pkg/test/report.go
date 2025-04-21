@@ -15,9 +15,10 @@ import (
 type Status string
 
 const (
-	Passed  = Status("passed")
-	Failed  = Status("failed")
-	Skipped = Status("skipped")
+	Passed   = Status("passed")
+	Failed   = Status("failed")
+	Skipped  = Status("skipped")
+	Canceled = Status("canceled")
 )
 
 const (
@@ -37,9 +38,10 @@ type Step struct {
 
 // Summary summaries a test run or clean.
 type Summary struct {
-	Passed  int `json:"passed"`
-	Failed  int `json:"failed"`
-	Skipped int `json:"skipped"`
+	Passed   int `json:"passed"`
+	Failed   int `json:"failed"`
+	Skipped  int `json:"skipped"`
+	Canceled int `json:"canceled"`
 }
 
 // Report created by test sub commands.
@@ -75,8 +77,8 @@ func (r *Report) AddStep(step *Step) {
 		if r.Status == "" {
 			r.Status = Passed
 		}
-	case Failed:
-		r.Status = Failed
+	case Failed, Canceled:
+		r.Status = step.Status
 	}
 
 	// Handle the special "tests" step.
@@ -145,8 +147,8 @@ func (s *Step) AddTest(t *Test) {
 		if s.Status == "" {
 			s.Status = Passed
 		}
-	case Failed:
-		s.Status = Failed
+	case Failed, Canceled:
+		s.Status = t.Status
 	}
 }
 
@@ -188,5 +190,12 @@ func (s *Summary) AddTest(t *Step) {
 		s.Failed++
 	case Skipped:
 		s.Skipped++
+	case Canceled:
+		s.Canceled++
 	}
+}
+
+func (s Summary) String() string {
+	return fmt.Sprintf("%d passed, %d failed, %d skipped, %d canceled",
+		s.Passed, s.Failed, s.Skipped, s.Canceled)
 }
