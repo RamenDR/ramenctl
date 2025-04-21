@@ -20,6 +20,7 @@
       1. [The clean flow](#the-clean-flow)
    1. [Failed tests](#failed-tests)
       1. [Inspecting gathered data](#inspecting-gathered-data)
+   1. [Canceling tests](#canceling-tests)
 
 ## Issue
 
@@ -621,3 +622,12 @@ $ ramenctl test clean -o example-failure
 
 ✅ passed (1 passed, 0 failed, 0 skipped)
 ```
+
+### Canceling tests
+
+The run or clean command may take up to 10 minutes to complete the current test
+step. To get all the information about failed tests you should wait until the
+command completes and gathers data for failed tests.
+
+You can cancel the command by pressing `Ctrl+C`. This saves the current tests
+progress but does not gather data for incomplete tests.
