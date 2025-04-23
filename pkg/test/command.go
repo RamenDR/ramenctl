@@ -157,7 +157,16 @@ func (c *Command) passStep() bool {
 	return true
 }
 
+func (c *Command) finishStep() bool {
+	c.Logger.Infof("Step %q finished", c.Current.Name)
+	c.Report.AddStep(c.Current)
+	c.Current = nil
+	return c.Report.Status == Passed
+}
+
 func (c *Command) runFlowFunc(f flowFunc) bool {
+	c.startStep(TestsStep)
+
 	var wg sync.WaitGroup
 	for _, test := range c.Tests {
 		wg.Add(1)
@@ -168,13 +177,11 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 	wg.Wait()
 
-	tests := &Step{Name: TestsStep}
 	for _, test := range c.Tests {
-		tests.AddTest(test)
+		c.Current.AddTest(test)
 	}
-	c.Report.AddStep(tests)
 
-	return c.Report.Status == Passed
+	return c.finishStep()
 }
 
 func (c *Command) runFlow(test *Test) {
