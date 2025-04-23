@@ -4,6 +4,8 @@
 package test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -31,6 +33,9 @@ type Command struct {
 
 	// Tests to run or clean.
 	Tests []*Test
+
+	// Current test step
+	Current *Step
 
 	// Command report, stored at the output directory on completion.
 	Report *Report
@@ -65,51 +70,33 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 }
 
 func (c *Command) Validate() bool {
-	step := &Step{Name: ValidateStep}
-	defer c.Report.AddStep(step)
-
+	c.startStep(ValidateStep)
 	console.Step("Validate config")
 	if err := validate.TestConfig(c.Env, c.Config, c.Logger); err != nil {
-		c.fail("failed to validate config", err)
-		step.Status = Failed
-		return false
+		return c.failStep(err)
 	}
-
 	console.Pass("Config validated")
-	step.Status = Passed
-	return true
+	return c.passStep()
 }
 
 func (c *Command) Setup() bool {
-	step := &Step{Name: SetupStep}
-	defer c.Report.AddStep(step)
-
+	c.startStep(SetupStep)
 	console.Step("Setup environment")
 	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
-		c.fail("failed to setup environment", err)
-		step.Status = Failed
-		return false
+		return c.failStep(err)
 	}
-
 	console.Pass("Environment setup")
-	step.Status = Passed
-	return true
+	return c.passStep()
 }
 
 func (c *Command) Cleanup() bool {
-	step := &Step{Name: CleanupStep}
-	defer c.Report.AddStep(step)
-
+	c.startStep(CleanupStep)
 	console.Step("Clean environment")
 	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
-		c.fail("failed to clean environment", err)
-		step.Status = Failed
-		return false
+		return c.failStep(err)
 	}
-
 	console.Pass("Environment cleaned")
-	step.Status = Passed
-	return true
+	return c.passStep()
 }
 
 func (c *Command) RunTests() bool {
@@ -143,9 +130,31 @@ func (c *Command) Passed() {
 	console.Completed("%s (%s)", c.Report.Status, c.Report.Summary)
 }
 
-func (c *Command) fail(msg string, err error) {
-	console.Error(msg)
-	c.Logger.Error("%s: %s", msg, err)
+func (c *Command) startStep(name string) {
+	c.Current = &Step{Name: name}
+	c.Logger.Infof("Step %q started", c.Current.Name)
+}
+
+func (c *Command) failStep(err error) bool {
+	if errors.Is(err, context.Canceled) {
+		c.Current.Status = Canceled
+		console.Error("Canceled %s", c.Current.Name)
+	} else {
+		c.Current.Status = Failed
+		console.Error("Failed to %s", c.Current.Name)
+	}
+	c.Logger.Errorf("Step %q %s: %s", c.Current.Name, c.Current.Status, err)
+	c.Report.AddStep(c.Current)
+	c.Current = nil
+	return false
+}
+
+func (c *Command) passStep() bool {
+	c.Current.Status = Passed
+	c.Logger.Infof("Step %q passed", c.Current.Name)
+	c.Report.AddStep(c.Current)
+	c.Current = nil
+	return true
 }
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
