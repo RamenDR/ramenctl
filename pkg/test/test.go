@@ -31,7 +31,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 		panic(fmt.Sprintf("unknown pvcSpec %q", tc.PVCSpec))
 	}
 
-	workload, err := workloads.New(tc.Workload, cmd.Config.Repo.Branch, pvcSpec)
+	workload, err := workloads.New(tc.Workload, cmd.Config().Repo.Branch, pvcSpec)
 	if err != nil {
 		panic(err)
 	}

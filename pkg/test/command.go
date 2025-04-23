@@ -52,16 +52,16 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 	}
 
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
-	cmd.Config.Channel.Namespace = "test-gitops"
+	cmd.Config().Channel.Namespace = "test-gitops"
 
 	testCmd := &Command{
 		Command:         cmd,
 		NamespacePrefix: "test-",
-		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
-		Report:          newReport(name, cmd.Config),
+		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config()),
+		Report:          newReport(name, cmd.Config()),
 	}
 
-	for _, tc := range cmd.Config.Tests {
+	for _, tc := range cmd.Config().Tests {
 		test := newTest(tc, testCmd)
 		testCmd.Tests = append(testCmd.Tests, test)
 	}
@@ -72,7 +72,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 func (c *Command) Validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
-	if err := validate.TestConfig(c.Env, c.Config, c.Logger); err != nil {
+	if err := validate.TestConfig(c.Env(), c.Config(), c.Logger()); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Config validated")
@@ -82,7 +82,7 @@ func (c *Command) Validate() bool {
 func (c *Command) Setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
-	if err := util.EnsureChannel(c.Env.Hub, c.Config, c.Logger); err != nil {
+	if err := util.EnsureChannel(c.Env().Hub, c.Config(), c.Logger()); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment setup")
@@ -92,7 +92,7 @@ func (c *Command) Setup() bool {
 func (c *Command) Cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
-	if err := util.EnsureChannelDeleted(c.Env.Hub, c.Config, c.Logger); err != nil {
+	if err := util.EnsureChannelDeleted(c.Env().Hub, c.Config(), c.Logger()); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment cleaned")
@@ -112,8 +112,8 @@ func (c *Command) CleanTests() bool {
 func (c *Command) GatherData() {
 	console.Step("Gather data")
 	namespaces := c.namespacesToGather()
-	outputDir := filepath.Join(c.OutputDir, c.Name+".gather")
-	gather.Namespaces(c.Env, namespaces, outputDir, c.Logger)
+	outputDir := filepath.Join(c.OutputDir(), c.Name()+".gather")
+	gather.Namespaces(c.Env(), namespaces, outputDir, c.Logger())
 }
 
 func (c *Command) Failed() error {
@@ -132,7 +132,7 @@ func (c *Command) Passed() {
 
 func (c *Command) startStep(name string) {
 	c.Current = &Step{Name: name}
-	c.Logger.Infof("Step %q started", c.Current.Name)
+	c.Logger().Infof("Step %q started", c.Current.Name)
 }
 
 func (c *Command) failStep(err error) bool {
@@ -143,7 +143,7 @@ func (c *Command) failStep(err error) bool {
 		c.Current.Status = Failed
 		console.Error("Failed to %s", c.Current.Name)
 	}
-	c.Logger.Errorf("Step %q %s: %s", c.Current.Name, c.Current.Status, err)
+	c.Logger().Errorf("Step %q %s: %s", c.Current.Name, c.Current.Status, err)
 	c.Report.AddStep(c.Current)
 	c.Current = nil
 	return false
@@ -151,14 +151,14 @@ func (c *Command) failStep(err error) bool {
 
 func (c *Command) passStep() bool {
 	c.Current.Status = Passed
-	c.Logger.Infof("Step %q passed", c.Current.Name)
+	c.Logger().Infof("Step %q passed", c.Current.Name)
 	c.Report.AddStep(c.Current)
 	c.Current = nil
 	return true
 }
 
 func (c *Command) finishStep() bool {
-	c.Logger.Infof("Step %q finished", c.Current.Name)
+	c.Logger().Infof("Step %q finished", c.Current.Name)
 	c.Report.AddStep(c.Current)
 	c.Current = nil
 	return c.Report.Status == Passed
@@ -211,10 +211,11 @@ func (c *Command) cleanFlow(test *Test) {
 }
 
 func (c *Command) namespacesToGather() []string {
+	cfg := c.Config()
 	seen := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
-		c.Config.Namespaces.RamenHubNamespace:       {},
-		c.Config.Namespaces.RamenDRClusterNamespace: {},
+		cfg.Namespaces.RamenHubNamespace:       {},
+		cfg.Namespaces.RamenDRClusterNamespace: {},
 	}
 
 	// Add application resources for failed tests.

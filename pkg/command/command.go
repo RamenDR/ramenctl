@@ -20,16 +20,16 @@ import (
 
 // Command is a ramenctl command.
 type Command struct {
-	// Name is the command name (e.g. "test-run")
-	Name string
-	// OutputDir contains the command log, summary, and gathered files.
-	OutputDir string
-	// Config loaded from configFile.
-	Config *types.Config
-	// Env loaded from the config.
-	Env *types.Env
-	// Logger logging to the command log.
-	Logger *zap.SugaredLogger
+	// name is the command name (e.g. "test-run")
+	name string
+	// outputDir contains the command log, summary, and gathered files.
+	outputDir string
+	// config loaded from configFile.
+	config *types.Config
+	// env loaded from the config.
+	env *types.Env
+	// log logging to the command log.
+	log *zap.SugaredLogger
 }
 
 func New(commandName, configFile, outputDir string) (*Command, error) {
@@ -58,12 +58,34 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 	}
 
 	return &Command{
-		Name:      commandName,
-		OutputDir: outputDir,
-		Config:    cfg,
-		Env:       env,
-		Logger:    log,
+		name:      commandName,
+		outputDir: outputDir,
+		config:    cfg,
+		env:       env,
+		log:       log,
 	}, nil
+}
+
+func (c *Command) Name() string {
+	return c.name
+}
+
+func (c *Command) OutputDir() string {
+	return c.outputDir
+}
+
+// ramen/e2e/types.Context interface
+
+func (c *Command) Logger() *zap.SugaredLogger {
+	return c.log
+}
+
+func (c *Command) Config() *types.Config {
+	return c.config
+}
+
+func (c *Command) Env() *types.Env {
+	return c.env
 }
 
 // WriteReport writes report in yaml format to the command output directory.
@@ -72,6 +94,6 @@ func (c *Command) WriteReport(report any) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
-	path := filepath.Join(c.OutputDir, c.Name+".yaml")
+	path := filepath.Join(c.outputDir, c.name+".yaml")
 	return os.WriteFile(path, data, 0o640)
 }

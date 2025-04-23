@@ -28,7 +28,7 @@ func newContext(workload types.Workload, deployer types.Deployer, cmd *Command) 
 		workload: workload,
 		deployer: deployer,
 		name:     name,
-		logger:   cmd.Logger.Named(name),
+		logger:   cmd.Logger().Named(name),
 		cmd:      cmd,
 	}
 }
@@ -61,9 +61,9 @@ func (c *Context) Logger() *zap.SugaredLogger {
 }
 
 func (c *Context) Env() *types.Env {
-	return c.cmd.Env
+	return c.cmd.Env()
 }
 
 func (c *Context) Config() *types.Config {
-	return c.cmd.Config
+	return c.cmd.Config()
 }
