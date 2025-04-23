@@ -54,6 +54,9 @@ func New() *Report {
 
 // Equal returns true if repoert is qual to other report.
 func (r *Report) Equal(o *Report) bool {
+	if r == o {
+		return true
+	}
 	if o == nil {
 		return false
 	}

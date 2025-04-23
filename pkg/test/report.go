@@ -108,6 +108,9 @@ func (r *Report) AddTest(t *Test) {
 
 // Equal return true if report is equal to other report.
 func (r *Report) Equal(o *Report) bool {
+	if r == o {
+		return true
+	}
 	if o == nil {
 		return false
 	}
@@ -160,6 +163,9 @@ func (s *Step) AddTest(t *Test) {
 
 // Equal return true if step is equal to other step.
 func (s *Step) Equal(o *Step) bool {
+	if s == o {
+		return true
+	}
 	if o == nil {
 		return false
 	}
