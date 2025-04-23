@@ -47,66 +47,66 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 }
 
 func (t *Test) Deploy() bool {
-	t.start("deploy")
+	t.startStep("deploy")
 	if err := t.Deployer().Deploy(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q deployed", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
 func (t *Test) Undeploy() bool {
-	t.start("undeploy")
+	t.startStep("undeploy")
 	if err := t.Deployer().Undeploy(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q undeployed", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
 func (t *Test) Protect() bool {
-	t.start("protect")
+	t.startStep("protect")
 	if err := dractions.EnableProtection(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q protected", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
 func (t *Test) Unprotect() bool {
-	t.start("unprotect")
+	t.startStep("unprotect")
 	if err := dractions.DisableProtection(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q unprotected", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
 func (t *Test) Failover() bool {
-	t.start("failover")
+	t.startStep("failover")
 	if err := dractions.Failover(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q failed over", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
 func (t *Test) Relocate() bool {
-	t.start("relocate")
+	t.startStep("relocate")
 	if err := dractions.Relocate(t.Context); err != nil {
-		return t.fail(err)
+		return t.failStep(err)
 	}
 	console.Pass("Application %q relocated", t.Name())
-	return t.pass()
+	return t.passStep()
 }
 
-func (t *Test) start(name string) {
+func (t *Test) startStep(name string) {
 	step := &Step{Name: name}
 	t.Steps = append(t.Steps, step)
 	t.Logger().Infof("Step %q started", step.Name)
 }
 
-func (t *Test) fail(err error) bool {
+func (t *Test) failStep(err error) bool {
 	step := t.Steps[len(t.Steps)-1]
 	step.Status = Failed
 	t.Status = Failed
@@ -115,7 +115,7 @@ func (t *Test) fail(err error) bool {
 	return false
 }
 
-func (t *Test) pass() bool {
+func (t *Test) passStep() bool {
 	step := t.Steps[len(t.Steps)-1]
 	step.Status = Passed
 	t.Logger().Infof("Step %q passed", step.Name)
