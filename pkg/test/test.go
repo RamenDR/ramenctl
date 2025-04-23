@@ -4,6 +4,8 @@
 package test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ramendr/ramen/e2e/deployers"
@@ -108,10 +110,15 @@ func (t *Test) startStep(name string) {
 
 func (t *Test) failStep(err error) bool {
 	step := t.Steps[len(t.Steps)-1]
-	step.Status = Failed
-	t.Status = Failed
-	t.Logger().Errorf("Step %q failed: %s", step.Name, err)
-	console.Error("Failed to %s application %q", step.Name, t.Name())
+	if errors.Is(err, context.Canceled) {
+		step.Status = Canceled
+		console.Error("Canceled application %q %s", t.Name(), step.Name)
+	} else {
+		step.Status = Failed
+		console.Error("Failed to %s application %q", step.Name, t.Name())
+	}
+	t.Status = step.Status
+	t.Logger().Errorf("Step %q %s: %s", step.Name, step.Status, err)
 	return false
 }
 
