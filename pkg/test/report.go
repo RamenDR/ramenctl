@@ -93,21 +93,15 @@ func (r *Report) AddTest(t *Test) {
 	}
 
 	step.AddTest(t)
+	r.Summary.AddTest(t)
 
 	switch t.Status {
-	case Passed:
-		r.Summary.Passed++
+	case Passed, Skipped:
 		if r.Status == "" {
 			r.Status = Passed
 		}
 	case Failed:
-		r.Summary.Failed++
 		r.Status = Failed
-	case Skipped:
-		r.Summary.Skipped++
-		if r.Status == "" {
-			r.Status = Passed
-		}
 	}
 }
 
@@ -202,4 +196,15 @@ func (s *Step) Equal(o *Step) bool {
 		}
 		return a.Equal(b)
 	})
+}
+
+func (s *Summary) AddTest(t *Test) {
+	switch t.Status {
+	case Passed:
+		s.Passed++
+	case Failed:
+		s.Failed++
+	case Skipped:
+		s.Skipped++
+	}
 }
