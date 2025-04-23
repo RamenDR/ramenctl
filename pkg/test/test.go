@@ -49,75 +49,68 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 func (t *Test) Deploy() bool {
 	step := &Step{Name: "deploy"}
 	if err := t.Deployer().Deploy(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to deploy application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q deployed", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q deployed", t.Name())
+	return t.pass(step)
 }
 
 func (t *Test) Undeploy() bool {
 	step := &Step{Name: "undeploy"}
 	if err := t.Deployer().Undeploy(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to undeploy application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q undeployed", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q undeployed", t.Name())
+	return t.pass(step)
 }
 
 func (t *Test) Protect() bool {
 	step := &Step{Name: "protect"}
 	if err := dractions.EnableProtection(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to protect application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q protected", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q protected", t.Name())
+	return t.pass(step)
 }
 
 func (t *Test) Unprotect() bool {
 	step := &Step{Name: "unprotect"}
 	if err := dractions.DisableProtection(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to unprotect application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q unprotected", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q unprotected", t.Name())
+	return t.pass(step)
 }
 
 func (t *Test) Failover() bool {
 	step := &Step{Name: "failover"}
 	if err := dractions.Failover(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to failover application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q failed over", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q failed over", t.Name())
+	return t.pass(step)
 }
 
 func (t *Test) Relocate() bool {
 	step := &Step{Name: "relocate"}
 	if err := dractions.Relocate(t.Context); err != nil {
-		msg := fmt.Sprintf("failed to relocate application %q", t.Name())
-		return t.fail(step, msg, err)
+		return t.fail(step, err)
 	}
-	msg := fmt.Sprintf("Application %q relocated", t.Name())
-	return t.pass(step, msg)
+	console.Pass("Application %q relocated", t.Name())
+	return t.pass(step)
 }
 
-func (t *Test) fail(step *Step, msg string, err error) bool {
+func (t *Test) fail(step *Step, err error) bool {
 	step.Status = Failed
 	t.Steps = append(t.Steps, step)
 	t.Status = Failed
-	console.Error(msg)
-	t.Logger().Errorf("%s: %s", msg, err)
+	t.Logger().Errorf("Step %q failed: %s", step.Name, err)
+	console.Error("Failed to %s application %q", step.Name, t.Name())
 	return false
 }
 
-func (t *Test) pass(step *Step, msg string) bool {
+func (t *Test) pass(step *Step) bool {
 	step.Status = Passed
 	t.Steps = append(t.Steps, step)
-	console.Pass(msg)
 	return true
 }
