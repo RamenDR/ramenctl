@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"go.uber.org/zap"
@@ -31,10 +32,15 @@ type Command struct {
 	env *types.Env
 	// log logging to the command log.
 	log *zap.SugaredLogger
+
+	// context and stop are used for cancellation.
+	context context.Context
+	stop    context.CancelFunc
 }
 
 var _ types.Context = &Command{}
 
+// New creates a new command handling os.Interrupt signal. To stop handling signals call Stop().
 func New(commandName, configFile, outputDir string) (*Command, error) {
 	// Create the logger first so we can log early command errors to the command log.
 	log, err := newLogger(outputDir, commandName+".log")
@@ -53,8 +59,14 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 
 	console.Info("Using config %q", configFile)
 
-	env, err := e2eenv.New(context.Background(), cfg, log)
+	// Create the context before creating the env so we can cancel the command cleanly if accessing the clusters block
+	// for long time. The log will contain the cancelation error.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+
+	env, err := e2eenv.New(ctx, cfg, log)
 	if err != nil {
+		// Stop the signal handler before we fail.
+		stop()
 		err := fmt.Errorf("failed to create env: %w", err)
 		log.Error(err)
 		return nil, err
@@ -66,6 +78,8 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 		config:    cfg,
 		env:       env,
 		log:       log,
+		context:   ctx,
+		stop:      stop,
 	}, nil
 }
 
@@ -92,7 +106,13 @@ func (c *Command) Env() *types.Env {
 }
 
 func (c *Command) Context() context.Context {
-	return context.Background()
+	return c.context
+}
+
+// Stop handling signals and mark the command context as done. Calling while a command is running will cancel the
+// command.
+func (c *Command) Stop() {
+	c.stop()
 }
 
 // WriteReport writes report in yaml format to the command output directory.

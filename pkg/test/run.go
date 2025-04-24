@@ -8,6 +8,7 @@ func Run(configFile string, outputDir string) error {
 	if err != nil {
 		return err
 	}
+	defer cmd.Stop()
 
 	if !cmd.Validate() {
 		return cmd.Failed()
