@@ -4,6 +4,7 @@
 package command
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,7 +19,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 
-// Command is a ramenctl command.
+// Command is a ramenctl command implementing the ramen/e2e/types.Context interface.
 type Command struct {
 	// name is the command name (e.g. "test-run")
 	name string
@@ -31,6 +32,8 @@ type Command struct {
 	// log logging to the command log.
 	log *zap.SugaredLogger
 }
+
+var _ types.Context = &Command{}
 
 func New(commandName, configFile, outputDir string) (*Command, error) {
 	// Create the logger first so we can log early command errors to the command log.
@@ -50,7 +53,7 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 
 	console.Info("Using config %q", configFile)
 
-	env, err := e2eenv.New(cfg, log)
+	env, err := e2eenv.New(context.Background(), cfg, log)
 	if err != nil {
 		err := fmt.Errorf("failed to create env: %w", err)
 		log.Error(err)
@@ -86,6 +89,10 @@ func (c *Command) Config() *types.Config {
 
 func (c *Command) Env() *types.Env {
 	return c.env
+}
+
+func (c *Command) Context() context.Context {
+	return context.Background()
 }
 
 // WriteReport writes report in yaml format to the command output directory.

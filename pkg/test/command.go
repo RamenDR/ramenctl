@@ -72,7 +72,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 func (c *Command) Validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
-	if err := validate.TestConfig(c.Env(), c.Config(), c.Logger()); err != nil {
+	if err := validate.TestConfig(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Config validated")
@@ -82,7 +82,7 @@ func (c *Command) Validate() bool {
 func (c *Command) Setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
-	if err := util.EnsureChannel(c.Env().Hub, c.Config(), c.Logger()); err != nil {
+	if err := util.EnsureChannel(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment setup")
@@ -92,7 +92,7 @@ func (c *Command) Setup() bool {
 func (c *Command) Cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
-	if err := util.EnsureChannelDeleted(c.Env().Hub, c.Config(), c.Logger()); err != nil {
+	if err := util.EnsureChannelDeleted(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment cleaned")

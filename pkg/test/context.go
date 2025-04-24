@@ -4,6 +4,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -11,7 +12,7 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 )
 
-// Context implements types.Context interface.
+// Context implements types.TestContext interface.
 type Context struct {
 	workload types.Workload
 	deployer types.Deployer
@@ -20,7 +21,7 @@ type Context struct {
 	cmd      *Command
 }
 
-var _ types.Context = &Context{}
+var _ types.TestContext = &Context{}
 
 func newContext(workload types.Workload, deployer types.Deployer, cmd *Command) *Context {
 	name := fmt.Sprintf("%s-%s", deployer.GetName(), workload.GetName())
@@ -66,4 +67,8 @@ func (c *Context) Env() *types.Env {
 
 func (c *Context) Config() *types.Config {
 	return c.cmd.Config()
+}
+
+func (c *Context) Context() context.Context {
+	return c.cmd.Context()
 }

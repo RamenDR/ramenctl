@@ -139,7 +139,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	step2 := &Step{Name: TestsStep}
 
 	failedTest := &Test{
-		Context: &Context{name: "appset-deploy-rbd"},
+		TestContext: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -160,7 +160,7 @@ func TestReportRunTestFailed(t *testing.T) {
 	}
 
 	passedTest := &Test{
-		Context: &Context{name: "appset-deploy-cephfs"},
+		TestContext: &Context{name: "appset-deploy-cephfs"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -255,7 +255,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	step2 := &Step{Name: TestsStep}
 
 	rbdTest := &Test{
-		Context: &Context{name: "appset-deploy-rbd"},
+		TestContext: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -279,7 +279,7 @@ func TestReportRunAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Context: &Context{name: "appset-deploy-cephfs"},
+		TestContext: &Context{name: "appset-deploy-cephfs"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -368,7 +368,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	step1 := &Step{Name: TestsStep}
 
 	rbdTest := &Test{
-		Context: &Context{name: "appset-deploy-rbd"},
+		TestContext: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -388,7 +388,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Context: &Context{name: "appset-deploy-cephfs"},
+		TestContext: &Context{name: "appset-deploy-cephfs"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -467,7 +467,7 @@ func TestReportCleanFailed(t *testing.T) {
 	step1 := &Step{Name: TestsStep}
 
 	rbdTest := &Test{
-		Context: &Context{name: "appset-deploy-rbd"},
+		TestContext: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -538,7 +538,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	step1 := &Step{Name: TestsStep}
 
 	rbdTest := &Test{
-		Context: &Context{name: "appset-deploy-rbd"},
+		TestContext: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",
@@ -558,7 +558,7 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	cephfsTest := &Test{
-		Context: &Context{name: "appset-deploy-cephfs"},
+		TestContext: &Context{name: "appset-deploy-cephfs"},
 		Config: &types.TestConfig{
 			Workload: "deploy",
 			Deployer: "appset",

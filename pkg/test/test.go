@@ -18,7 +18,7 @@ import (
 
 // Test perform DR opetaions for testing DR flow.
 type Test struct {
-	types.Context
+	types.TestContext
 	Status Status
 	Config *types.TestConfig
 	Steps  []*Step
@@ -42,15 +42,15 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 	}
 
 	return &Test{
-		Context: newContext(workload, deployer, cmd),
-		Status:  Passed,
-		Config:  &tc,
+		TestContext: newContext(workload, deployer, cmd),
+		Status:      Passed,
+		Config:      &tc,
 	}
 }
 
 func (t *Test) Deploy() bool {
 	t.startStep("deploy")
-	if err := t.Deployer().Deploy(t.Context); err != nil {
+	if err := t.Deployer().Deploy(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q deployed", t.Name())
@@ -59,7 +59,7 @@ func (t *Test) Deploy() bool {
 
 func (t *Test) Undeploy() bool {
 	t.startStep("undeploy")
-	if err := t.Deployer().Undeploy(t.Context); err != nil {
+	if err := t.Deployer().Undeploy(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q undeployed", t.Name())
@@ -68,7 +68,7 @@ func (t *Test) Undeploy() bool {
 
 func (t *Test) Protect() bool {
 	t.startStep("protect")
-	if err := dractions.EnableProtection(t.Context); err != nil {
+	if err := dractions.EnableProtection(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q protected", t.Name())
@@ -77,7 +77,7 @@ func (t *Test) Protect() bool {
 
 func (t *Test) Unprotect() bool {
 	t.startStep("unprotect")
-	if err := dractions.DisableProtection(t.Context); err != nil {
+	if err := dractions.DisableProtection(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q unprotected", t.Name())
@@ -86,7 +86,7 @@ func (t *Test) Unprotect() bool {
 
 func (t *Test) Failover() bool {
 	t.startStep("failover")
-	if err := dractions.Failover(t.Context); err != nil {
+	if err := dractions.Failover(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q failed over", t.Name())
@@ -95,7 +95,7 @@ func (t *Test) Failover() bool {
 
 func (t *Test) Relocate() bool {
 	t.startStep("relocate")
-	if err := dractions.Relocate(t.Context); err != nil {
+	if err := dractions.Relocate(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q relocated", t.Name())
