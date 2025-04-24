@@ -207,6 +207,43 @@ The test-run.yaml is a machine and human readable description of the the
 test run:
 
 ```yaml
+build:
+  commit: de6950adf6666a4ff0886e29e99a998615142fe5
+  version: v0.4.0-7-gde6950a
+config:
+  channel:
+    name: https-github-com-ramendr-ocm-ramen-samples-git
+    namespace: test-gitops
+  clusterSet: submariner
+  clusters:
+    c1:
+      kubeconfig: mykubeconfigs/primary-cluster
+    c2:
+      kubeconfig: mykubeconfigs/secondary-cluster
+    hub:
+      kubeconfig: mykubeconfigs/hub
+  distro: ocp
+  drPolicy: drpolicy-1m
+  namespaces:
+    argocdNamespace: openshift-gitops
+    ramenDRClusterNamespace: openshift-dr-system
+    ramenHubNamespace: openshift-operators
+    ramenOpsNamespace: openshift-dr-ops
+  pvcSpecs:
+  - accessModes: ReadWriteOnce
+    name: rbd
+    storageClassName: ocs-storagecluster-ceph-rbd
+  - accessModes: ReadWriteMany
+    name: cephfs
+    storageClassName: ocs-storagecluster-cephfs
+  repo:
+    branch: main
+    url: https://github.com/RamenDR/ocm-ramen-samples.git
+  tests:
+  - deployer: appset
+    pvcSpec: rbd
+    workload: deploy
+created: "2025-04-24T16:33:28.800757+05:30"
 host:
   arch: arm64
   cpus: 12
@@ -223,6 +260,19 @@ steps:
       deployer: appset
       pvcSpec: rbd
       workload: deploy
+    items:
+    - name: deploy
+      status: passed
+    - name: protect
+      status: passed
+    - name: failover
+      status: passed
+    - name: relocate
+      status: passed
+    - name: unprotect
+      status: passed
+    - name: undeploy
+      status: passed
     name: appset-deploy-rbd
     status: passed
   name: tests
