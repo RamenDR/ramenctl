@@ -14,7 +14,6 @@ func Clean(configFile string, outputDir string) error {
 	}
 
 	if !cmd.CleanTests() {
-		cmd.GatherData()
 		return cmd.Failed()
 	}
 

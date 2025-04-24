@@ -20,7 +20,6 @@ func Run(configFile string, outputDir string) error {
 	}
 
 	if !cmd.RunTests() {
-		cmd.GatherData()
 		return cmd.Failed()
 	}
 

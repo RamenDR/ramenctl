@@ -109,7 +109,7 @@ func (c *Command) CleanTests() bool {
 	return c.runFlowFunc(c.cleanFlow)
 }
 
-func (c *Command) GatherData() {
+func (c *Command) gatherData() {
 	console.Step("Gather data")
 	namespaces := c.namespacesToGather()
 	outputDir := filepath.Join(c.OutputDir(), c.Name()+".gather")
@@ -181,7 +181,11 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 		c.Current.AddTest(test)
 	}
 
-	return c.finishStep()
+	res := c.finishStep()
+	if c.Report.Status == Failed {
+		c.gatherData()
+	}
+	return res
 }
 
 func (c *Command) runFlow(test *Test) {
