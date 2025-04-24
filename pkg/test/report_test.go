@@ -14,9 +14,37 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
+var config = &types.Config{
+	Distro:     "ocp",
+	Repo:       types.RepoConfig{URL: "https://github.com/org/repo", Branch: "main"},
+	DRPolicy:   "dr-policy",
+	ClusterSet: "clusterset",
+	Clusters: map[string]types.ClusterConfig{
+		"hub": {Kubeconfig: "hub-kubeconfig"},
+		"c1":  {Kubeconfig: "c1-kubeconfig"},
+		"c2":  {Kubeconfig: "c2-kubeconfig"},
+	},
+	PVCSpecs: []types.PVCSpecConfig{
+		{Name: "pvc-a", StorageClassName: "standard", AccessModes: "ReadWriteOnce"},
+	},
+	Tests: []types.TestConfig{
+		{Workload: "wl1", Deployer: "ocm-hub", PVCSpec: "pvc-a"},
+	},
+	Channel: types.ChannelConfig{
+		Name:      "my-channel",
+		Namespace: "ramen-system",
+	},
+	Namespaces: types.NamespacesConfig{
+		RamenHubNamespace:       "ramen-hub",
+		RamenDRClusterNamespace: "ramen-dr-cluster",
+		RamenOpsNamespace:       "ramen-ops",
+		ArgocdNamespace:         "argocd",
+	},
+}
+
 func TestReportEmpty(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run")
+	r := newReport("test-run", config)
 
 	// Host and ramenctl info is ready.
 	expectedReport := report.New()
@@ -41,7 +69,7 @@ func TestReportEmpty(t *testing.T) {
 
 func TestReportRunSetupFailed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run")
+	r := newReport("test-run", config)
 	step := &Step{Name: SetupStep, Status: Failed}
 	r.AddStep(step)
 
@@ -71,7 +99,7 @@ func TestReportRunSetupFailed(t *testing.T) {
 
 func TestReportRunSetupPassed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run")
+	r := newReport("test-run", config)
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -100,7 +128,7 @@ func TestReportRunSetupPassed(t *testing.T) {
 
 func TestReportRunTestFailed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run")
+	r := newReport("test-run", config)
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -204,7 +232,7 @@ func TestReportRunTestFailed(t *testing.T) {
 
 func TestReportRunAllPassed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run")
+	r := newReport("test-run", config)
 
 	step := &Step{Name: SetupStep, Status: Passed}
 	r.AddStep(step)
@@ -311,7 +339,7 @@ func TestReportRunAllPassed(t *testing.T) {
 
 func TestReportCleanTestFailed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-clean")
+	r := newReport("test-clean", config)
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
@@ -398,7 +426,7 @@ func TestReportCleanTestFailed(t *testing.T) {
 
 func TestReportCleanFailed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-clean")
+	r := newReport("test-clean", config)
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
@@ -457,7 +485,7 @@ func TestReportCleanFailed(t *testing.T) {
 
 func TestReportCleanAllPassed(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-clean")
+	r := newReport("test-clean", config)
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},

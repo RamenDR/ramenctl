@@ -45,16 +45,21 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Name    string  `json:"name"`
-	Steps   []*Step `json:"steps"`
-	Summary Summary `json:"summary"`
-	Status  Status  `json:"status,omitempty"`
+	Name    string        `json:"name"`
+	Config  *types.Config `json:"config"`
+	Steps   []*Step       `json:"steps"`
+	Summary Summary       `json:"summary"`
+	Status  Status        `json:"status,omitempty"`
 }
 
-func newReport(commandName string) *Report {
+func newReport(commandName string, config *types.Config) *Report {
+	if config == nil {
+		panic("config must not be nil")
+	}
 	return &Report{
 		Report: report.New(),
 		Name:   commandName,
+		Config: config,
 	}
 }
 
@@ -119,6 +124,14 @@ func (r *Report) Equal(o *Report) bool {
 	}
 	if r.Name != o.Name {
 		return false
+	}
+	if r.Config != o.Config {
+		if r.Config == nil || o.Config == nil {
+			return false
+		}
+		if !r.Config.Equal(o.Config) {
+			return false
+		}
 	}
 	if r.Status != o.Status {
 		return false

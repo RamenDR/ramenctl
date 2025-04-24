@@ -53,7 +53,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		Command:         cmd,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config),
-		Report:          newReport(name),
+		Report:          newReport(name, cmd.Config),
 	}
 
 	for _, tc := range cmd.Config.Tests {
