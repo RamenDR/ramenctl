@@ -78,30 +78,12 @@ func (r *Report) AddStep(step *Step) {
 	case Failed:
 		r.Status = Failed
 	}
-}
 
-// AddTest records a completed test. A failed test mark the test step and the report as failed.
-func (r *Report) AddTest(t *Test) {
-	var step *Step
-
-	// To make it easy to use, we create the tests step automaticlaly when adding the first test.
-	if len(r.Steps) == 0 || r.Steps[len(r.Steps)-1].Name != TestsStep {
-		step = &Step{Name: TestsStep}
-		r.AddStep(step)
-	} else {
-		step = r.Steps[len(r.Steps)-1]
-	}
-
-	step.AddTest(t)
-	r.Summary.AddTest(t)
-
-	switch t.Status {
-	case Passed, Skipped:
-		if r.Status == "" {
-			r.Status = Passed
+	// Handle the special "tests" step.
+	if step.Name == TestsStep {
+		for _, t := range step.Items {
+			r.Summary.AddTest(t)
 		}
-	case Failed:
-		r.Status = Failed
 	}
 }
 
@@ -198,7 +180,7 @@ func (s *Step) Equal(o *Step) bool {
 	})
 }
 
-func (s *Summary) AddTest(t *Test) {
+func (s *Summary) AddTest(t *Step) {
 	switch t.Status {
 	case Passed:
 		s.Passed++

@@ -161,9 +161,11 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 	wg.Wait()
 
+	tests := &Step{Name: TestsStep}
 	for _, test := range c.Tests {
-		c.Report.AddTest(test)
+		tests.AddTest(test)
 	}
+	c.Report.AddStep(tests)
 
 	return c.Report.Status == Passed
 }

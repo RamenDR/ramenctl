@@ -130,11 +130,13 @@ func TestReportRunTestFailed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-run", config)
 
-	step := &Step{Name: SetupStep, Status: Passed}
-	r.AddStep(step)
+	step1 := &Step{Name: SetupStep, Status: Passed}
+	r.AddStep(step1)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
+
+	step2 := &Step{Name: TestsStep}
 
 	failedTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
@@ -150,9 +152,11 @@ func TestReportRunTestFailed(t *testing.T) {
 			{Name: "failover", Status: Failed},
 		},
 	}
-	r.AddTest(failedTest)
-	if r.Status != Failed {
-		t.Errorf("expected status %q, got %q", Failed, r.Status)
+
+	// Adding a failed test mark the step as failed.
+	step2.AddTest(failedTest)
+	if step2.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, step2.Status)
 	}
 
 	passedTest := &Test{
@@ -172,7 +176,15 @@ func TestReportRunTestFailed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(passedTest)
+
+	// Adding a passed test does not change the step status if already set.
+	step2.AddTest(passedTest)
+	if step2.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, step2.Status)
+	}
+
+	// Adding a failed step to the report mark the report as failed.
+	r.AddStep(step2)
 	if r.Status != Failed {
 		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
@@ -234,11 +246,13 @@ func TestReportRunAllPassed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-run", config)
 
-	step := &Step{Name: SetupStep, Status: Passed}
-	r.AddStep(step)
+	step1 := &Step{Name: SetupStep, Status: Passed}
+	r.AddStep(step1)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
+
+	step2 := &Step{Name: TestsStep}
 
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
@@ -257,9 +271,11 @@ func TestReportRunAllPassed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(rbdTest)
-	if r.Status != Passed {
-		t.Errorf("expected status %q, got %q", Passed, r.Status)
+
+	// Adding pass test set the step status to passed since the status is unset.
+	step2.AddTest(rbdTest)
+	if step2.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step2.Status)
 	}
 
 	cephfsTest := &Test{
@@ -279,7 +295,15 @@ func TestReportRunAllPassed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(cephfsTest)
+
+	// Adding another passed tests does not change the status.
+	step2.AddTest(cephfsTest)
+	if step2.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step2.Status)
+	}
+
+	// Adding passed step keep report status as is.
+	r.AddStep(step2)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
@@ -341,6 +365,8 @@ func TestReportCleanTestFailed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-clean", config)
 
+	step1 := &Step{Name: TestsStep}
+
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
@@ -354,9 +380,11 @@ func TestReportCleanTestFailed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(rbdTest)
-	if r.Status != Passed {
-		t.Errorf("expected status %q, got %q", Passed, r.Status)
+
+	// Adding passed tests set the step status.
+	step1.AddTest(rbdTest)
+	if step1.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step1.Status)
 	}
 
 	cephfsTest := &Test{
@@ -371,7 +399,15 @@ func TestReportCleanTestFailed(t *testing.T) {
 			{Name: "unprotect", Status: Failed},
 		},
 	}
-	r.AddTest(cephfsTest)
+
+	// Adding failed test mark the step as failed.
+	step1.AddTest(cephfsTest)
+	if step1.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, step1.Status)
+	}
+
+	// Adding failed step mark the report as failed.
+	r.AddStep(step1)
 	if r.Status != Failed {
 		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
@@ -428,6 +464,8 @@ func TestReportCleanFailed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-clean", config)
 
+	step1 := &Step{Name: TestsStep}
+
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
@@ -441,13 +479,23 @@ func TestReportCleanFailed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(rbdTest)
-	if r.Status != Passed {
-		t.Errorf("expected status %q, got %q", Passed, r.Status)
+
+	// Adding a passed test mark the step as passed.
+	step1.AddTest(rbdTest)
+	if step1.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step1.Status)
 	}
 
-	step := &Step{Name: CleanupStep, Status: Failed}
-	r.AddStep(step)
+	// Adding a passed step marks the report as passed.
+	r.AddStep(step1)
+	if r.Status != Passed {
+		t.Errorf("expected status %q, got %q", Failed, r.Status)
+	}
+
+	step2 := &Step{Name: CleanupStep, Status: Failed}
+
+	// Adding a failed step marks the report as failed.
+	r.AddStep(step2)
 	if r.Status != Failed {
 		t.Errorf("expected status %q, got %q", Failed, r.Status)
 	}
@@ -487,6 +535,8 @@ func TestReportCleanAllPassed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-clean", config)
 
+	step1 := &Step{Name: TestsStep}
+
 	rbdTest := &Test{
 		Context: &Context{name: "appset-deploy-rbd"},
 		Config: &types.TestConfig{
@@ -500,9 +550,11 @@ func TestReportCleanAllPassed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(rbdTest)
-	if r.Status != Passed {
-		t.Errorf("expected status %q, got %q", Passed, r.Status)
+
+	// Adding a passed test marks the step as passed.
+	step1.AddTest(rbdTest)
+	if step1.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step1.Status)
 	}
 
 	cephfsTest := &Test{
@@ -518,13 +570,23 @@ func TestReportCleanAllPassed(t *testing.T) {
 			{Name: "undeploy", Status: Passed},
 		},
 	}
-	r.AddTest(cephfsTest)
+
+	// Adding a passed test does not change step status.
+	step1.AddTest(cephfsTest)
+	if step1.Status != Passed {
+		t.Errorf("expected status %q, got %q", Passed, step1.Status)
+	}
+
+	// Adding a passed step keeps the report passed.
+	r.AddStep(step1)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
 
-	step := &Step{Name: CleanupStep, Status: Passed}
-	r.AddStep(step)
+	step2 := &Step{Name: CleanupStep, Status: Passed}
+
+	// Adding a passed step keeps the report passed.
+	r.AddStep(step2)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
 	}
