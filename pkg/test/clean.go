@@ -10,7 +10,7 @@ func Clean(configFile string, outputDir string) error {
 	if err != nil {
 		return err
 	}
-	defer cmd.Stop()
+	defer cmd.Close()
 
 	testCmd := newCommand(cmd)
 

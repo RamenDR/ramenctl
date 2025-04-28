@@ -11,15 +11,15 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func newLogger(outputDir, commandName string) (*zap.SugaredLogger, error) {
+func newLogger(outputDir, commandName string) (*zap.SugaredLogger, func(), error) {
 	if err := os.MkdirAll(outputDir, 0o750); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	path := filepath.Join(outputDir, commandName)
-	logfile, err := os.Create(path)
+	writer, closeFile, err := zap.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	encoderConfig := zap.NewProductionEncoderConfig()
@@ -27,8 +27,8 @@ func newLogger(outputDir, commandName string) (*zap.SugaredLogger, error) {
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	core := zapcore.NewCore(encoder, zapcore.Lock(logfile), zapcore.DebugLevel)
+	core := zapcore.NewCore(encoder, writer, zapcore.DebugLevel)
 	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 
-	return logger.Sugar(), nil
+	return logger.Sugar(), closeFile, nil
 }

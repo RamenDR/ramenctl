@@ -31,7 +31,8 @@ type Command struct {
 	// env loaded from the config.
 	env *types.Env
 	// log logging to the command log.
-	log *zap.SugaredLogger
+	log      *zap.SugaredLogger
+	closeLog func()
 
 	// context and stop are used for cancellation.
 	context context.Context
@@ -40,10 +41,10 @@ type Command struct {
 
 var _ types.Context = &Command{}
 
-// New creates a new command handling os.Interrupt signal. To stop handling signals call Stop().
+// New creates a new command handling os.Interrupt signal. To close the log and stop the signal handler call Close().
 func New(commandName, configFile, outputDir string) (*Command, error) {
 	// Create the logger first so we can log early command errors to the command log.
-	log, err := newLogger(outputDir, commandName+".log")
+	log, closeLog, err := newLogger(outputDir, commandName+".log")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger: %w", err)
 	}
@@ -78,8 +79,27 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 		config:    cfg,
 		env:       env,
 		log:       log,
+		closeLog:  closeLog,
 		context:   ctx,
 		stop:      stop,
+	}, nil
+}
+
+// ForTest is a command configured for testing without real clusters. This command does not handle signals and its
+// context cannot be cancelled.
+func ForTest(commandName string, cfg *types.Config, env *types.Env, outputDir string) (*Command, error) {
+	log, closeLog, err := newLogger(outputDir, commandName+".log")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create logger: %w", err)
+	}
+	return &Command{
+		name:      commandName,
+		outputDir: outputDir,
+		config:    cfg,
+		env:       env,
+		log:       log,
+		closeLog:  closeLog,
+		context:   context.Background(),
 	}, nil
 }
 
@@ -109,10 +129,14 @@ func (c *Command) Context() context.Context {
 	return c.context
 }
 
-// Stop handling signals and mark the command context as done. Calling while a command is running will cancel the
-// command.
-func (c *Command) Stop() {
-	c.stop()
+// Close log and stop handling signals and mark the command context as done. Calling while a command is running will
+// cancel the command.
+func (c *Command) Close() {
+	if c.stop != nil {
+		c.stop()
+	}
+	_ = c.log.Sync()
+	c.closeLog()
 }
 
 // WriteReport writes report in yaml format to the command output directory.
