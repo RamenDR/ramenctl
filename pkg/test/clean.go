@@ -3,7 +3,10 @@
 
 package test
 
-import "github.com/ramendr/ramenctl/pkg/command"
+import (
+	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/e2e"
+)
 
 func Clean(configFile string, outputDir string) error {
 	cmd, err := command.New("test-clean", configFile, outputDir)
@@ -12,7 +15,7 @@ func Clean(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	testCmd := newCommand(cmd)
+	testCmd := newCommand(cmd, e2e.Backend{})
 
 	if !testCmd.Validate() {
 		return testCmd.Failed()

@@ -13,17 +13,18 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
-	"github.com/ramendr/ramen/e2e/util"
-	"github.com/ramendr/ramen/e2e/validate"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/e2e"
 	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
 // Command is a ramenctl test command.
 type Command struct {
 	*command.Command
+
+	Backend e2e.Testing
 
 	// NamespacePrefix is used for all namespaces created by tests.
 	NamespacePrefix string
@@ -45,12 +46,13 @@ type Command struct {
 type flowFunc func(t *Test)
 
 // newCommand return a new test command.
-func newCommand(cmd *command.Command) *Command {
+func newCommand(cmd *command.Command, backend e2e.Testing) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
 	cmd.Config().Channel.Namespace = "test-gitops"
 
 	testCmd := &Command{
 		Command:         cmd,
+		Backend:         backend,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config()),
 		Report:          newReport(cmd.Name(), cmd.Config()),
@@ -67,7 +69,7 @@ func newCommand(cmd *command.Command) *Command {
 func (c *Command) Validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
-	if err := validate.TestConfig(c); err != nil {
+	if err := c.Backend.Validate(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Config validated")
@@ -77,7 +79,7 @@ func (c *Command) Validate() bool {
 func (c *Command) Setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
-	if err := util.EnsureChannel(c); err != nil {
+	if err := c.Backend.Setup(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment setup")
@@ -87,7 +89,7 @@ func (c *Command) Setup() bool {
 func (c *Command) Cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
-	if err := util.EnsureChannelDeleted(c); err != nil {
+	if err := c.Backend.Cleanup(c); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment cleaned")

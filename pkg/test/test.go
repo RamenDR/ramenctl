@@ -9,19 +9,20 @@ import (
 	"fmt"
 
 	"github.com/ramendr/ramen/e2e/deployers"
-	"github.com/ramendr/ramen/e2e/dractions"
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/workloads"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/e2e"
 )
 
 // Test perform DR opetaions for testing DR flow.
 type Test struct {
 	types.TestContext
-	Status Status
-	Config *types.TestConfig
-	Steps  []*Step
+	Backend e2e.Testing
+	Status  Status
+	Config  *types.TestConfig
+	Steps   []*Step
 }
 
 // newTest creates a test from test configuration and command context.
@@ -43,6 +44,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 	return &Test{
 		TestContext: newContext(workload, deployer, cmd),
+		Backend:     cmd.Backend,
 		Status:      Passed,
 		Config:      &tc,
 	}
@@ -50,7 +52,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 func (t *Test) Deploy() bool {
 	t.startStep("deploy")
-	if err := t.Deployer().Deploy(t.TestContext); err != nil {
+	if err := t.Backend.Deploy(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q deployed", t.Name())
@@ -59,7 +61,7 @@ func (t *Test) Deploy() bool {
 
 func (t *Test) Undeploy() bool {
 	t.startStep("undeploy")
-	if err := t.Deployer().Undeploy(t.TestContext); err != nil {
+	if err := t.Backend.Undeploy(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q undeployed", t.Name())
@@ -68,7 +70,7 @@ func (t *Test) Undeploy() bool {
 
 func (t *Test) Protect() bool {
 	t.startStep("protect")
-	if err := dractions.EnableProtection(t.TestContext); err != nil {
+	if err := t.Backend.Protect(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q protected", t.Name())
@@ -77,7 +79,7 @@ func (t *Test) Protect() bool {
 
 func (t *Test) Unprotect() bool {
 	t.startStep("unprotect")
-	if err := dractions.DisableProtection(t.TestContext); err != nil {
+	if err := t.Backend.Unprotect(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q unprotected", t.Name())
@@ -86,7 +88,7 @@ func (t *Test) Unprotect() bool {
 
 func (t *Test) Failover() bool {
 	t.startStep("failover")
-	if err := dractions.Failover(t.TestContext); err != nil {
+	if err := t.Backend.Failover(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q failed over", t.Name())
@@ -95,7 +97,7 @@ func (t *Test) Failover() bool {
 
 func (t *Test) Relocate() bool {
 	t.startStep("relocate")
-	if err := dractions.Relocate(t.TestContext); err != nil {
+	if err := t.Backend.Relocate(t.TestContext); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q relocated", t.Name())
