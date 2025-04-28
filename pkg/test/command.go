@@ -241,10 +241,7 @@ func (c *Command) runFlow(test *Test) {
 }
 
 func (c *Command) cleanFlow(test *Test) {
-	if !test.Unprotect() {
-		return
-	}
-	test.Undeploy()
+	test.Cleanup()
 }
 
 func (c *Command) namespacesToGather() []string {

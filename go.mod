@@ -11,6 +11,7 @@ require (
 	github.com/ramendr/ramen/e2e v0.0.0-20250424122329-3f0bedcd598d
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
+	golang.org/x/sync v0.13.0
 	k8s.io/client-go v0.31.1
 	sigs.k8s.io/yaml v1.4.0
 )

@@ -11,6 +11,7 @@ import (
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/workloads"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
@@ -101,6 +102,29 @@ func (t *Test) Relocate() bool {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q relocated", t.Name())
+	return t.passStep()
+}
+
+func (t *Test) Cleanup() bool {
+	var g errgroup.Group
+
+	t.startStep("cleanup")
+	g.Go(func() error {
+		if err := t.Backend.Unprotect(t.TestContext); err != nil {
+			return err
+		}
+		return nil
+	})
+	g.Go(func() error {
+		if err := t.Backend.Undeploy(t.TestContext); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err := g.Wait(); err != nil {
+		return t.failStep(err)
+	}
+	console.Pass("Application %q cleaned up", t.Name())
 	return t.passStep()
 }
 
