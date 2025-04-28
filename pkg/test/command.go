@@ -45,12 +45,7 @@ type Command struct {
 type flowFunc func(t *Test)
 
 // newCommand return a new test command.
-func newCommand(name, configFile, outputDir string) (*Command, error) {
-	cmd, err := command.New(name, configFile, outputDir)
-	if err != nil {
-		return nil, err
-	}
-
+func newCommand(cmd *command.Command) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
 	cmd.Config().Channel.Namespace = "test-gitops"
 
@@ -58,7 +53,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		Command:         cmd,
 		NamespacePrefix: "test-",
 		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config()),
-		Report:          newReport(name, cmd.Config()),
+		Report:          newReport(cmd.Name(), cmd.Config()),
 	}
 
 	for _, tc := range cmd.Config().Tests {
@@ -66,7 +61,7 @@ func newCommand(name, configFile, outputDir string) (*Command, error) {
 		testCmd.Tests = append(testCmd.Tests, test)
 	}
 
-	return testCmd, nil
+	return testCmd
 }
 
 func (c *Command) Validate() bool {

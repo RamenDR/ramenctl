@@ -3,25 +3,29 @@
 
 package test
 
+import "github.com/ramendr/ramenctl/pkg/command"
+
 func Clean(configFile string, outputDir string) error {
-	cmd, err := newCommand("test-clean", configFile, outputDir)
+	cmd, err := command.New("test-clean", configFile, outputDir)
 	if err != nil {
 		return err
 	}
 	defer cmd.Stop()
 
-	if !cmd.Validate() {
-		return cmd.Failed()
+	testCmd := newCommand(cmd)
+
+	if !testCmd.Validate() {
+		return testCmd.Failed()
 	}
 
-	if !cmd.CleanTests() {
-		return cmd.Failed()
+	if !testCmd.CleanTests() {
+		return testCmd.Failed()
 	}
 
-	if !cmd.Cleanup() {
-		return cmd.Failed()
+	if !testCmd.Cleanup() {
+		return testCmd.Failed()
 	}
 
-	cmd.Passed()
+	testCmd.Passed()
 	return nil
 }

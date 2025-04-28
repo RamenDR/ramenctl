@@ -3,27 +3,31 @@
 
 package test
 
+import "github.com/ramendr/ramenctl/pkg/command"
+
 func Run(configFile string, outputDir string) error {
-	cmd, err := newCommand("test-run", configFile, outputDir)
+	cmd, err := command.New("test-run", configFile, outputDir)
 	if err != nil {
 		return err
 	}
 	defer cmd.Stop()
 
-	if !cmd.Validate() {
-		return cmd.Failed()
+	testCmd := newCommand(cmd)
+
+	if !testCmd.Validate() {
+		return testCmd.Failed()
 	}
 
 	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
 	// as is for inspection.
-	if !cmd.Setup() {
-		return cmd.Failed()
+	if !testCmd.Setup() {
+		return testCmd.Failed()
 	}
 
-	if !cmd.RunTests() {
-		return cmd.Failed()
+	if !testCmd.RunTests() {
+		return testCmd.Failed()
 	}
 
-	cmd.Passed()
+	testCmd.Passed()
 	return nil
 }
