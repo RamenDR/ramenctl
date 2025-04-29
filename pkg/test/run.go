@@ -15,6 +15,6 @@ func Run(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	test := newCommand(cmd, e2e.Backend{})
+	test := newCommand(cmd, e2e.Backend{}, Options{GatherData: true})
 	return test.Run()
 }
