@@ -15,22 +15,6 @@ func Run(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	testCmd := newCommand(cmd, e2e.Backend{})
-
-	if !testCmd.Validate() {
-		return testCmd.Failed()
-	}
-
-	// NOTE: The environment will be cleaned up by `test clean` command. If a test fail we want to keep the environment
-	// as is for inspection.
-	if !testCmd.Setup() {
-		return testCmd.Failed()
-	}
-
-	if !testCmd.RunTests() {
-		return testCmd.Failed()
-	}
-
-	testCmd.Passed()
-	return nil
+	test := newCommand(cmd, e2e.Backend{})
+	return test.Run()
 }

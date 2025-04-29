@@ -15,20 +15,6 @@ func Clean(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	testCmd := newCommand(cmd, e2e.Backend{})
-
-	if !testCmd.Validate() {
-		return testCmd.Failed()
-	}
-
-	if !testCmd.CleanTests() {
-		return testCmd.Failed()
-	}
-
-	if !testCmd.Cleanup() {
-		return testCmd.Failed()
-	}
-
-	testCmd.Passed()
-	return nil
+	test := newCommand(cmd, e2e.Backend{})
+	return test.Clean()
 }

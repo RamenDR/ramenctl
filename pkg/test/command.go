@@ -66,6 +66,37 @@ func newCommand(cmd *command.Command, backend e2e.Testing) *Command {
 	return testCmd
 }
 
+// Run a test flow and return an error if one or more tests failed. When completed you need to call Clean() to remove
+// resources created during the run.
+func (c *Command) Run() error {
+	if !c.Validate() {
+		return c.Failed()
+	}
+	if !c.Setup() {
+		return c.Failed()
+	}
+	if !c.RunTests() {
+		return c.Failed()
+	}
+	c.Passed()
+	return nil
+}
+
+// Clean up after running a test flow and return an if cleaning one or more tests failed.
+func (c *Command) Clean() error {
+	if !c.Validate() {
+		return c.Failed()
+	}
+	if !c.CleanTests() {
+		return c.Failed()
+	}
+	if !c.Cleanup() {
+		return c.Failed()
+	}
+	c.Passed()
+	return nil
+}
+
 func (c *Command) Validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
