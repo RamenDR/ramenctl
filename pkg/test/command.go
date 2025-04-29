@@ -69,35 +69,35 @@ func newCommand(cmd *command.Command, backend e2e.Testing) *Command {
 // Run a test flow and return an error if one or more tests failed. When completed you need to call Clean() to remove
 // resources created during the run.
 func (c *Command) Run() error {
-	if !c.Validate() {
-		return c.Failed()
+	if !c.validate() {
+		return c.failed()
 	}
-	if !c.Setup() {
-		return c.Failed()
+	if !c.setup() {
+		return c.failed()
 	}
-	if !c.RunTests() {
-		return c.Failed()
+	if !c.runTests() {
+		return c.failed()
 	}
-	c.Passed()
+	c.passed()
 	return nil
 }
 
 // Clean up after running a test flow and return an if cleaning one or more tests failed.
 func (c *Command) Clean() error {
-	if !c.Validate() {
-		return c.Failed()
+	if !c.validate() {
+		return c.failed()
 	}
-	if !c.CleanTests() {
-		return c.Failed()
+	if !c.cleanTests() {
+		return c.failed()
 	}
-	if !c.Cleanup() {
-		return c.Failed()
+	if !c.cleanup() {
+		return c.failed()
 	}
-	c.Passed()
+	c.passed()
 	return nil
 }
 
-func (c *Command) Validate() bool {
+func (c *Command) validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
 	if err := c.Backend.Validate(c); err != nil {
@@ -107,7 +107,7 @@ func (c *Command) Validate() bool {
 	return c.passStep()
 }
 
-func (c *Command) Setup() bool {
+func (c *Command) setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
 	if err := c.Backend.Setup(c); err != nil {
@@ -117,7 +117,7 @@ func (c *Command) Setup() bool {
 	return c.passStep()
 }
 
-func (c *Command) Cleanup() bool {
+func (c *Command) cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
 	if err := c.Backend.Cleanup(c); err != nil {
@@ -127,12 +127,12 @@ func (c *Command) Cleanup() bool {
 	return c.passStep()
 }
 
-func (c *Command) RunTests() bool {
+func (c *Command) runTests() bool {
 	console.Step("Run tests")
 	return c.runFlowFunc(c.runFlow)
 }
 
-func (c *Command) CleanTests() bool {
+func (c *Command) cleanTests() bool {
 	console.Step("Clean tests")
 	return c.runFlowFunc(c.cleanFlow)
 }
@@ -144,14 +144,14 @@ func (c *Command) gatherData() {
 	gather.Namespaces(c.Env(), namespaces, outputDir, c.Logger())
 }
 
-func (c *Command) Failed() error {
+func (c *Command) failed() error {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
 	return fmt.Errorf("%s (%s)", c.Report.Status, c.Report.Summary)
 }
 
-func (c *Command) Passed() {
+func (c *Command) passed() {
 	if err := c.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
