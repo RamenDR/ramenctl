@@ -20,14 +20,15 @@ import (
 	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
+// namespacePrefix is used for all namespaces created by tests.
+const namespacePrefix = "test-"
+
 // Command is a ramenctl test command.
 type Command struct {
 	*command.Command
 
 	Backend e2e.Testing
 
-	// NamespacePrefix is used for all namespaces created by tests.
-	NamespacePrefix string
 
 	// PCCSpecs maps pvscpec name to pvcspec.
 	PVCSpecs map[string]types.PVCSpecConfig
@@ -48,14 +49,13 @@ type flowFunc func(t *Test)
 // newCommand return a new test command.
 func newCommand(cmd *command.Command, backend e2e.Testing) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
-	cmd.Config().Channel.Namespace = "test-gitops"
+	cmd.Config().Channel.Namespace = namespacePrefix + "gitops"
 
 	testCmd := &Command{
-		Command:         cmd,
-		Backend:         backend,
-		NamespacePrefix: "test-",
-		PVCSpecs:        e2econfig.PVCSpecsMap(cmd.Config()),
-		Report:          newReport(cmd.Name(), cmd.Config()),
+		Command:  cmd,
+		Backend:  backend,
+		PVCSpecs: e2econfig.PVCSpecsMap(cmd.Config()),
+		Report:   newReport(cmd.Name(), cmd.Config()),
 	}
 
 	for _, tc := range cmd.Config().Tests {
