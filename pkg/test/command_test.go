@@ -103,6 +103,18 @@ var unprotectCanceled = MockBackend{
 	},
 }
 
+var undeployFailed = MockBackend{
+	UndeployFunc: func(ctx types.TestContext) error {
+		return errors.New("No undeploy for you!")
+	},
+}
+
+var undeployCanceled = MockBackend{
+	UndeployFunc: func(ctx types.TestContext) error {
+		return context.Canceled
+	},
+}
+
 func TestRun(t *testing.T) {
 	outputDir := t.TempDir()
 	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
@@ -323,7 +335,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 	}
 }
 
-func TestCleanTestsFailed(t *testing.T) {
+func TestCleanUnprotectFailed(t *testing.T) {
 	outputDir := t.TempDir()
 	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
 	if err != nil {
@@ -343,7 +355,27 @@ func TestCleanTestsFailed(t *testing.T) {
 	}
 }
 
-func TestCleanTestsCanceled(t *testing.T) {
+func TestCleanUndeployFailed(t *testing.T) {
+	outputDir := t.TempDir()
+	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cmd.Close()
+	test := newCommand(cmd, &undeployFailed, testOptions)
+	if err := test.Clean(); err == nil {
+		t.Fatal("command did not fail")
+	}
+	if test.Report.Status != Failed {
+		t.Errorf("expected status %q, got %q", Failed, test.Report.Status)
+	}
+	summary := Summary{Failed: len(testConfig.Tests)}
+	if test.Report.Summary != summary {
+		t.Errorf("expected summary %+v, got %+v", summary, test.Report.Summary)
+	}
+}
+
+func TestCleanUnprotectCanceled(t *testing.T) {
 	outputDir := t.TempDir()
 	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
 	if err != nil {
@@ -355,7 +387,27 @@ func TestCleanTestsCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	if test.Report.Status != Canceled {
-		t.Errorf("expected status %q, got %q", Failed, test.Report.Status)
+		t.Errorf("expected status %q, got %q", Canceled, test.Report.Status)
+	}
+	summary := Summary{Canceled: len(testConfig.Tests)}
+	if test.Report.Summary != summary {
+		t.Errorf("expected summary %+v, got %+v", summary, test.Report.Summary)
+	}
+}
+
+func TestCleanUndeployCanceled(t *testing.T) {
+	outputDir := t.TempDir()
+	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cmd.Close()
+	test := newCommand(cmd, &undeployCanceled, testOptions)
+	if err := test.Clean(); err == nil {
+		t.Fatal("command did not fail")
+	}
+	if test.Report.Status != Canceled {
+		t.Errorf("expected status %q, got %q", Canceled, test.Report.Status)
 	}
 	summary := Summary{Canceled: len(testConfig.Tests)}
 	if test.Report.Summary != summary {
