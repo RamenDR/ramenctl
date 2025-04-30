@@ -14,23 +14,23 @@ import (
 
 // Context implements types.TestContext interface.
 type Context struct {
+	ctx      types.Context
 	workload types.Workload
 	deployer types.Deployer
 	name     string
 	logger   *zap.SugaredLogger
-	cmd      *Command
 }
 
 var _ types.TestContext = &Context{}
 
-func newContext(workload types.Workload, deployer types.Deployer, cmd *Command) *Context {
+func newContext(ctx types.Context, workload types.Workload, deployer types.Deployer) *Context {
 	name := fmt.Sprintf("%s-%s", deployer.GetName(), workload.GetName())
 	return &Context{
+		ctx:      ctx,
 		workload: workload,
 		deployer: deployer,
 		name:     name,
-		logger:   cmd.Logger().Named(name),
-		cmd:      cmd,
+		logger:   ctx.Logger().Named(name),
 	}
 }
 
@@ -62,13 +62,13 @@ func (c *Context) Logger() *zap.SugaredLogger {
 }
 
 func (c *Context) Env() *types.Env {
-	return c.cmd.Env()
+	return c.ctx.Env()
 }
 
 func (c *Context) Config() *types.Config {
-	return c.cmd.Config()
+	return c.ctx.Config()
 }
 
 func (c *Context) Context() context.Context {
-	return c.cmd.Context()
+	return c.ctx.Context()
 }

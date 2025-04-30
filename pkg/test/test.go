@@ -44,7 +44,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 	}
 
 	return &Test{
-		TestContext: newContext(workload, deployer, cmd),
+		TestContext: newContext(cmd, workload, deployer),
 		Backend:     cmd.Backend,
 		Status:      Passed,
 		Config:      &tc,
