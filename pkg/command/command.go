@@ -61,7 +61,7 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 	console.Info("Using config %q", configFile)
 
 	// Create the context before creating the env so we can cancel the command cleanly if accessing the clusters block
-	// for long time. The log will contain the cancelation error.
+	// for long time. The log will contain the cancellation error.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 
 	env, err := e2eenv.New(ctx, cfg, log)

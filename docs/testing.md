@@ -369,7 +369,7 @@ Cleaning up the clusters includes:
 ### Failed tests
 
 When a test fails, the test command gathers data related to the failed tests in
-the ouput directory. The gathered data can help you or develpers to diagnose the
+the output directory. The gathered data can help you or developers to diagnose the
 issue.
 
 The following example shows a test run with a failed test, and how to inspect
