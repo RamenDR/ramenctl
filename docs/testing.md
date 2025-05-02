@@ -245,6 +245,7 @@ config:
     pvcSpec: rbd
     workload: deploy
 created: "2025-04-24T16:33:28.800757+05:30"
+duration: 695.608462543
 host:
   arch: arm64
   cpus: 12
@@ -252,33 +253,44 @@ host:
 name: test-run
 status: passed
 steps:
-- name: validate
+- duration: 0.022823334
+  name: validate
   status: passed
-- name: setup
+- duration: 0.009449584
+  name: setup
   status: passed
-- items:
+- duration: 695.576189625
+  items:
   - config:
       deployer: appset
       pvcSpec: rbd
       workload: deploy
+    duration: 695.576118209
     items:
-    - name: deploy
+    - duration: 0.013429167
+      name: deploy
       status: passed
-    - name: protect
+    - duration: 95.095957834
+      name: protect
       status: passed
-    - name: failover
+    - duration: 270.193688542
+      name: failover
       status: passed
-    - name: relocate
+    - duration: 270.207244208
+      name: relocate
       status: passed
-    - name: unprotect
+    - duration: 60.052227083
+      name: unprotect
       status: passed
-    - name: undeploy
+    - duration: 0.013571375
+      name: undeploy
       status: passed
     name: appset-deploy-rbd
     status: passed
   name: tests
   status: passed
 summary:
+  canceled: 0
   failed: 0
   passed: 1
   skipped: 0
