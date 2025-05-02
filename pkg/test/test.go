@@ -15,15 +15,18 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 // Test perform DR opetaions for testing DR flow.
 type Test struct {
 	types.TestContext
-	Backend e2e.Testing
-	Status  Status
-	Config  *types.TestConfig
-	Steps   []*Step
+	Backend     e2e.Testing
+	Status      Status
+	Config      *types.TestConfig
+	Steps       []*Step
+	Duration    float64
+	stepStarted time.Time
 }
 
 // newTest creates a test from test configuration and command context.
@@ -130,12 +133,15 @@ func (t *Test) Cleanup() bool {
 
 func (t *Test) startStep(name string) {
 	step := &Step{Name: name}
+	t.stepStarted = time.Now()
 	t.Steps = append(t.Steps, step)
 	t.Logger().Infof("Step %q started", step.Name)
 }
 
 func (t *Test) failStep(err error) bool {
 	step := t.Steps[len(t.Steps)-1]
+	step.Duration = time.Since(t.stepStarted).Seconds()
+	t.Duration += step.Duration
 	if errors.Is(err, context.Canceled) {
 		step.Status = Canceled
 		console.Error("Canceled application %q %s", t.Name(), step.Name)
@@ -150,6 +156,8 @@ func (t *Test) failStep(err error) bool {
 
 func (t *Test) passStep() bool {
 	step := t.Steps[len(t.Steps)-1]
+	step.Duration = time.Since(t.stepStarted).Seconds()
+	t.Duration += step.Duration
 	step.Status = Passed
 	t.Logger().Infof("Step %q passed", step.Name)
 	return true

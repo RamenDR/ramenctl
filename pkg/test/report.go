@@ -30,10 +30,11 @@ const (
 
 // A step is a test command step.
 type Step struct {
-	Name   string            `json:"name"`
-	Status Status            `json:"status,omitempty"`
-	Config *types.TestConfig `json:"config,omitempty"`
-	Items  []*Step           `json:"items,omitempty"`
+	Name     string            `json:"name"`
+	Status   Status            `json:"status,omitempty"`
+	Duration float64           `json:"time,omitempty"`
+	Config   *types.TestConfig `json:"config,omitempty"`
+	Items    []*Step           `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -47,11 +48,12 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Name    string        `json:"name"`
-	Config  *types.Config `json:"config"`
-	Steps   []*Step       `json:"steps"`
-	Summary Summary       `json:"summary"`
-	Status  Status        `json:"status,omitempty"`
+	Name     string        `json:"name"`
+	Config   *types.Config `json:"config"`
+	Steps    []*Step       `json:"steps"`
+	Summary  Summary       `json:"summary"`
+	Status   Status        `json:"status,omitempty"`
+	Duration float64       `json:"time,omitempty"`
 }
 
 func newReport(commandName string, config *types.Config) *Report {
@@ -71,6 +73,7 @@ func (r *Report) AddStep(step *Step) {
 		panic(fmt.Sprintf("step %q exists", step.Name))
 	}
 	r.Steps = append(r.Steps, step)
+	r.Duration += step.Duration
 
 	switch step.Status {
 	case Passed, Skipped:
@@ -117,6 +120,9 @@ func (r *Report) Equal(o *Report) bool {
 	if r.Summary != o.Summary {
 		return false
 	}
+	if r.Duration != o.Duration {
+		return false
+	}
 	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
 		return a.Equal(b)
 	})
@@ -134,10 +140,11 @@ func (r *Report) findStep(name string) *Step {
 // AddTest records a completed test. A failed test marks the step as failed.
 func (s *Step) AddTest(t *Test) {
 	result := &Step{
-		Name:   t.Name(),
-		Config: t.Config,
-		Status: t.Status,
-		Items:  t.Steps,
+		Name:     t.Name(),
+		Config:   t.Config,
+		Status:   t.Status,
+		Items:    t.Steps,
+		Duration: t.Duration,
 	}
 
 	s.Items = append(s.Items, result)
@@ -164,6 +171,9 @@ func (s *Step) Equal(o *Step) bool {
 		return false
 	}
 	if s.Status != o.Status {
+		return false
+	}
+	if s.Duration != o.Duration {
 		return false
 	}
 	if s.Config != o.Config {

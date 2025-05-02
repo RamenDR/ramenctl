@@ -18,6 +18,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
 	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 // namespacePrefix is used for all namespaces created by tests.
@@ -45,6 +46,9 @@ type Command struct {
 
 	// Command report, stored at the output directory on completion.
 	Report *Report
+
+	// stepStarted records the time when the step execution began, used for duration tracking.
+	stepStarted time.Time
 }
 
 // flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if the flow failed.
@@ -165,10 +169,12 @@ func (c *Command) passed() {
 
 func (c *Command) startStep(name string) {
 	c.Current = &Step{Name: name}
+	c.stepStarted = time.Now()
 	c.Logger().Infof("Step %q started", c.Current.Name)
 }
 
 func (c *Command) failStep(err error) bool {
+	c.Current.Duration = time.Since(c.stepStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
 		c.Current.Status = Canceled
 		console.Error("Canceled %s", c.Current.Name)
@@ -183,6 +189,7 @@ func (c *Command) failStep(err error) bool {
 }
 
 func (c *Command) passStep() bool {
+	c.Current.Duration = time.Since(c.stepStarted).Seconds()
 	c.Current.Status = Passed
 	c.Logger().Infof("Step %q passed", c.Current.Name)
 	c.Report.AddStep(c.Current)
@@ -191,6 +198,7 @@ func (c *Command) passStep() bool {
 }
 
 func (c *Command) finishStep() bool {
+	c.Current.Duration = time.Since(c.stepStarted).Seconds()
 	c.Logger().Infof("Step %q finished", c.Current.Name)
 	c.Report.AddStep(c.Current)
 	c.Current = nil

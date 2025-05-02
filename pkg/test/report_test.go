@@ -101,7 +101,7 @@ func TestReportRunSetupPassed(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-run", config)
 
-	step := &Step{Name: SetupStep, Status: Passed}
+	step := &Step{Name: SetupStep, Status: Passed, Duration: 1.23}
 	r.AddStep(step)
 	if r.Status != Passed {
 		t.Errorf("expected status %q, got %q", Passed, r.Status)
@@ -111,7 +111,7 @@ func TestReportRunSetupPassed(t *testing.T) {
 	if len(r.Steps) != 1 {
 		t.Errorf("unexpected steps %+v", r.Steps)
 	}
-	passedSetup := &Step{Name: SetupStep, Status: Passed}
+	passedSetup := &Step{Name: SetupStep, Status: Passed, Duration: 1.23}
 	if !r.Steps[0].Equal(passedSetup) {
 		t.Fatalf("expected setup %+v, got %+v", passedSetup, r.Steps[0])
 	}
