@@ -70,9 +70,9 @@ func TestSampleFromEnv(t *testing.T) {
 	sample := config.SampleFromEnv("ramenctl", env)
 	expected := &config.Sample{
 		CommandName:            "ramenctl",
-		HubKubeconfig:          env.KubeconfigPath("hub"),
-		PrimaryKubeconfig:      env.KubeconfigPath("dr1"),
-		SecondaryKubeconfig:    env.KubeconfigPath("dr2"),
+		HubKubeconfig:          env.MustGetKubeCfgPath("hub"),
+		PrimaryKubeconfig:      env.MustGetKubeCfgPath("dr1"),
+		SecondaryKubeconfig:    env.MustGetKubeCfgPath("dr2"),
 		RBDStorageClassName:    "rook-ceph-block",
 		CephFSStorageClassName: "rook-cephfs-fs1",
 	}

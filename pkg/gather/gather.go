@@ -16,11 +16,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	rtime "github.com/ramendr/ramenctl/pkg/time"
 )
 
 // Namespaces gathers namespaces from all clusters storing data in outputDir.
 func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.SugaredLogger) {
-	start := time.Now()
+	start := rtime.GetTimeNow()
 	log.Infof("Gather namespaces %q from all clusters", namespaces)
 
 	var wg sync.WaitGroup
@@ -43,7 +44,7 @@ func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.
 }
 
 func gatherCluster(cluster *types.Cluster, namespaces []string, outputDir string, log *zap.SugaredLogger) error {
-	start := time.Now()
+	start := rtime.GetTimeNow()
 	log.Infof("Gather namespaces from cluster %q", cluster.Name)
 
 	config, err := restConfig(cluster.Kubeconfig)

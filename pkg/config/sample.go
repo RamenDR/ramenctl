@@ -46,9 +46,9 @@ func SampleFromEnv(commandName string, env *EnvFile) *Sample {
 	// Using drenv envfile: use drenv storage classes.
 	return &Sample{
 		CommandName:         commandName,
-		HubKubeconfig:       env.KubeconfigPath(env.Ramen.Hub),
-		PrimaryKubeconfig:   env.KubeconfigPath(env.Ramen.Clusters[0]),
-		SecondaryKubeconfig: env.KubeconfigPath(env.Ramen.Clusters[1]),
+		HubKubeconfig:       env.MustGetKubeCfgPath(env.Ramen.Hub),
+		PrimaryKubeconfig:   env.MustGetKubeCfgPath(env.Ramen.Clusters[0]),
+		SecondaryKubeconfig: env.MustGetKubeCfgPath(env.Ramen.Clusters[1]),
 
 		// TODO: Get the info from the envfile instead of hard-coding.
 		RBDStorageClassName:    "rook-ceph-block",

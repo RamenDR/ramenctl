@@ -37,7 +37,7 @@ func ReadEnvFile(filePath string) (*EnvFile, error) {
 	return &env, nil
 }
 
-func (e *EnvFile) KubeconfigPath(name string) string {
+func (e *EnvFile) MustGetKubeCfgPath(name string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
