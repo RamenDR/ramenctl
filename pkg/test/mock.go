@@ -12,8 +12,8 @@ import (
 type ContextFunc func(types.Context) error
 type TestContextFunc func(types.TestContext) error
 
-// MockBackend implements the e2e.Testing interface. All operations succeed without accessing the clusters. To cause
-// operations to fail, set a function returning an error.
+// MockBackend implements the e2e.Testing interface. All operations succeed without accessing the
+// clusters. To cause operations to fail, set a function returning an error.
 type MockBackend struct {
 	// Operations on types.Context
 	ValidateFunc ContextFunc

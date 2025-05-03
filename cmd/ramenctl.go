@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	// We add the sub commands here so other project can use the same root command with a subset of ramenctl commands.
+	// We add the sub commands here so other project can use the same root command with a subset of
+	// ramenctl commands.
 	commands.RootCmd.AddCommand(
 		commands.InitCmd,
 		commands.TestCmd,

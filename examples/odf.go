@@ -20,8 +20,8 @@ var rootCmd = &cobra.Command{
 	// Not clear why odf is using this flag.
 	TraverseChildren: true,
 
-	// odf uses this to create k8s clients and validate the cluster. For ramenctl this is not relevant since we work on
-	// multiple clusers that may or may not have odf installed.
+	// odf uses this to create k8s clients and validate the cluster. For ramenctl this is not
+	// relevant since we work on multiple clusers that may or may not have odf installed.
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log.Print("odf sub command pre-run")
 	},
@@ -36,8 +36,9 @@ var fooCmd = &cobra.Command{
 }
 
 func init() {
-	// This persistent flag is not relevant to the "odf dr" sub command so it should not be inherited by it. There seems
-	// to be no way to avoid this inheritance now, so it will be need to change in odf.
+	// This persistent flag is not relevant to the "odf dr" sub command so it should not be
+	// inherited by it. There seems to be no way to avoid this inheritance now, so it will be need
+	// to change in odf.
 	rootCmd.PersistentFlags().String("context", "", "kubectl context")
 }
 

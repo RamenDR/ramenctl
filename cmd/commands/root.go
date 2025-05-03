@@ -31,7 +31,8 @@ func init() {
 	RootCmd.SetVersionTemplate("{{.Version}}\n")
 
 	// These flags are used by all sub commands.
-	RootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "config.yaml", "configuration file")
+	RootCmd.PersistentFlags().
+		StringVarP(&configFile, "config", "c", "config.yaml", "configuration file")
 }
 
 func addOutputFlag(c *cobra.Command) {

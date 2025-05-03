@@ -42,7 +42,12 @@ func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.
 	log.Infof("Gathered all clusters in %.2f seconds", time.Since(start).Seconds())
 }
 
-func gatherCluster(cluster *types.Cluster, namespaces []string, outputDir string, log *zap.SugaredLogger) error {
+func gatherCluster(
+	cluster *types.Cluster,
+	namespaces []string,
+	outputDir string,
+	log *zap.SugaredLogger,
+) error {
 	start := time.Now()
 	log.Infof("Gather namespaces from cluster %q", cluster.Name)
 

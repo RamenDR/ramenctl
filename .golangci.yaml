@@ -28,9 +28,13 @@ formatters:
   enable:
     - gofmt
     - goimports
+    - golines
   exclusions:
     generated: lax
     paths:
       - third_party$
       - builtin$
       - examples$
+  settings:
+    golines:
+      shorten-comments: true

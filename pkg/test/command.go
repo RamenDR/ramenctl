@@ -51,7 +51,8 @@ type Command struct {
 	stepStarted time.Time
 }
 
-// flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if the flow failed.
+// flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if
+// the flow failed.
 type flowFunc func(t *Test)
 
 // newCommand return a new test command.
@@ -75,8 +76,8 @@ func newCommand(cmd *command.Command, backend e2e.Testing, options Options) *Com
 	return testCmd
 }
 
-// Run a test flow and return an error if one or more tests failed. When completed you need to call Clean() to remove
-// resources created during the run.
+// Run a test flow and return an error if one or more tests failed. When completed you need to call
+// Clean() to remove resources created during the run.
 func (c *Command) Run() error {
 	if !c.validate() {
 		return c.failed()

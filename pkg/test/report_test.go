@@ -52,7 +52,8 @@ func TestReportEmpty(t *testing.T) {
 		t.Errorf("expected report %+v, got %+v", expectedReport, r.Report)
 	}
 
-	// Otherwise nothing was added so the status and steps should be empty, and summary should be all zero.
+	// Otherwise nothing was added so the status and steps should be empty, and summary should be
+	// all zero.
 	if r.Status != "" {
 		t.Errorf("non-empty status: %q", r.Status)
 	}
