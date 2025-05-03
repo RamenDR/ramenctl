@@ -10,7 +10,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/build"
 )
 
-// Used to provide a custom clock for testing.
+// Now used to provide a custom clock for testing.
 var Now func() time.Time
 
 // Host describes the host ramenctl is running on.
@@ -52,7 +52,7 @@ func New() *Report {
 	return r
 }
 
-// Equal returns true if repoert is qual to other report.
+// Equal returns true if report is equal to other report.
 func (r *Report) Equal(o *Report) bool {
 	if r == o {
 		return true
