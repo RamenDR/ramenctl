@@ -27,7 +27,7 @@ examples:
 	$(GO) build -o examples/odf examples/odf.go
 
 fmt:
-	gofmt -s -w $(shell find . -name '*.go')
+	golangci-lint fmt
 
 lint:
 	golangci-lint run ./...
