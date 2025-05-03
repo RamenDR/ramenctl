@@ -13,13 +13,13 @@ import (
 )
 
 type Ramen struct {
-	Hub      string   `json:"hub" yaml:"hub"`
-	Clusters []string `json:"clusters" yaml:"clusters"`
+	Hub      string   `json:"hub"`
+	Clusters []string `json:"clusters"`
 }
 
 type EnvFile struct {
-	Name  string `json:"name" yaml:"name"`
-	Ramen Ramen  `json:"ramen" yaml:"ramen"`
+	Name  string `json:"name"`
+	Ramen Ramen  `json:"ramen"`
 }
 
 // ReadEnvFile reads and parses an environment file into an EnvFile struct.
