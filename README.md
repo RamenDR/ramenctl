@@ -85,6 +85,10 @@ Visit the docs below to learn about *ramenctl* commands:
 - [init](docs/init.md)
 - [test](docs/test.md)
 
+Check the guides below to learn more:
+
+- [Testing disaster recovery with ramenctl](docs/testing.md)
+
 ## Contributing
 
 - For reporting bugs, suggesting improvements, or requesting new
