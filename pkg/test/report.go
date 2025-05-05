@@ -32,7 +32,7 @@ const (
 type Step struct {
 	Name     string            `json:"name"`
 	Status   Status            `json:"status,omitempty"`
-	Duration float64           `json:"time,omitempty"`
+	Duration float64           `json:"duration,omitempty"`
 	Config   *types.TestConfig `json:"config,omitempty"`
 	Items    []*Step           `json:"items,omitempty"`
 }
@@ -53,7 +53,7 @@ type Report struct {
 	Steps    []*Step       `json:"steps"`
 	Summary  Summary       `json:"summary"`
 	Status   Status        `json:"status,omitempty"`
-	Duration float64       `json:"time,omitempty"`
+	Duration float64       `json:"duration,omitempty"`
 }
 
 func newReport(commandName string, config *types.Config) *Report {
