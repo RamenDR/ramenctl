@@ -5,13 +5,10 @@ package report
 
 import (
 	"runtime"
-	"time"
 
 	"github.com/ramendr/ramenctl/pkg/build"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
-
-// Now used to provide a custom clock for testing.
-var Now func() time.Time
 
 // Host describes the host ramenctl is running on.
 type Host struct {
@@ -41,7 +38,8 @@ func New() *Report {
 			Arch: runtime.GOARCH,
 			Cpus: runtime.NumCPU(),
 		},
-		Created: Now(),
+		// time value without monotonic clock reading
+		Created: time.Now().Local(),
 	}
 	if build.Version != "" || build.Commit != "" {
 		r.Build = &Build{
@@ -75,14 +73,4 @@ func (r *Report) Equal(o *Report) bool {
 		}
 	}
 	return true
-}
-
-// marshalableTime return a time value without monotonic time info. This makes it possible to marshal and unmarshal the
-// time value.
-func marshalableTime() time.Time {
-	return time.Now().Local()
-}
-
-func init() {
-	Now = marshalableTime
 }

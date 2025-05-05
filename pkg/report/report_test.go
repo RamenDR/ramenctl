@@ -7,12 +7,12 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
-	"time"
 
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/build"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 func TestHost(t *testing.T) {
@@ -62,8 +62,8 @@ func TestBuildInfo(t *testing.T) {
 func TestCreatedTime(t *testing.T) {
 	fakeTime(t)
 	r := report.New()
-	if r.Created != report.Now() {
-		t.Fatalf("expected %v, got %v", report.Now(), r.Created)
+	if r.Created != time.Now().Local() {
+		t.Fatalf("expected %v, got %v", time.Now().Local(), r.Created)
 	}
 }
 
@@ -82,14 +82,14 @@ func TestRoundtrip(t *testing.T) {
 	}
 }
 
-var fakeNow = report.Now()
+var fakeNow = time.Now()
 
 func fakeTime(t *testing.T) {
-	savedNow := report.Now
-	report.Now = func() time.Time {
+	savedNow := time.Now
+	time.Now = func() time.Time {
 		return fakeNow
 	}
 	t.Cleanup(func() {
-		report.Now = savedNow
+		time.Now = savedNow
 	})
 }

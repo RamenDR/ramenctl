@@ -5,13 +5,13 @@ package test
 
 import (
 	"testing"
-	"time"
 
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 var config = &types.Config{
@@ -662,14 +662,14 @@ func checkRoundtrip(t *testing.T, r1 *Report) {
 	}
 }
 
-var fakeNow = report.Now()
+var fakeNow = time.Now()
 
 func fakeTime(t *testing.T) {
-	savedNow := report.Now
-	report.Now = func() time.Time {
+	savedNow := time.Now
+	time.Now = func() time.Time {
 		return fakeNow
 	}
 	t.Cleanup(func() {
-		report.Now = savedNow
+		time.Now = savedNow
 	})
 }
