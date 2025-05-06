@@ -9,8 +9,8 @@ on:
     types: [created]
 
 permissions:
-    contents: write
-    packages: write
+  contents: write
+  packages: write
 
 jobs:
   release-matrix:
@@ -26,8 +26,8 @@ jobs:
         - amd64
         - arm64
         exclude:
-          - goarch: arm64
-            goos: windows
+        - goarch: arm64
+          goos: windows
     steps:
     - uses: actions/checkout@v4
     - uses: wangyoucao577/go-release-action@v1
