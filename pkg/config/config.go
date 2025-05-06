@@ -63,5 +63,5 @@ func createFile(name string, content []byte) error {
 	if _, err := f.Write(content); err != nil {
 		return err
 	}
-	return f.Close()
+	return nil
 }
