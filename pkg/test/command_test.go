@@ -115,7 +115,7 @@ var undeployCanceled = MockBackend{
 	},
 }
 
-func TestRun(t *testing.T) {
+func TestRunPassed(t *testing.T) {
 	outputDir := t.TempDir()
 	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
 	if err != nil {
@@ -275,7 +275,7 @@ func TestRunTestsCanceled(t *testing.T) {
 	}
 }
 
-func TestClean(t *testing.T) {
+func TestCleanPassed(t *testing.T) {
 	outputDir := t.TempDir()
 	cmd, err := command.ForTest("test-run", &testConfig, &testEnv, outputDir)
 	if err != nil {
