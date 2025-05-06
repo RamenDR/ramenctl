@@ -12,7 +12,6 @@ var Now func() Time
 
 // Since returns the time elapsed since t. It is shorthand for time.Now().Sub(t).
 func Since(t Time) time.Duration {
-	// return Now().Sub(t)
 	return Now().Sub(t)
 }
 
