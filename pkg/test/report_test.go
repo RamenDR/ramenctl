@@ -4,6 +4,7 @@
 package test
 
 import (
+	"slices"
 	"testing"
 
 	"sigs.k8s.io/yaml"
@@ -648,6 +649,316 @@ func TestReportCleanAllPassed(t *testing.T) {
 	}
 
 	// We can marshal and unmarshal the report
+	checkRoundtrip(t, r)
+}
+
+func TestReportAddPassedStep(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	passedStep := &Step{Name: "passed_step", Status: Passed, Duration: 1.0}
+	r.AddStep(passedStep)
+
+	if !slices.Equal(r.Steps, []*Step{passedStep}) {
+		t.Errorf("expected steps to br equal, got %v", r.Steps)
+	}
+	if r.Status != Passed {
+		t.Errorf("expected status %s, got %s", Passed, r.Status)
+	}
+}
+
+func TestReportAddFailedStep(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	r.Status = Passed
+	failedStep := &Step{Name: "failed_step", Status: Failed, Duration: 1.0}
+	r.AddStep(failedStep)
+
+	if !slices.Equal(r.Steps, []*Step{failedStep}) {
+		t.Errorf("expected steps to be equal, got %v", r.Steps)
+	}
+
+	// Failed status should override existing Passed status
+	if r.Status != Failed {
+		t.Errorf("expected status %s, got %s", Failed, r.Status)
+	}
+}
+
+func TestReportAddCanceledStep(t *testing.T) {
+	fakeTime(t)
+	t.Run("failed initial status", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Failed
+		canceledStep := &Step{Name: "canceled_step", Status: Canceled, Duration: 1.0}
+		r.AddStep(canceledStep)
+
+		if !slices.Equal(r.Steps, []*Step{canceledStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+
+		// Canceled status should override Failed status
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
+	})
+
+	t.Run("canceled initial status", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Canceled
+		failedStep := &Step{Name: "failed_step", Status: Failed, Duration: 1.0}
+		r.AddStep(failedStep)
+
+		if !slices.Equal(r.Steps, []*Step{failedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+
+		// Status should remain Canceled, not overridden by Failed
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
+	})
+}
+
+func TestReportAddSkippedStep(t *testing.T) {
+	fakeTime(t)
+	skippedStep := &Step{Name: "skipped-step", Status: Skipped, Duration: 0.0}
+	t.Run("empty initial status", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.AddStep(skippedStep)
+
+		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+
+		// Skipped step with empty status should result in Passed
+		if r.Status != Passed {
+			t.Errorf("expected status %s, got %s", Passed, r.Status)
+		}
+	})
+
+	t.Run("failed initial status", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Failed
+		r.AddStep(skippedStep)
+
+		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+
+		// Failed status should not be overridden by Skipped
+		if r.Status != Failed {
+			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		}
+	})
+}
+
+func TestReportDuration(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	steps := []*Step{
+		{Name: "step1", Status: Passed, Duration: 1.0},
+		{Name: "step2", Status: Passed, Duration: 1.0},
+		{Name: "step3", Status: Skipped, Duration: 0.0},
+	}
+	for _, step := range steps {
+		r.AddStep(step)
+	}
+
+	// Verify cumulative duration
+	expectedDuration := steps[0].Duration + steps[1].Duration + steps[2].Duration
+	if r.Duration != expectedDuration {
+		t.Errorf("expected duration %f, got %f", expectedDuration, r.Duration)
+	}
+
+	// Add a failing step and verify duration updates
+	failStep := &Step{Name: "step4", Status: Failed, Duration: 1.0}
+	r.AddStep(failStep)
+	expectedDuration += failStep.Duration
+	if r.Duration != expectedDuration {
+		t.Errorf("expected duration %f, got %f", expectedDuration, r.Duration)
+	}
+}
+
+func TestReportAddDuplicateStep(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	step := &Step{Name: "unique-step", Status: Passed, Duration: 1.0}
+	r.AddStep(step)
+
+	// Add another step with the same name
+	duplicateStep := &Step{Name: "unique-step", Status: Failed, Duration: 1.0}
+
+	// AddStep should panic
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("expected panic when adding duplicate step, but it didn't happen")
+		}
+	}()
+	r.AddStep(duplicateStep)
+}
+
+func TestReportSummary(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	testsStep := &Step{
+		Name:     TestsStep,
+		Status:   Passed,
+		Duration: 1.0,
+		Items: []*Step{
+			{Name: "test1", Status: Passed, Duration: 1.0},
+			{Name: "test2", Status: Failed, Duration: 1.0},
+			{Name: "test3", Status: Skipped, Duration: 1.0},
+			{Name: "test4", Status: Canceled, Duration: 1.0},
+		},
+	}
+	r.AddStep(testsStep)
+
+	expectedSummary := Summary{Passed: 1, Failed: 1, Skipped: 1, Canceled: 1}
+	if r.Summary != expectedSummary {
+		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
+	}
+}
+
+func TestReportEqual(t *testing.T) {
+	fakeTime(t)
+	// Helper function to create a standard report
+	createReport := func() *Report {
+		r := newReport("test-command", config)
+		r.Status = Passed
+		r.Duration = 1.0
+		r.Steps = []*Step{
+			{Name: "step1", Status: Passed, Duration: 1.0},
+			{Name: "step2", Status: Passed, Duration: 1.0},
+		}
+		r.Summary = Summary{Passed: 2}
+		return r
+	}
+
+	r1 := createReport()
+
+	// Intentionally comparing report to itself
+	//nolint:gocritic
+	t.Run("equal to self", func(t *testing.T) {
+		if !r1.Equal(r1) {
+			t.Error("report should be equal itself")
+		}
+	})
+
+	t.Run("not equal to nil", func(t *testing.T) {
+		if r1.Equal(nil) {
+			t.Error("report should not be equal nil")
+		}
+	})
+
+	t.Run("equal reports", func(t *testing.T) {
+		equalReport := createReport()
+		if !r1.Equal(equalReport) {
+			t.Error("reports with identical content should be equal")
+		}
+	})
+
+	t.Run("different name", func(t *testing.T) {
+		r2 := createReport()
+		r2.Name = "different-command"
+		if r1.Equal(r2) {
+			t.Error("reports with different names should not be equal")
+		}
+	})
+
+	t.Run("different config reference", func(t *testing.T) {
+		r2 := createReport()
+		if !r1.Equal(r2) {
+			t.Error("reports with equal configs should be equal")
+		}
+	})
+
+	t.Run("different config content", func(t *testing.T) {
+		r2 := createReport()
+		differentConfig := *config
+		differentConfig.DRPolicy = "differentDrPolicy"
+		r2.Config = &differentConfig
+		if r1.Equal(r2) {
+			t.Error("reports with different config content should not be equal")
+		}
+	})
+
+	t.Run("nil config", func(t *testing.T) {
+		r2 := createReport()
+		r2.Config = nil
+		if r1.Equal(r2) || r2.Equal(r1) {
+			t.Error("reports with one nil config should not be equal")
+		}
+	})
+
+	t.Run("different status", func(t *testing.T) {
+		r2 := createReport()
+		r2.Status = Failed
+		if r1.Equal(r2) {
+			t.Error("reports with different status should not be equal")
+		}
+	})
+
+	t.Run("different summary", func(t *testing.T) {
+		r2 := createReport()
+		r2.Summary = Summary{Passed: 1, Failed: 1}
+		if r1.Equal(r2) {
+			t.Error("reports with different summary should not be equal")
+		}
+	})
+
+	t.Run("different duration", func(t *testing.T) {
+		r2 := createReport()
+		r2.Duration = 4.0
+		if r1.Equal(r2) {
+			t.Error("reports with different duration should not be equal")
+		}
+	})
+
+	t.Run("different step length", func(t *testing.T) {
+		r2 := createReport()
+		r2.Steps = []*Step{
+			{Name: "step1", Status: Passed, Duration: 1.0},
+		}
+		if r1.Equal(r2) {
+			t.Error("reports with different step counts should not be equal")
+		}
+	})
+
+	t.Run("different steps content", func(t *testing.T) {
+		r2 := createReport()
+		r2.Steps = []*Step{
+			{Name: "step1", Status: Passed, Duration: 1.0},
+			{Name: "different", Status: Passed, Duration: 2.0},
+		}
+		if r1.Equal(r2) {
+			t.Error("reports with different step content should not be equal")
+		}
+	})
+}
+
+func TestReportMarshaling(t *testing.T) {
+	fakeTime(t)
+	r := newReport("test-command", config)
+	r.Status = Failed
+	r.Duration = 2.0
+	r.Steps = []*Step{
+		{
+			Name:     "step1",
+			Status:   Passed,
+			Duration: 1.0,
+			Items: []*Step{
+				{Name: "subitem1", Status: Passed, Duration: 1.0},
+				{Name: "subitem2", Status: Passed, Duration: 1.0},
+			},
+		},
+		{
+			Name:     "step2",
+			Status:   Failed,
+			Duration: 1.0,
+		},
+	}
+	r.Summary = Summary{Passed: 2, Failed: 1}
+
+	// Test roundtrip marshaling/unmarshaling
 	checkRoundtrip(t, r)
 }
 
