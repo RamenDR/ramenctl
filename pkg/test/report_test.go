@@ -648,6 +648,51 @@ func TestReportCleanAllPassed(t *testing.T) {
 	checkRoundtrip(t, r)
 }
 
+func TestSummaryString(t *testing.T) {
+	summary := Summary{Passed: 5, Failed: 2, Skipped: 3, Canceled: 1}
+
+	expectedString := "5 passed, 2 failed, 3 skipped, 1 canceled"
+	if summary.String() != expectedString {
+		t.Errorf("expected summary string %s, got %s", expectedString, summary.String())
+	}
+}
+
+func TestSummaryMarshal(t *testing.T) {
+	summary := Summary{Passed: 4, Failed: 3, Skipped: 2, Canceled: 1}
+
+	bytes, err := yaml.Marshal(summary)
+	if err != nil {
+		t.Fatalf("failed to marshal summary: %v", err)
+	}
+
+	var unmarshaledSummary Summary
+	err = yaml.Unmarshal(bytes, &unmarshaledSummary)
+	if err != nil {
+		t.Fatalf("failed to unmarshal summary: %v", err)
+	}
+	if unmarshaledSummary != summary {
+		t.Errorf("unmarshaled summary %+v does not match original summary %+v",
+			unmarshaledSummary, summary)
+	}
+}
+
+func TestSummaryCount(t *testing.T) {
+	summary := Summary{}
+
+	// Add multiple tests of different status
+	summary.AddTest(&Step{Status: Passed})
+	summary.AddTest(&Step{Status: Passed})
+	summary.AddTest(&Step{Status: Failed})
+	summary.AddTest(&Step{Status: Skipped})
+	summary.AddTest(&Step{Status: Canceled})
+	summary.AddTest(&Step{Status: Passed})
+
+	expectedSummary := Summary{Passed: 3, Failed: 1, Skipped: 1, Canceled: 1}
+	if summary != expectedSummary {
+		t.Errorf("expected summary %+v, got %+v", expectedSummary, summary)
+	}
+}
+
 func checkRoundtrip(t *testing.T, r1 *Report) {
 	// We must be able to marshal and unmarshal the report
 	b, err := yaml.Marshal(r1)
