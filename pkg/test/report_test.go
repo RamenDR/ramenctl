@@ -15,7 +15,7 @@ import (
 )
 
 var config = &types.Config{
-	Distro:     "ocp",
+	Distro:     "k8s",
 	Repo:       types.RepoConfig{URL: "https://github.com/org/repo", Branch: "main"},
 	DRPolicy:   "dr-policy",
 	ClusterSet: "clusterset",
@@ -25,18 +25,21 @@ var config = &types.Config{
 		"c2":  {Kubeconfig: "c2-kubeconfig"},
 	},
 	PVCSpecs: []types.PVCSpecConfig{
-		{Name: "pvc-a", StorageClassName: "standard", AccessModes: "ReadWriteOnce"},
+		{Name: "rbd", StorageClassName: "rook-ceph-block", AccessModes: "ReadWriteOnce"},
+		{Name: "cephfs", StorageClassName: "rook-cephfs-fs", AccessModes: "ReadWriteMany"},
 	},
 	Tests: []types.TestConfig{
-		{Workload: "wl1", Deployer: "ocm-hub", PVCSpec: "pvc-a"},
+		{Workload: "appset", Deployer: "deploy", PVCSpec: "rbd"},
+		{Workload: "subscr", Deployer: "deploy", PVCSpec: "rbd"},
+		{Workload: "disapp", Deployer: "deploy", PVCSpec: "cephfs"},
 	},
 	Channel: types.ChannelConfig{
 		Name:      "my-channel",
-		Namespace: "ramen-system",
+		Namespace: "test-gitops",
 	},
 	Namespaces: types.NamespacesConfig{
-		RamenHubNamespace:       "ramen-hub",
-		RamenDRClusterNamespace: "ramen-dr-cluster",
+		RamenHubNamespace:       "ramen-system",
+		RamenDRClusterNamespace: "ramen-system",
 		RamenOpsNamespace:       "ramen-ops",
 		ArgocdNamespace:         "argocd",
 	},
