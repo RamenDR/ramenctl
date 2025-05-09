@@ -80,7 +80,11 @@ func (r *Report) AddStep(step *Step) {
 		if r.Status == "" {
 			r.Status = Passed
 		}
-	case Failed, Canceled:
+	case Failed:
+		if r.Status != Canceled {
+			r.Status = step.Status
+		}
+	case Canceled:
 		r.Status = step.Status
 	}
 
@@ -154,7 +158,11 @@ func (s *Step) AddTest(t *Test) {
 		if s.Status == "" {
 			s.Status = Passed
 		}
-	case Failed, Canceled:
+	case Failed:
+		if s.Status != Canceled {
+			s.Status = t.Status
+		}
+	case Canceled:
 		s.Status = t.Status
 	}
 }
