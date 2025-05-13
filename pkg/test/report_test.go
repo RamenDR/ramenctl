@@ -74,16 +74,19 @@ func TestReportEmpty(t *testing.T) {
 
 func TestReportAddPassedStep(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-command", config)
 	passedStep := &Step{Name: "passed_step", Status: Passed, Duration: 1.0}
-	r.AddStep(passedStep)
 
-	if !slices.Equal(r.Steps, []*Step{passedStep}) {
-		t.Errorf("expected steps to br equal, got %v", r.Steps)
-	}
-	if r.Status != Passed {
-		t.Errorf("expected status %s, got %s", Passed, r.Status)
-	}
+	// Adding a passed test should set the report status.
+	t.Run("empty", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.AddStep(passedStep)
+		if r.Status != Passed {
+			t.Errorf("expected status %s, got %s", Passed, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{passedStep}) {
+			t.Errorf("expected steps to br equal, got %v", r.Steps)
+		}
+	})
 }
 
 func TestReportAddFailedStep(t *testing.T) {
