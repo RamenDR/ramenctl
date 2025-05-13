@@ -229,25 +229,21 @@ func TestReportDuration(t *testing.T) {
 }
 
 func TestReportAddDuplicateStep(t *testing.T) {
-	fakeTime(t)
 	r := newReport("test-command", config)
 	step := &Step{Name: "unique-step", Status: Passed, Duration: 1.0}
 	r.AddStep(step)
 
-	// Add another step with the same name
-	duplicateStep := &Step{Name: "unique-step", Status: Failed, Duration: 1.0}
-
-	// AddStep should panic
+	// Adding another step with the same name should panic.
+	dup := &Step{Name: "unique-step", Status: Failed, Duration: 1.0}
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("expected panic when adding duplicate step, but it didn't happen")
 		}
 	}()
-	r.AddStep(duplicateStep)
+	r.AddStep(dup)
 }
 
 func TestReportSummary(t *testing.T) {
-	fakeTime(t)
 	r := newReport("test-command", config)
 	testsStep := &Step{
 		Name:     TestsStep,
