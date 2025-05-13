@@ -162,6 +162,19 @@ func TestReportAddCanceledStep(t *testing.T) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
 	})
+
+	// Adding canceled step mark the report as cancled.
+	t.Run("passed", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Passed
+		r.AddStep(canceledStep)
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{canceledStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+	})
 }
 
 func TestReportAddSkippedStep(t *testing.T) {
