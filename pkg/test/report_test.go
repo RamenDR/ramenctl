@@ -423,12 +423,14 @@ func TestStepAddPassedTest(t *testing.T) {
 			{Name: "undeploy", Status: Passed, Duration: 1.0},
 		},
 	}
-	t.Run("empty initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root"}
-		rootStep.AddTest(passedTest)
-		expectedStep := &Step{
-			Name:   rootStep.Name,
-			Status: passedTest.Status,
+
+	// Adding passed step should set step status.
+	t.Run("empty", func(t *testing.T) {
+		s1 := &Step{Name: "root"}
+		s1.AddTest(passedTest)
+		s2 := &Step{
+			Name:   s1.Name,
+			Status: Passed,
 			Items: []*Step{
 				{
 					Name:     passedTest.Name(),
@@ -439,17 +441,17 @@ func TestStepAddPassedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("failed initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Failed}
-		rootStep.AddTest(passedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Failed status should not be changed
+	// If a report is failed adding new step should not change the status.
+	t.Run("failed", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Failed}
+		s1.AddTest(passedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Failed,
 			Items: []*Step{
 				{
@@ -461,17 +463,17 @@ func TestStepAddPassedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("canceled initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Canceled}
-		rootStep.AddTest(passedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Canceled status should not be changed
+	// If a report is failed adding new step should not change the status.
+	t.Run("canceled", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Canceled}
+		s1.AddTest(passedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Canceled,
 			Items: []*Step{
 				{
@@ -483,8 +485,8 @@ func TestStepAddPassedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 }
@@ -499,12 +501,13 @@ func TestStepAddFailedTest(t *testing.T) {
 			{Name: "undeploy", Status: Failed, Duration: 1.0},
 		},
 	}
-	t.Run("empty initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root"}
-		rootStep.AddTest(failedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Status should be Failed
+
+	// Addding failed test should set report status.
+	t.Run("empty", func(t *testing.T) {
+		s1 := &Step{Name: "root"}
+		s1.AddTest(failedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Failed,
 			Items: []*Step{
 				{
@@ -516,16 +519,17 @@ func TestStepAddFailedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("passed initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Passed}
-		rootStep.AddTest(failedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
+	// Adding failed tests shuuld change report status.
+	t.Run("passed", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Passed}
+		s1.AddTest(failedTest)
+		s2 := &Step{
+			Name: s1.Name,
 			// Passed status should be changed to Failed
 			Status: Failed,
 			Items: []*Step{
@@ -538,17 +542,17 @@ func TestStepAddFailedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("canceled initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Canceled}
-		rootStep.AddTest(failedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Canceled status should not be changed
+	// Adding failed step should not change canceled report.
+	t.Run("canceled", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Canceled}
+		s1.AddTest(failedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Canceled,
 			Items: []*Step{
 				{
@@ -560,28 +564,29 @@ func TestStepAddFailedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 }
 
 func TestStepAddCanceledTest(t *testing.T) {
-	t.Run("failed initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Failed}
-		canceledTest := &Test{
-			TestContext: &Context{name: "canceled_test"},
-			Status:      Canceled,
-			Duration:    1.0,
-			Steps: []*Step{
-				{Name: "deploy", Status: Canceled, Duration: 1.0},
-			},
-		}
-		rootStep.AddTest(canceledTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Failed status should be overridden with Canceled
-			Status: canceledTest.Status,
+	canceledTest := &Test{
+		TestContext: &Context{name: "canceled_test"},
+		Status:      Canceled,
+		Duration:    1.0,
+		Steps: []*Step{
+			{Name: "deploy", Status: Canceled, Duration: 1.0},
+		},
+	}
+
+	// Adding canceled test should override failed status.
+	t.Run("failed", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Failed}
+		s1.AddTest(canceledTest)
+		s2 := &Step{
+			Name:   s1.Name,
+			Status: Canceled,
 			Items: []*Step{
 				{
 					Name:     canceledTest.Name(),
@@ -591,37 +596,29 @@ func TestStepAddCanceledTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("canceled initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Canceled}
-		failedTest := &Test{
-			TestContext: &Context{name: "failed_test"},
-			Status:      Failed,
-			Duration:    1.0,
-			Steps: []*Step{
-				{Name: "deploy", Status: Failed, Duration: 1.0},
-			},
-		}
-		rootStep.AddTest(failedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Status should still be Canceled, not overridden by Failed
+	// Adding canceled test should override passed status.
+	t.Run("passed", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Passed}
+		s1.AddTest(canceledTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Canceled,
 			Items: []*Step{
 				{
-					Name:     failedTest.Name(),
-					Status:   failedTest.Status,
-					Duration: failedTest.Duration,
-					Items:    failedTest.Steps,
+					Name:     canceledTest.Name(),
+					Status:   canceledTest.Status,
+					Duration: canceledTest.Duration,
+					Items:    canceledTest.Steps,
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 }
@@ -632,12 +629,13 @@ func TestStepAddSkippedTest(t *testing.T) {
 		Status:      Skipped,
 		Duration:    0.0,
 	}
-	t.Run("empty initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root"}
-		rootStep.AddTest(skippedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Skipped tests get Passed status when parent has no status
+
+	// Adding skipped test should set status to passed.
+	t.Run("empty", func(t *testing.T) {
+		s1 := &Step{Name: "root"}
+		s1.AddTest(skippedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Passed,
 			Items: []*Step{
 				{
@@ -647,17 +645,17 @@ func TestStepAddSkippedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 
-	t.Run("failed initial status", func(t *testing.T) {
-		rootStep := &Step{Name: "root", Status: Failed}
-		rootStep.AddTest(skippedTest)
-		expectedStep := &Step{
-			Name: rootStep.Name,
-			// Failed status should not change
+	// Adding skipped test should not modify failed status.
+	t.Run("failed", func(t *testing.T) {
+		s1 := &Step{Name: "root", Status: Failed}
+		s1.AddTest(skippedTest)
+		s2 := &Step{
+			Name:   s1.Name,
 			Status: Failed,
 			Items: []*Step{
 				{
@@ -667,8 +665,8 @@ func TestStepAddSkippedTest(t *testing.T) {
 				},
 			},
 		}
-		if !rootStep.Equal(expectedStep) {
-			t.Errorf("rootStep %+v doesn't match expectedStep %+v", rootStep, expectedStep)
+		if !s1.Equal(s2) {
+			t.Errorf("rootStep %+v doesn't match expectedStep %+v", s1, s2)
 		}
 	})
 }
@@ -699,105 +697,105 @@ func TestStepMarshal(t *testing.T) {
 }
 
 func TestStepEqual(t *testing.T) {
-	baseStep := Step{Name: "base_test", Status: Passed, Duration: 1.0, Config: &config.Tests[0]}
+	s1 := Step{Name: "base_test", Status: Passed, Duration: 1.0, Config: &config.Tests[0]}
 
 	t.Run("equal to self", func(t *testing.T) {
-		if !baseStep.Equal(&baseStep) {
+		if !s1.Equal(&s1) {
 			t.Fatalf("step should be equal to itself")
 		}
 	})
 
 	t.Run("not equal to nil", func(t *testing.T) {
-		if baseStep.Equal(nil) {
+		if s1.Equal(nil) {
 			t.Fatalf("step should not be equal to nil")
 		}
 	})
 
 	t.Run("different name", func(t *testing.T) {
-		differentStep := baseStep
-		differentStep.Name = "new_test"
-		if baseStep.Equal(&differentStep) {
+		s2 := s1
+		s2.Name = "new_test"
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different names should not be equal")
 		}
 	})
 
 	t.Run("different status", func(t *testing.T) {
-		differentStep := baseStep
-		differentStep.Status = Failed
-		if baseStep.Equal(&differentStep) {
+		s2 := s1
+		s2.Status = Failed
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different status should not be equal")
 		}
 	})
 
 	t.Run("different duration", func(t *testing.T) {
-		differentStep := baseStep
-		differentStep.Duration = 2.0
-		if baseStep.Equal(&differentStep) {
+		s2 := s1
+		s2.Duration = 2.0
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different duration should not be equal")
 		}
 	})
 
 	t.Run("different config", func(t *testing.T) {
-		differentStep := baseStep
-		differentStep.Config = &config.Tests[1]
-		if baseStep.Equal(&differentStep) {
+		s2 := s1
+		s2.Config = &config.Tests[1]
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different config should not be equal")
 		}
 	})
 
 	t.Run("one nil config", func(t *testing.T) {
-		differentStep := baseStep
-		differentStep.Config = nil
-		if baseStep.Equal(&differentStep) {
+		s2 := s1
+		s2.Config = nil
+		if s1.Equal(&s2) {
 			t.Fatalf("step with config should not be equal to step without config")
 		}
 	})
 
 	t.Run("both nil config", func(t *testing.T) {
-		stepA := Step{Name: "test", Status: Passed, Duration: 1.0, Config: nil}
-		stepB := stepA
-		if !stepA.Equal(&stepB) {
+		s1 := Step{Name: "test", Status: Passed, Duration: 1.0, Config: nil}
+		s2 := s1
+		if !s1.Equal(&s2) {
 			t.Fatalf("steps with nil config should be equal")
 		}
 	})
 
 	t.Run("equal subitems", func(t *testing.T) {
-		stepA := Step{
+		s1 := Step{
 			Name:     "parent",
 			Status:   Passed,
 			Duration: 1.0,
 			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
 		}
-		stepB := stepA
-		if !stepA.Equal(&stepB) {
+		s2 := s1
+		if !s1.Equal(&s2) {
 			t.Fatalf("steps with equal subitems should be equal")
 		}
 	})
 
 	t.Run("different subitem name", func(t *testing.T) {
-		stepA := Step{
+		s1 := Step{
 			Name:     "parent",
 			Status:   Passed,
 			Duration: 1.0,
 			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
 		}
-		stepB := stepA
-		stepB.Items = []*Step{{Name: "child1", Status: Passed}, {Name: "different", Status: Failed}}
-		if stepA.Equal(&stepB) {
+		s2 := s1
+		s2.Items = []*Step{{Name: "child1", Status: Passed}, {Name: "different", Status: Failed}}
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different subitem names should not be equal")
 		}
 	})
 
 	t.Run("different number of subitems", func(t *testing.T) {
-		stepA := Step{
+		s1 := Step{
 			Name:     "parent",
 			Status:   Passed,
 			Duration: 1.0,
 			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
 		}
-		stepB := stepA
-		stepB.Items = []*Step{{Name: "child1", Status: Passed}}
-		if stepA.Equal(&stepB) {
+		s2 := s1
+		s2.Items = []*Step{{Name: "child1", Status: Passed}}
+		if s1.Equal(&s2) {
 			t.Fatalf("steps with different number of subitems should not be equal")
 		}
 	})
@@ -805,7 +803,6 @@ func TestStepEqual(t *testing.T) {
 
 func TestSummaryString(t *testing.T) {
 	summary := Summary{Passed: 5, Failed: 2, Skipped: 3, Canceled: 1}
-
 	expectedString := "5 passed, 2 failed, 3 skipped, 1 canceled"
 	if summary.String() != expectedString {
 		t.Errorf("expected summary string %s, got %s", expectedString, summary.String())
