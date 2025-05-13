@@ -87,6 +87,32 @@ func TestReportAddPassedStep(t *testing.T) {
 			t.Errorf("expected steps to br equal, got %v", r.Steps)
 		}
 	})
+
+	// Adding a passed test should not modify failed status.
+	t.Run("failed", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Failed
+		r.AddStep(passedStep)
+		if r.Status != Failed {
+			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{passedStep}) {
+			t.Errorf("expected steps to br equal, got %v", r.Steps)
+		}
+	})
+
+	// Adding a passed test should not modify canceled status.
+	t.Run("failed", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Canceled
+		r.AddStep(passedStep)
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{passedStep}) {
+			t.Errorf("expected steps to br equal, got %v", r.Steps)
+		}
+	})
 }
 
 func TestReportAddFailedStep(t *testing.T) {
