@@ -320,7 +320,7 @@ func TestReportEqual(t *testing.T) {
 	t.Run("different config content", func(t *testing.T) {
 		r2 := createReport()
 		differentConfig := *config
-		differentConfig.DRPolicy = "differentDrPolicy"
+		differentConfig.DRPolicy = "different-dr-policy"
 		r2.Config = &differentConfig
 		if r1.Equal(r2) {
 			t.Error("reports with different config content should not be equal")
