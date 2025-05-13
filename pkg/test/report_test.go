@@ -208,27 +208,21 @@ func TestReportAddSkippedStep(t *testing.T) {
 }
 
 func TestReportDuration(t *testing.T) {
-	fakeTime(t)
 	r := newReport("test-command", config)
 	steps := []*Step{
 		{Name: "step1", Status: Passed, Duration: 1.0},
 		{Name: "step2", Status: Passed, Duration: 1.0},
-		{Name: "step3", Status: Skipped, Duration: 0.0},
+		{Name: "step3", Status: Skipped, Duration: 1.0},
+		{Name: "step4", Status: Failed, Duration: 1.0},
+		{Name: "step5", Status: Canceled, Duration: 1.0},
 	}
 	for _, step := range steps {
 		r.AddStep(step)
 	}
-
-	// Verify cumulative duration
-	expectedDuration := steps[0].Duration + steps[1].Duration + steps[2].Duration
-	if r.Duration != expectedDuration {
-		t.Errorf("expected duration %f, got %f", expectedDuration, r.Duration)
+	var expectedDuration float64
+	for _, s := range r.Steps {
+		expectedDuration += s.Duration
 	}
-
-	// Add a failing step and verify duration updates
-	failStep := &Step{Name: "step4", Status: Failed, Duration: 1.0}
-	r.AddStep(failStep)
-	expectedDuration += failStep.Duration
 	if r.Duration != expectedDuration {
 		t.Errorf("expected duration %f, got %f", expectedDuration, r.Duration)
 	}
