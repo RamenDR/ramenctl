@@ -117,52 +117,49 @@ func TestReportAddPassedStep(t *testing.T) {
 
 func TestReportAddFailedStep(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-command", config)
-	r.Status = Passed
 	failedStep := &Step{Name: "failed_step", Status: Failed, Duration: 1.0}
-	r.AddStep(failedStep)
 
-	if !slices.Equal(r.Steps, []*Step{failedStep}) {
-		t.Errorf("expected steps to be equal, got %v", r.Steps)
-	}
+	// Failed status should override existing Passed status.
+	t.Run("passed", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Passed
+		r.AddStep(failedStep)
+		if r.Status != Failed {
+			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{failedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+	})
 
-	// Failed status should override existing Passed status
-	if r.Status != Failed {
-		t.Errorf("expected status %s, got %s", Failed, r.Status)
-	}
+	// If a report is canceled, adding a failed test should not change the status.
+	t.Run("canceled", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Canceled
+		r.AddStep(failedStep)
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{failedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+	})
 }
 
 func TestReportAddCanceledStep(t *testing.T) {
 	fakeTime(t)
-	t.Run("failed initial status", func(t *testing.T) {
+	canceledStep := &Step{Name: "canceled_step", Status: Canceled, Duration: 1.0}
+
+	// Adding canceled step mark the report as cancled.
+	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", config)
 		r.Status = Failed
-		canceledStep := &Step{Name: "canceled_step", Status: Canceled, Duration: 1.0}
 		r.AddStep(canceledStep)
-
+		if r.Status != Canceled {
+			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		}
 		if !slices.Equal(r.Steps, []*Step{canceledStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
-		}
-
-		// Canceled status should override Failed status
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
-		}
-	})
-
-	t.Run("canceled initial status", func(t *testing.T) {
-		r := newReport("test-command", config)
-		r.Status = Canceled
-		failedStep := &Step{Name: "failed_step", Status: Failed, Duration: 1.0}
-		r.AddStep(failedStep)
-
-		if !slices.Equal(r.Steps, []*Step{failedStep}) {
-			t.Errorf("expected steps to be equal, got %v", r.Steps)
-		}
-
-		// Status should remain Canceled, not overridden by Failed
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
 		}
 	})
 }
