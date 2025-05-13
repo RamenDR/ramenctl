@@ -180,32 +180,29 @@ func TestReportAddCanceledStep(t *testing.T) {
 func TestReportAddSkippedStep(t *testing.T) {
 	fakeTime(t)
 	skippedStep := &Step{Name: "skipped-step", Status: Skipped, Duration: 0.0}
-	t.Run("empty initial status", func(t *testing.T) {
+
+	// Skipped step with empty status should result in Passed.
+	t.Run("empty", func(t *testing.T) {
 		r := newReport("test-command", config)
 		r.AddStep(skippedStep)
-
-		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
-			t.Errorf("expected steps to be equal, got %v", r.Steps)
-		}
-
-		// Skipped step with empty status should result in Passed
 		if r.Status != Passed {
 			t.Errorf("expected status %s, got %s", Passed, r.Status)
 		}
-	})
-
-	t.Run("failed initial status", func(t *testing.T) {
-		r := newReport("test-command", config)
-		r.Status = Failed
-		r.AddStep(skippedStep)
-
 		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
+	})
 
-		// Failed status should not be overridden by Skipped
+	// Failed status should not be overridden by Skipped.
+	t.Run("failed", func(t *testing.T) {
+		r := newReport("test-command", config)
+		r.Status = Failed
+		r.AddStep(skippedStep)
 		if r.Status != Failed {
 			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		}
+		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
 	})
 }
