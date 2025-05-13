@@ -310,7 +310,7 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("different config reference", func(t *testing.T) {
+	t.Run("same config reference", func(t *testing.T) {
 		r2 := createReport()
 		if !r1.Equal(r2) {
 			t.Error("reports with equal configs should be equal")
