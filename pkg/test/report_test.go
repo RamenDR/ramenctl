@@ -296,8 +296,8 @@ func TestReportEqual(t *testing.T) {
 	})
 
 	t.Run("equal reports", func(t *testing.T) {
-		equalReport := createReport()
-		if !r1.Equal(equalReport) {
+		r2 := createReport()
+		if !r1.Equal(r2) {
 			t.Error("reports with identical content should be equal")
 		}
 	})
