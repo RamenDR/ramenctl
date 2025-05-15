@@ -38,5 +38,8 @@ test:
 coverage:
 	$(GO) tool cover -html=cover.out
 
+spell:
+	git ls-files | xargs codespell
+
 clean:
 	rm -f ramenctl examples/odf
