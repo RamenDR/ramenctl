@@ -10,6 +10,7 @@ import (
 
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/types"
+	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/workloads"
 	"golang.org/x/sync/errgroup"
 
@@ -56,7 +57,9 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 func (t *Test) Deploy() bool {
 	t.startStep("deploy")
-	if err := t.Backend.Deploy(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Deploy(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q deployed", t.Name())
@@ -65,7 +68,9 @@ func (t *Test) Deploy() bool {
 
 func (t *Test) Undeploy() bool {
 	t.startStep("undeploy")
-	if err := t.Backend.Undeploy(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Undeploy(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q undeployed", t.Name())
@@ -74,7 +79,9 @@ func (t *Test) Undeploy() bool {
 
 func (t *Test) Protect() bool {
 	t.startStep("protect")
-	if err := t.Backend.Protect(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Protect(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q protected", t.Name())
@@ -83,7 +90,9 @@ func (t *Test) Protect() bool {
 
 func (t *Test) Unprotect() bool {
 	t.startStep("unprotect")
-	if err := t.Backend.Unprotect(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Unprotect(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q unprotected", t.Name())
@@ -92,7 +101,9 @@ func (t *Test) Unprotect() bool {
 
 func (t *Test) Failover() bool {
 	t.startStep("failover")
-	if err := t.Backend.Failover(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Failover(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q failed over", t.Name())
@@ -101,7 +112,9 @@ func (t *Test) Failover() bool {
 
 func (t *Test) Relocate() bool {
 	t.startStep("relocate")
-	if err := t.Backend.Relocate(t.Context); err != nil {
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
+	if err := t.Backend.Relocate(timedCtx); err != nil {
 		return t.failStep(err)
 	}
 	console.Pass("Application %q relocated", t.Name())
@@ -110,16 +123,18 @@ func (t *Test) Relocate() bool {
 
 func (t *Test) Cleanup() bool {
 	var g errgroup.Group
+	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	defer cancel()
 
 	t.startStep("cleanup")
 	g.Go(func() error {
-		if err := t.Backend.Unprotect(t.Context); err != nil {
+		if err := t.Backend.Unprotect(timedCtx); err != nil {
 			return err
 		}
 		return nil
 	})
 	g.Go(func() error {
-		if err := t.Backend.Undeploy(t.Context); err != nil {
+		if err := t.Backend.Undeploy(timedCtx); err != nil {
 			return err
 		}
 		return nil
@@ -127,6 +142,7 @@ func (t *Test) Cleanup() bool {
 	if err := g.Wait(); err != nil {
 		return t.failStep(err)
 	}
+
 	console.Pass("Application %q cleaned up", t.Name())
 	return t.passStep()
 }
