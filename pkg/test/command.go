@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	stdtime "time"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
@@ -110,7 +111,9 @@ func (c *Command) Clean() error {
 func (c *Command) validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
-	if err := c.Backend.Validate(c); err != nil {
+	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
+	defer cancel()
+	if err := c.Backend.Validate(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Config validated")
@@ -120,7 +123,9 @@ func (c *Command) validate() bool {
 func (c *Command) setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
-	if err := c.Backend.Setup(c); err != nil {
+	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
+	defer cancel()
+	if err := c.Backend.Setup(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment setup")
@@ -130,7 +135,9 @@ func (c *Command) setup() bool {
 func (c *Command) cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
-	if err := c.Backend.Cleanup(c); err != nil {
+	timedCmd, cancel := c.WithTimeout(1 * stdtime.Minute)
+	defer cancel()
+	if err := c.Backend.Cleanup(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment cleaned")
