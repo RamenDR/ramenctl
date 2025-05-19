@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	stdtime "time"
 
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
@@ -133,6 +134,14 @@ func (c *Command) Env() *types.Env {
 
 func (c *Command) Context() context.Context {
 	return c.context
+}
+
+// WithTimeout returns a derived command with a deadline. Call cancel to release resources
+// associated with the context as soon as the operation running in the context complete.
+func (c Command) WithTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(c.context, d)
+	c.context = ctx
+	return &c, cancel
 }
 
 // Close log and stop handling signals and mark the command context as done. Calling while a command
