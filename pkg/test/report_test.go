@@ -410,10 +410,10 @@ func TestReportMarshaling(t *testing.T) {
 
 func TestStepAddPassedTest(t *testing.T) {
 	passedTest := &Test{
-		TestContext: &Context{name: "passing_test"},
-		Status:      Passed,
-		Config:      &config.Tests[0],
-		Duration:    6.0,
+		Context:  &Context{name: "passing_test"},
+		Status:   Passed,
+		Config:   &config.Tests[0],
+		Duration: 6.0,
 		Steps: []*Step{
 			{Name: "deploy", Status: Passed, Duration: 1.0},
 			{Name: "protect", Status: Passed, Duration: 1.0},
@@ -493,10 +493,10 @@ func TestStepAddPassedTest(t *testing.T) {
 
 func TestStepAddFailedTest(t *testing.T) {
 	failedTest := &Test{
-		TestContext: &Context{name: "failing_test"},
-		Status:      Failed,
-		Config:      &config.Tests[0],
-		Duration:    1.0,
+		Context:  &Context{name: "failing_test"},
+		Status:   Failed,
+		Config:   &config.Tests[0],
+		Duration: 1.0,
 		Steps: []*Step{
 			{Name: "undeploy", Status: Failed, Duration: 1.0},
 		},
@@ -572,9 +572,9 @@ func TestStepAddFailedTest(t *testing.T) {
 
 func TestStepAddCanceledTest(t *testing.T) {
 	canceledTest := &Test{
-		TestContext: &Context{name: "canceled_test"},
-		Status:      Canceled,
-		Duration:    1.0,
+		Context:  &Context{name: "canceled_test"},
+		Status:   Canceled,
+		Duration: 1.0,
 		Steps: []*Step{
 			{Name: "deploy", Status: Canceled, Duration: 1.0},
 		},
@@ -625,9 +625,9 @@ func TestStepAddCanceledTest(t *testing.T) {
 
 func TestStepAddSkippedTest(t *testing.T) {
 	skippedTest := &Test{
-		TestContext: &Context{name: "skipped_test"},
-		Status:      Skipped,
-		Duration:    0.0,
+		Context:  &Context{name: "skipped_test"},
+		Status:   Skipped,
+		Duration: 0.0,
 	}
 
 	// Adding skipped test should set status to passed.
