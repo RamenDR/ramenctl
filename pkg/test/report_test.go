@@ -150,7 +150,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 	fakeTime(t)
 	canceledStep := &Step{Name: "canceled_step", Status: Canceled, Duration: 1.0}
 
-	// Adding canceled step mark the report as cancled.
+	// Adding canceled step mark the report as canceled.
 	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", config)
 		r.Status = Failed
@@ -163,7 +163,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 		}
 	})
 
-	// Adding canceled step mark the report as cancled.
+	// Adding canceled step mark the report as canceled.
 	t.Run("passed", func(t *testing.T) {
 		r := newReport("test-command", config)
 		r.Status = Passed
@@ -502,7 +502,7 @@ func TestStepAddFailedTest(t *testing.T) {
 		},
 	}
 
-	// Addding failed test should set report status.
+	// Adding failed test should set report status.
 	t.Run("empty", func(t *testing.T) {
 		s1 := &Step{Name: "root"}
 		s1.AddTest(failedTest)

@@ -366,7 +366,7 @@ ramenctl-test
 
 #### The clean flow
 
-When runnning the clean command *ramenctl* deletes all the tests applications
+When running the clean command *ramenctl* deletes all the tests applications
 specified in the configuration file and cleans up the clusters.
 
 For every test specified in the configuration file perform the following steps:
