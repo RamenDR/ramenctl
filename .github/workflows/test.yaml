@@ -11,6 +11,19 @@ on:
       - main
 
 jobs:
+  spell:
+    name: Spell Check
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Run codespell
+        uses: codespell-project/actions-codespell@v2
+        with:
+          skip: go.sum
+
   lint:
     name: Lint
     permissions:

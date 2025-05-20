@@ -29,6 +29,9 @@ examples:
 fmt:
 	golangci-lint fmt
 
+spell:
+	codespell --skip="go.sum"
+
 lint:
 	golangci-lint run ./...
 
