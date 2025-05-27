@@ -32,6 +32,9 @@ fmt:
 spell:
 	codespell --skip="go.sum"
 
+spell-fix:
+	codespell --skip="go.sum" --write-changes
+
 lint:
 	golangci-lint run ./...
 
