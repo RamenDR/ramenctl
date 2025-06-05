@@ -7,12 +7,14 @@ go 1.23.5
 toolchain go1.23.8
 
 require (
+	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.7.0
 	github.com/ramendr/ramen/e2e v0.0.0-20250527195156-9b873833c437
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.13.0
 	k8s.io/client-go v0.31.1
+	k8s.io/klog/v2 v2.130.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -76,7 +78,6 @@ require (
 	k8s.io/apimachinery v0.31.1 // indirect
 	k8s.io/cli-runtime v0.31.1 // indirect
 	k8s.io/component-base v0.31.1 // indirect
-	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240816214639-573285566f34 // indirect
 	k8s.io/kubectl v0.31.1 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
