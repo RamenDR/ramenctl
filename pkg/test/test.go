@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/deployers"
-	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/workloads"
 	"golang.org/x/sync/errgroup"
@@ -24,14 +24,14 @@ type Test struct {
 	*Context
 	Backend     e2e.Testing
 	Status      Status
-	Config      *types.TestConfig
+	Config      *e2econfig.Test
 	Steps       []*Step
 	Duration    float64
 	stepStarted time.Time
 }
 
 // newTest creates a test from test configuration and command context.
-func newTest(tc types.TestConfig, cmd *Command) *Test {
+func newTest(tc e2econfig.Test, cmd *Command) *Test {
 	pvcSpec, ok := cmd.PVCSpecs[tc.PVCSpec]
 	if !ok {
 		panic(fmt.Sprintf("unknown pvcSpec %q", tc.PVCSpec))

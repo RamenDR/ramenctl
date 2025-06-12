@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/ramendr/ramen/e2e/types"
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 
 	"github.com/ramendr/ramenctl/pkg/report"
 )
@@ -30,11 +30,11 @@ const (
 
 // A step is a test command step.
 type Step struct {
-	Name     string            `json:"name"`
-	Status   Status            `json:"status,omitempty"`
-	Duration float64           `json:"duration,omitempty"`
-	Config   *types.TestConfig `json:"config,omitempty"`
-	Items    []*Step           `json:"items,omitempty"`
+	Name     string          `json:"name"`
+	Status   Status          `json:"status,omitempty"`
+	Duration float64         `json:"duration,omitempty"`
+	Config   *e2econfig.Test `json:"config,omitempty"`
+	Items    []*Step         `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -48,15 +48,15 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Name     string        `json:"name"`
-	Config   *types.Config `json:"config"`
-	Steps    []*Step       `json:"steps"`
-	Summary  Summary       `json:"summary"`
-	Status   Status        `json:"status,omitempty"`
-	Duration float64       `json:"duration,omitempty"`
+	Name     string            `json:"name"`
+	Config   *e2econfig.Config `json:"config"`
+	Steps    []*Step           `json:"steps"`
+	Summary  Summary           `json:"summary"`
+	Status   Status            `json:"status,omitempty"`
+	Duration float64           `json:"duration,omitempty"`
 }
 
-func newReport(commandName string, config *types.Config) *Report {
+func newReport(commandName string, config *e2econfig.Config) *Report {
 	if config == nil {
 		panic("config must not be nil")
 	}
