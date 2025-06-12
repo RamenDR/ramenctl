@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 	e2eenv "github.com/ramendr/ramen/e2e/env"
 	"github.com/ramendr/ramen/e2e/types"
 
@@ -28,7 +29,7 @@ type Command struct {
 	// outputDir contains the command log, summary, and gathered files.
 	outputDir string
 	// config loaded from configFile.
-	config *types.Config
+	config *e2econfig.Config
 	// env loaded from the config.
 	env *types.Env
 	// log logging to the command log.
@@ -66,7 +67,7 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 	// the clusters block for long time. The log will contain the cancellation error.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 
-	env, err := e2eenv.New(ctx, cfg, log)
+	env, err := e2eenv.New(ctx, cfg.Clusters, log)
 	if err != nil {
 		// Stop the signal handler before we fail.
 		stop()
@@ -91,7 +92,7 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 // signals and its context cannot be cancelled.
 func ForTest(
 	commandName string,
-	cfg *types.Config,
+	cfg *e2econfig.Config,
 	env *types.Env,
 	outputDir string,
 ) (*Command, error) {
@@ -124,7 +125,7 @@ func (c *Command) Logger() *zap.SugaredLogger {
 	return c.log
 }
 
-func (c *Command) Config() *types.Config {
+func (c *Command) Config() *e2econfig.Config {
 	return c.config
 }
 

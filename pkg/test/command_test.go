@@ -9,16 +9,18 @@ import (
 	"fmt"
 	"testing"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+
 	"github.com/ramendr/ramenctl/pkg/command"
 )
 
-var testConfig = types.Config{
-	PVCSpecs: []types.PVCSpecConfig{
+var testConfig = e2econfig.Config{
+	PVCSpecs: []e2econfig.PVCSpec{
 		{Name: "block", StorageClassName: "block-storage"},
 		{Name: "file", StorageClassName: "file-storage"},
 	},
-	Tests: []types.TestConfig{
+	Tests: []e2econfig.Test{
 		{Workload: "deploy", Deployer: "appset", PVCSpec: "block"},
 		{Workload: "deploy", Deployer: "appset", PVCSpec: "file"},
 		{Workload: "deploy", Deployer: "subscr", PVCSpec: "block"},
@@ -586,7 +588,7 @@ func checkStep(t *testing.T, step *Step, name string, status Status) {
 	// We cannot check duration since it may be zero on windows.
 }
 
-func checkTest(t *testing.T, test *Step, tc types.TestConfig, status Status, flow ...string) {
+func checkTest(t *testing.T, test *Step, tc e2econfig.Test, status Status, flow ...string) {
 	name := fmt.Sprintf("%s-%s-%s", tc.Deployer, tc.Workload, tc.PVCSpec)
 	if name != test.Name {
 		t.Fatalf("expected step %q, got %q", name, test.Name)

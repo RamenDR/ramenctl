@@ -13,7 +13,6 @@ import (
 	stdtime "time"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
-	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
@@ -37,7 +36,7 @@ type Command struct {
 	Options Options
 
 	// PCCSpecs maps pvscpec name to pvcspec.
-	PVCSpecs map[string]types.PVCSpecConfig
+	PVCSpecs map[string]e2econfig.PVCSpec
 
 	// Tests to run or clean.
 	Tests []*Test

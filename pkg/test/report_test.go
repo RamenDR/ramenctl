@@ -9,36 +9,36 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/ramendr/ramen/e2e/types"
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
-var config = &types.Config{
+var config = &e2econfig.Config{
 	Distro:     "k8s",
-	Repo:       types.RepoConfig{URL: "https://github.com/org/repo", Branch: "main"},
+	Repo:       e2econfig.Repo{URL: "https://github.com/org/repo", Branch: "main"},
 	DRPolicy:   "dr-policy",
 	ClusterSet: "clusterset",
-	Clusters: map[string]types.ClusterConfig{
+	Clusters: map[string]e2econfig.Cluster{
 		"hub": {Kubeconfig: "hub-kubeconfig"},
 		"c1":  {Kubeconfig: "c1-kubeconfig"},
 		"c2":  {Kubeconfig: "c2-kubeconfig"},
 	},
-	PVCSpecs: []types.PVCSpecConfig{
+	PVCSpecs: []e2econfig.PVCSpec{
 		{Name: "rbd", StorageClassName: "rook-ceph-block", AccessModes: "ReadWriteOnce"},
 		{Name: "cephfs", StorageClassName: "rook-cephfs-fs", AccessModes: "ReadWriteMany"},
 	},
-	Tests: []types.TestConfig{
+	Tests: []e2econfig.Test{
 		{Workload: "appset", Deployer: "deploy", PVCSpec: "rbd"},
 		{Workload: "subscr", Deployer: "deploy", PVCSpec: "rbd"},
 		{Workload: "disapp", Deployer: "deploy", PVCSpec: "cephfs"},
 	},
-	Channel: types.ChannelConfig{
+	Channel: e2econfig.Channel{
 		Name:      "my-channel",
 		Namespace: "test-gitops",
 	},
-	Namespaces: types.NamespacesConfig{
+	Namespaces: e2econfig.Namespaces{
 		RamenHubNamespace:       "ramen-system",
 		RamenDRClusterNamespace: "ramen-system",
 		RamenOpsNamespace:       "ramen-ops",

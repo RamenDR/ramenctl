@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/deployers"
-	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/workloads"
 	"golang.org/x/sync/errgroup"
@@ -24,14 +24,14 @@ type Test struct {
 	*Context
 	Backend     e2e.Testing
 	Status      Status
-	Config      *types.TestConfig
+	Config      *e2econfig.Test
 	Steps       []*Step
 	Duration    float64
 	stepStarted time.Time
 }
 
 // newTest creates a test from test configuration and command context.
-func newTest(tc types.TestConfig, cmd *Command) *Test {
+func newTest(tc e2econfig.Test, cmd *Command) *Test {
 	pvcSpec, ok := cmd.PVCSpecs[tc.PVCSpec]
 	if !ok {
 		panic(fmt.Sprintf("unknown pvcSpec %q", tc.PVCSpec))
@@ -57,7 +57,7 @@ func newTest(tc types.TestConfig, cmd *Command) *Test {
 
 func (t *Test) Deploy() bool {
 	t.startStep("deploy")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.DeployTimeout)
 	defer cancel()
 	if err := t.Backend.Deploy(timedCtx); err != nil {
 		return t.failStep(err)
@@ -68,7 +68,7 @@ func (t *Test) Deploy() bool {
 
 func (t *Test) Undeploy() bool {
 	t.startStep("undeploy")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.UndeployTimeout)
 	defer cancel()
 	if err := t.Backend.Undeploy(timedCtx); err != nil {
 		return t.failStep(err)
@@ -79,7 +79,7 @@ func (t *Test) Undeploy() bool {
 
 func (t *Test) Protect() bool {
 	t.startStep("protect")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.EnableTimeout)
 	defer cancel()
 	if err := t.Backend.Protect(timedCtx); err != nil {
 		return t.failStep(err)
@@ -90,7 +90,7 @@ func (t *Test) Protect() bool {
 
 func (t *Test) Unprotect() bool {
 	t.startStep("unprotect")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.DisableTimeout)
 	defer cancel()
 	if err := t.Backend.Unprotect(timedCtx); err != nil {
 		return t.failStep(err)
@@ -101,7 +101,7 @@ func (t *Test) Unprotect() bool {
 
 func (t *Test) Failover() bool {
 	t.startStep("failover")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.FailoverTimeout)
 	defer cancel()
 	if err := t.Backend.Failover(timedCtx); err != nil {
 		return t.failStep(err)
@@ -112,7 +112,7 @@ func (t *Test) Failover() bool {
 
 func (t *Test) Relocate() bool {
 	t.startStep("relocate")
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timedCtx, cancel := t.WithTimeout(util.RelocateTimeout)
 	defer cancel()
 	if err := t.Backend.Relocate(timedCtx); err != nil {
 		return t.failStep(err)
@@ -123,7 +123,8 @@ func (t *Test) Relocate() bool {
 
 func (t *Test) Cleanup() bool {
 	var g errgroup.Group
-	timedCtx, cancel := t.WithTimeout(util.Timeout)
+	timeout := max(util.UndeployTimeout, util.DisableTimeout)
+	timedCtx, cancel := t.WithTimeout(timeout)
 	defer cancel()
 
 	t.startStep("cleanup")

@@ -10,7 +10,6 @@ import (
 
 	"github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/deployers"
-	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/workloads"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
@@ -42,7 +41,7 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 	return nil
 }
 
-func ReadConfig(filename string) (*types.Config, error) {
+func ReadConfig(filename string) (*config.Config, error) {
 	options := config.Options{
 		Workloads: workloads.AvailableNames(),
 		Deployers: deployers.AvailableNames(),
