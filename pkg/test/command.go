@@ -42,23 +42,23 @@ type Command struct {
 	// content is used to set deadlines.
 	context context.Context
 
-	// Backend is used to perform testing operations.
-	Backend e2e.Testing
+	// backend is used to perform testing operations.
+	backend e2e.Testing
 
-	// Options for test commands.
-	Options Options
+	// options for test commands.
+	options Options
 
 	// PCCSpecs maps pvscpec name to pvcspec.
-	PVCSpecs map[string]e2econfig.PVCSpec
+	pvcSpecs map[string]e2econfig.PVCSpec
 
-	// Tests to run or clean.
-	Tests []*Test
+	// tests to run or clean.
+	tests []*Test
 
-	// Current test step
-	Current *Step
+	// current test step
+	current *Step
 
 	// Command report, stored at the output directory on completion.
-	Report *Report
+	report *Report
 
 	// stepStarted records the time when the step execution began, used for duration tracking.
 	stepStarted time.Time
@@ -85,15 +85,15 @@ func newCommand(
 		command:  cmd,
 		config:   cfg,
 		context:  cmd.Context(),
-		Backend:  backend,
-		Options:  options,
-		PVCSpecs: e2econfig.PVCSpecsMap(cfg),
-		Report:   newReport(cmd.Name(), cfg),
+		backend:  backend,
+		options:  options,
+		pvcSpecs: e2econfig.PVCSpecsMap(cfg),
+		report:   newReport(cmd.Name(), cfg),
 	}
 
 	for _, tc := range cfg.Tests {
 		test := newTest(tc, testCmd)
-		testCmd.Tests = append(testCmd.Tests, test)
+		testCmd.tests = append(testCmd.tests, test)
 	}
 
 	return testCmd
@@ -161,7 +161,7 @@ func (c *Command) validate() bool {
 	console.Step("Validate config")
 	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
 	defer cancel()
-	if err := c.Backend.Validate(timedCmd); err != nil {
+	if err := c.backend.Validate(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Config validated")
@@ -173,7 +173,7 @@ func (c *Command) setup() bool {
 	console.Step("Setup environment")
 	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
 	defer cancel()
-	if err := c.Backend.Setup(timedCmd); err != nil {
+	if err := c.backend.Setup(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment setup")
@@ -185,7 +185,7 @@ func (c *Command) cleanup() bool {
 	console.Step("Clean environment")
 	timedCmd, cancel := c.WithTimeout(1 * stdtime.Minute)
 	defer cancel()
-	if err := c.Backend.Cleanup(timedCmd); err != nil {
+	if err := c.backend.Cleanup(timedCmd); err != nil {
 		return c.failStep(err)
 	}
 	console.Pass("Environment cleaned")
@@ -210,62 +210,62 @@ func (c *Command) gatherData() {
 }
 
 func (c *Command) failed() error {
-	if err := c.command.WriteReport(c.Report); err != nil {
+	if err := c.command.WriteReport(c.report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	return fmt.Errorf("%s (%s)", c.Report.Status, c.Report.Summary)
+	return fmt.Errorf("%s (%s)", c.report.Status, c.report.Summary)
 }
 
 func (c *Command) passed() {
-	if err := c.command.WriteReport(c.Report); err != nil {
+	if err := c.command.WriteReport(c.report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	console.Completed("%s (%s)", c.Report.Status, c.Report.Summary)
+	console.Completed("%s (%s)", c.report.Status, c.report.Summary)
 }
 
 func (c *Command) startStep(name string) {
-	c.Current = &Step{Name: name}
+	c.current = &Step{Name: name}
 	c.stepStarted = time.Now()
-	c.Logger().Infof("Step %q started", c.Current.Name)
+	c.Logger().Infof("Step %q started", c.current.Name)
 }
 
 func (c *Command) failStep(err error) bool {
-	c.Current.Duration = time.Since(c.stepStarted).Seconds()
+	c.current.Duration = time.Since(c.stepStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
-		c.Current.Status = Canceled
-		console.Error("Canceled %s", c.Current.Name)
+		c.current.Status = Canceled
+		console.Error("Canceled %s", c.current.Name)
 	} else {
-		c.Current.Status = Failed
-		console.Error("Failed to %s", c.Current.Name)
+		c.current.Status = Failed
+		console.Error("Failed to %s", c.current.Name)
 	}
-	c.Logger().Errorf("Step %q %s: %s", c.Current.Name, c.Current.Status, err)
-	c.Report.AddStep(c.Current)
-	c.Current = nil
+	c.Logger().Errorf("Step %q %s: %s", c.current.Name, c.current.Status, err)
+	c.report.AddStep(c.current)
+	c.current = nil
 	return false
 }
 
 func (c *Command) passStep() bool {
-	c.Current.Duration = time.Since(c.stepStarted).Seconds()
-	c.Current.Status = Passed
-	c.Logger().Infof("Step %q passed", c.Current.Name)
-	c.Report.AddStep(c.Current)
-	c.Current = nil
+	c.current.Duration = time.Since(c.stepStarted).Seconds()
+	c.current.Status = Passed
+	c.Logger().Infof("Step %q passed", c.current.Name)
+	c.report.AddStep(c.current)
+	c.current = nil
 	return true
 }
 
 func (c *Command) finishStep() bool {
-	c.Current.Duration = time.Since(c.stepStarted).Seconds()
-	c.Logger().Infof("Step %q finished", c.Current.Name)
-	c.Report.AddStep(c.Current)
-	c.Current = nil
-	return c.Report.Status == Passed
+	c.current.Duration = time.Since(c.stepStarted).Seconds()
+	c.Logger().Infof("Step %q finished", c.current.Name)
+	c.report.AddStep(c.current)
+	c.current = nil
+	return c.report.Status == Passed
 }
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
 	c.startStep(TestsStep)
 
 	var wg sync.WaitGroup
-	for _, test := range c.Tests {
+	for _, test := range c.tests {
 		wg.Add(1)
 		go func() {
 			f(test)
@@ -274,12 +274,12 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 	wg.Wait()
 
-	for _, test := range c.Tests {
-		c.Current.AddTest(test)
+	for _, test := range c.tests {
+		c.current.AddTest(test)
 	}
 
 	res := c.finishStep()
-	if c.Report.Status == Failed && c.Options.GatherData {
+	if c.report.Status == Failed && c.options.GatherData {
 		c.gatherData()
 	}
 	return res
@@ -316,7 +316,7 @@ func (c *Command) namespacesToGather() []string {
 	}
 
 	// Add application resources for failed tests.
-	for _, test := range c.Tests {
+	for _, test := range c.tests {
 		if test.Status == Failed {
 			seen[test.AppNamespace()] = struct{}{}
 			seen[test.ManagementNamespace()] = struct{}{}

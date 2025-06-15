@@ -32,7 +32,7 @@ type Test struct {
 
 // newTest creates a test from test configuration and command context.
 func newTest(tc e2econfig.Test, cmd *Command) *Test {
-	pvcSpec, ok := cmd.PVCSpecs[tc.PVCSpec]
+	pvcSpec, ok := cmd.pvcSpecs[tc.PVCSpec]
 	if !ok {
 		panic(fmt.Sprintf("unknown pvcSpec %q", tc.PVCSpec))
 	}
@@ -49,7 +49,7 @@ func newTest(tc e2econfig.Test, cmd *Command) *Test {
 
 	return &Test{
 		Context: newContext(cmd, workload, deployer),
-		Backend: cmd.Backend,
+		Backend: cmd.backend,
 		Status:  Passed,
 		Config:  &tc,
 	}

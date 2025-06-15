@@ -133,15 +133,15 @@ func TestRunPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.Report, Passed, Summary{Passed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Passed, Summary{Passed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Passed)
-	tests := test.Report.Steps[2]
+	tests := test.report.Steps[2]
 	checkStep(t, tests, TestsStep, Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -162,11 +162,11 @@ func TestRunValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{})
-	if len(test.Report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{})
+	if len(test.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Failed)
 }
 
@@ -183,11 +183,11 @@ func TestRunValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{})
-	if len(test.Report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{})
+	if len(test.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Canceled)
 }
 
@@ -204,13 +204,13 @@ func TestRunSetupFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Failed)
 }
 
@@ -227,13 +227,13 @@ func TestRunSetupCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Canceled)
 }
 
@@ -250,15 +250,15 @@ func TestRunTestsFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{Failed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{Failed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Passed)
-	tests := test.Report.Steps[2]
+	tests := test.report.Steps[2]
 	checkStep(t, tests, TestsStep, Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -279,15 +279,15 @@ func TestRunDisappFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{Passed: 4, Failed: 2})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{Passed: 4, Failed: 2})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Passed)
-	tests := test.Report.Steps[2]
+	tests := test.report.Steps[2]
 	checkStep(t, tests, TestsStep, Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -312,15 +312,15 @@ func TestRunTestsCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{Canceled: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{Canceled: len(testConfig.Tests)})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	setup := test.Report.Steps[1]
+	setup := test.report.Steps[1]
 	checkStep(t, setup, SetupStep, Passed)
-	tests := test.Report.Steps[2]
+	tests := test.report.Steps[2]
 	checkStep(t, tests, TestsStep, Canceled)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -341,19 +341,19 @@ func TestCleanPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.Report, Passed, Summary{Passed: 6})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Passed, Summary{Passed: 6})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, Passed, "cleanup")
 	}
-	cleanup := test.Report.Steps[2]
+	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, Passed)
 }
 
@@ -370,11 +370,11 @@ func TestCleanValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{})
-	if len(test.Report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{})
+	if len(test.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Failed)
 }
 
@@ -391,11 +391,11 @@ func TestCleanValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{})
-	if len(test.Report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{})
+	if len(test.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Canceled)
 }
 
@@ -412,13 +412,13 @@ func TestCleanUnprotectFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{Failed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{Failed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -439,13 +439,13 @@ func TestCleanUndeployFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{Failed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{Failed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -466,13 +466,13 @@ func TestCleanUnprotectCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{Canceled: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{Canceled: len(testConfig.Tests)})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Canceled)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -493,13 +493,13 @@ func TestCleanUndeployCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{Canceled: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{Canceled: len(testConfig.Tests)})
+	if len(test.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Canceled)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
@@ -520,19 +520,19 @@ func TestCleanCleanupFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Failed, Summary{Passed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Failed, Summary{Passed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, Passed, "cleanup")
 	}
-	cleanup := test.Report.Steps[2]
+	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, Failed)
 }
 
@@ -549,19 +549,19 @@ func TestCleanCleanupCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.Report, Canceled, Summary{Passed: len(testConfig.Tests)})
-	if len(test.Report.Steps) != 3 {
-		t.Fatalf("unexpected steps %+v", test.Report.Steps)
+	checkReport(t, test.report, Canceled, Summary{Passed: len(testConfig.Tests)})
+	if len(test.report.Steps) != 3 {
+		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
-	validate := test.Report.Steps[0]
+	validate := test.report.Steps[0]
 	checkStep(t, validate, ValidateStep, Passed)
-	tests := test.Report.Steps[1]
+	tests := test.report.Steps[1]
 	checkStep(t, tests, TestsStep, Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, Passed, "cleanup")
 	}
-	cleanup := test.Report.Steps[2]
+	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, Canceled)
 }
 
