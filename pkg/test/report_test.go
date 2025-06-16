@@ -15,7 +15,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
-var config = &e2econfig.Config{
+var reportConfig = &e2econfig.Config{
 	Distro:     "k8s",
 	Repo:       e2econfig.Repo{URL: "https://github.com/org/repo", Branch: "main"},
 	DRPolicy:   "dr-policy",
@@ -48,7 +48,7 @@ var config = &e2econfig.Config{
 
 func TestReportEmpty(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-run", config)
+	r := newReport("test-run", reportConfig)
 
 	// Host and ramenctl info is ready.
 	expectedReport := report.New()
@@ -78,7 +78,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should set the report status.
 	t.Run("empty", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.AddStep(passedStep)
 		if r.Status != Passed {
 			t.Errorf("expected status %s, got %s", Passed, r.Status)
@@ -90,7 +90,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should not modify failed status.
 	t.Run("failed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Failed
 		r.AddStep(passedStep)
 		if r.Status != Failed {
@@ -103,7 +103,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should not modify canceled status.
 	t.Run("failed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Canceled
 		r.AddStep(passedStep)
 		if r.Status != Canceled {
@@ -121,7 +121,7 @@ func TestReportAddFailedStep(t *testing.T) {
 
 	// Failed status should override existing Passed status.
 	t.Run("passed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Passed
 		r.AddStep(failedStep)
 		if r.Status != Failed {
@@ -134,7 +134,7 @@ func TestReportAddFailedStep(t *testing.T) {
 
 	// If a report is canceled, adding a failed test should not change the status.
 	t.Run("canceled", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Canceled
 		r.AddStep(failedStep)
 		if r.Status != Canceled {
@@ -152,7 +152,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 
 	// Adding canceled step mark the report as canceled.
 	t.Run("failed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Failed
 		r.AddStep(canceledStep)
 		if r.Status != Canceled {
@@ -165,7 +165,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 
 	// Adding canceled step mark the report as canceled.
 	t.Run("passed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Passed
 		r.AddStep(canceledStep)
 		if r.Status != Canceled {
@@ -183,7 +183,7 @@ func TestReportAddSkippedStep(t *testing.T) {
 
 	// Skipped step with empty status should result in Passed.
 	t.Run("empty", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.AddStep(skippedStep)
 		if r.Status != Passed {
 			t.Errorf("expected status %s, got %s", Passed, r.Status)
@@ -195,7 +195,7 @@ func TestReportAddSkippedStep(t *testing.T) {
 
 	// Failed status should not be overridden by Skipped.
 	t.Run("failed", func(t *testing.T) {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Failed
 		r.AddStep(skippedStep)
 		if r.Status != Failed {
@@ -208,7 +208,7 @@ func TestReportAddSkippedStep(t *testing.T) {
 }
 
 func TestReportDuration(t *testing.T) {
-	r := newReport("test-command", config)
+	r := newReport("test-command", reportConfig)
 	steps := []*Step{
 		{Name: "step1", Status: Passed, Duration: 1.0},
 		{Name: "step2", Status: Passed, Duration: 1.0},
@@ -229,7 +229,7 @@ func TestReportDuration(t *testing.T) {
 }
 
 func TestReportAddDuplicateStep(t *testing.T) {
-	r := newReport("test-command", config)
+	r := newReport("test-command", reportConfig)
 	step := &Step{Name: "unique-step", Status: Passed, Duration: 1.0}
 	r.AddStep(step)
 
@@ -244,7 +244,7 @@ func TestReportAddDuplicateStep(t *testing.T) {
 }
 
 func TestReportSummary(t *testing.T) {
-	r := newReport("test-command", config)
+	r := newReport("test-command", reportConfig)
 	testsStep := &Step{
 		Name:     TestsStep,
 		Status:   Passed,
@@ -268,7 +268,7 @@ func TestReportEqual(t *testing.T) {
 	fakeTime(t)
 	// Helper function to create a standard report
 	createReport := func() *Report {
-		r := newReport("test-command", config)
+		r := newReport("test-command", reportConfig)
 		r.Status = Passed
 		r.Duration = 1.0
 		r.Steps = []*Step{
@@ -319,7 +319,7 @@ func TestReportEqual(t *testing.T) {
 
 	t.Run("different config content", func(t *testing.T) {
 		r2 := createReport()
-		differentConfig := *config
+		differentConfig := *reportConfig
 		differentConfig.DRPolicy = "different-dr-policy"
 		r2.Config = &differentConfig
 		if r1.Equal(r2) {
@@ -383,7 +383,7 @@ func TestReportEqual(t *testing.T) {
 
 func TestReportMarshaling(t *testing.T) {
 	fakeTime(t)
-	r := newReport("test-command", config)
+	r := newReport("test-command", reportConfig)
 	r.Status = Failed
 	r.Duration = 2.0
 	r.Steps = []*Step{
@@ -412,7 +412,7 @@ func TestStepAddPassedTest(t *testing.T) {
 	passedTest := &Test{
 		Context:  &Context{name: "passing_test"},
 		Status:   Passed,
-		Config:   &config.Tests[0],
+		Config:   &reportConfig.Tests[0],
 		Duration: 6.0,
 		Steps: []*Step{
 			{Name: "deploy", Status: Passed, Duration: 1.0},
@@ -495,7 +495,7 @@ func TestStepAddFailedTest(t *testing.T) {
 	failedTest := &Test{
 		Context:  &Context{name: "failing_test"},
 		Status:   Failed,
-		Config:   &config.Tests[0],
+		Config:   &reportConfig.Tests[0],
 		Duration: 1.0,
 		Steps: []*Step{
 			{Name: "undeploy", Status: Failed, Duration: 1.0},
@@ -675,7 +675,7 @@ func TestStepMarshal(t *testing.T) {
 		Name:     "test",
 		Status:   Passed,
 		Duration: 2.0,
-		Config:   &config.Tests[0],
+		Config:   &reportConfig.Tests[0],
 		Items: []*Step{
 			{Name: "subtest1", Status: Passed, Duration: 1.0},
 			{Name: "subtest2", Status: Failed, Duration: 1.0},
@@ -697,7 +697,7 @@ func TestStepMarshal(t *testing.T) {
 }
 
 func TestStepEqual(t *testing.T) {
-	s1 := Step{Name: "base_test", Status: Passed, Duration: 1.0, Config: &config.Tests[0]}
+	s1 := Step{Name: "base_test", Status: Passed, Duration: 1.0, Config: &reportConfig.Tests[0]}
 
 	t.Run("equal to self", func(t *testing.T) {
 		if !s1.Equal(&s1) {
@@ -737,7 +737,7 @@ func TestStepEqual(t *testing.T) {
 
 	t.Run("different config", func(t *testing.T) {
 		s2 := s1
-		s2.Config = &config.Tests[1]
+		s2.Config = &reportConfig.Tests[1]
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different config should not be equal")
 		}
