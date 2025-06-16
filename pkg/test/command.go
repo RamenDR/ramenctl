@@ -13,6 +13,8 @@ import (
 	stdtime "time"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
+	"github.com/ramendr/ramen/e2e/types"
+	"go.uber.org/zap"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
@@ -31,8 +33,19 @@ type Options struct {
 
 // Command is a ramenctl test command.
 type Command struct {
-	*command.Command
+	// Command is the generic command used by all ramenctl commands.
+	command *command.Command
+
+	// config is the test config for this command.
+	config *e2econfig.Config
+
+	// content is used to set deadlines.
+	context context.Context
+
+	// Backend is used to perform testing operations.
 	Backend e2e.Testing
+
+	// Options for test commands.
 	Options Options
 
 	// PCCSpecs maps pvscpec name to pvcspec.
@@ -51,24 +64,34 @@ type Command struct {
 	stepStarted time.Time
 }
 
+// Ensure that command implements types.Context.
+var _ types.Context = &Command{}
+
 // flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if
 // the flow failed.
 type flowFunc func(t *Test)
 
 // newCommand return a new test command.
-func newCommand(cmd *command.Command, backend e2e.Testing, options Options) *Command {
+func newCommand(
+	cmd *command.Command,
+	cfg *e2econfig.Config,
+	backend e2e.Testing,
+	options Options,
+) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
-	cmd.Config().Channel.Namespace = namespacePrefix + "gitops"
+	cfg.Channel.Namespace = namespacePrefix + "gitops"
 
 	testCmd := &Command{
-		Command:  cmd,
+		command:  cmd,
+		config:   cfg,
+		context:  cmd.Context(),
 		Backend:  backend,
 		Options:  options,
-		PVCSpecs: e2econfig.PVCSpecsMap(cmd.Config()),
-		Report:   newReport(cmd.Name(), cmd.Config()),
+		PVCSpecs: e2econfig.PVCSpecsMap(cfg),
+		Report:   newReport(cmd.Name(), cfg),
 	}
 
-	for _, tc := range cmd.Config().Tests {
+	for _, tc := range cfg.Tests {
 		test := newTest(tc, testCmd)
 		testCmd.Tests = append(testCmd.Tests, test)
 	}
@@ -105,6 +128,32 @@ func (c *Command) Clean() error {
 	}
 	c.passed()
 	return nil
+}
+
+// ramen/e2e/types.Context interface
+
+func (c *Command) Logger() *zap.SugaredLogger {
+	return c.command.Logger()
+}
+
+func (c *Command) Env() *types.Env {
+	return c.command.Env()
+}
+
+func (c *Command) Context() context.Context {
+	return c.context
+}
+
+func (c *Command) Config() *e2econfig.Config {
+	return c.config
+}
+
+// WithTimeout returns a derived command with a deadline. Call cancel to release resources
+// associated with the context as soon as the operation running in the context complete.
+func (c Command) WithTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(c.context, d)
+	c.context = ctx
+	return &c, cancel
 }
 
 func (c *Command) validate() bool {
@@ -156,19 +205,19 @@ func (c *Command) cleanTests() bool {
 func (c *Command) gatherData() {
 	console.Step("Gather data")
 	namespaces := c.namespacesToGather()
-	outputDir := filepath.Join(c.OutputDir(), c.Name()+".gather")
+	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
 	gather.Namespaces(c.Env(), namespaces, outputDir, c.Logger())
 }
 
 func (c *Command) failed() error {
-	if err := c.WriteReport(c.Report); err != nil {
+	if err := c.command.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
 	return fmt.Errorf("%s (%s)", c.Report.Status, c.Report.Summary)
 }
 
 func (c *Command) passed() {
-	if err := c.WriteReport(c.Report); err != nil {
+	if err := c.command.WriteReport(c.Report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
 	console.Completed("%s (%s)", c.Report.Status, c.Report.Summary)
@@ -260,11 +309,10 @@ func (c *Command) cleanFlow(test *Test) {
 }
 
 func (c *Command) namespacesToGather() []string {
-	cfg := c.Config()
 	seen := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
-		cfg.Namespaces.RamenHubNamespace:       {},
-		cfg.Namespaces.RamenDRClusterNamespace: {},
+		c.config.Namespaces.RamenHubNamespace:       {},
+		c.config.Namespaces.RamenDRClusterNamespace: {},
 	}
 
 	// Add application resources for failed tests.

@@ -5,16 +5,24 @@ package test
 
 import (
 	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
 )
 
 func Clean(configFile string, outputDir string) error {
-	cmd, err := command.New("test-clean", configFile, outputDir)
+	cfg, err := config.ReadConfig(configFile)
+	if err != nil {
+		return err
+	}
+	console.Info("Using config %q", configFile)
+
+	cmd, err := command.New("test-clean", cfg.Clusters, outputDir)
 	if err != nil {
 		return err
 	}
 	defer cmd.Close()
 
-	test := newCommand(cmd, e2e.Backend{}, Options{GatherData: true})
+	test := newCommand(cmd, cfg, e2e.Backend{}, Options{GatherData: true})
 	return test.Clean()
 }

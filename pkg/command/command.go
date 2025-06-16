@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	stdtime "time"
 
 	"go.uber.org/zap"
 	"sigs.k8s.io/yaml"
@@ -18,20 +17,21 @@ import (
 	e2eenv "github.com/ramendr/ramen/e2e/env"
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 
-// Command is a ramenctl command implementing the ramen/e2e/types.Context interface.
+// Command is a ramenctl generic command used by all ramenctl commands. Note that the config is not
+// part of the command since test commands use extended configuration.
 type Command struct {
 	// name is the command name (e.g. "test-run")
 	name string
+
 	// outputDir contains the command log, summary, and gathered files.
 	outputDir string
-	// config loaded from configFile.
-	config *e2econfig.Config
-	// env loaded from the config.
+
+	// env loaded from specified clusters.
 	env *types.Env
+
 	// log logging to the command log.
 	log      *zap.SugaredLogger
 	closeLog func()
@@ -41,11 +41,13 @@ type Command struct {
 	stop    context.CancelFunc
 }
 
-var _ types.Context = &Command{}
-
 // New creates a new command handling os.Interrupt signal. To close the log and stop the signal
 // handler call Close().
-func New(commandName, configFile, outputDir string) (*Command, error) {
+func New(
+	commandName string,
+	clusters map[string]e2econfig.Cluster,
+	outputDir string,
+) (*Command, error) {
 	// Create the logger first so we can log early command errors to the command log.
 	log, closeLog, err := newLogger(outputDir, commandName+".log")
 	if err != nil {
@@ -54,20 +56,11 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 
 	console.Info("Using report %q", outputDir)
 
-	cfg, err := config.ReadConfig(configFile)
-	if err != nil {
-		err := fmt.Errorf("failed to read config %q: %w", configFile, err)
-		log.Error(err)
-		return nil, err
-	}
-
-	console.Info("Using config %q", configFile)
-
 	// Create the context before creating the env so we can cancel the command cleanly if accessing
 	// the clusters block for long time. The log will contain the cancellation error.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 
-	env, err := e2eenv.New(ctx, cfg.Clusters, log)
+	env, err := e2eenv.New(ctx, clusters, log)
 	if err != nil {
 		// Stop the signal handler before we fail.
 		stop()
@@ -79,7 +72,6 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 	return &Command{
 		name:      commandName,
 		outputDir: outputDir,
-		config:    cfg,
 		env:       env,
 		log:       log,
 		closeLog:  closeLog,
@@ -92,7 +84,6 @@ func New(commandName, configFile, outputDir string) (*Command, error) {
 // signals and its context cannot be cancelled.
 func ForTest(
 	commandName string,
-	cfg *e2econfig.Config,
 	env *types.Env,
 	outputDir string,
 ) (*Command, error) {
@@ -103,7 +94,6 @@ func ForTest(
 	return &Command{
 		name:      commandName,
 		outputDir: outputDir,
-		config:    cfg,
 		env:       env,
 		log:       log,
 		closeLog:  closeLog,
@@ -119,14 +109,8 @@ func (c *Command) OutputDir() string {
 	return c.outputDir
 }
 
-// ramen/e2e/types.Context interface
-
 func (c *Command) Logger() *zap.SugaredLogger {
 	return c.log
-}
-
-func (c *Command) Config() *e2econfig.Config {
-	return c.config
 }
 
 func (c *Command) Env() *types.Env {
@@ -135,14 +119,6 @@ func (c *Command) Env() *types.Env {
 
 func (c *Command) Context() context.Context {
 	return c.context
-}
-
-// WithTimeout returns a derived command with a deadline. Call cancel to release resources
-// associated with the context as soon as the operation running in the context complete.
-func (c Command) WithTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(c.context, d)
-	c.context = ctx
-	return &c, cancel
 }
 
 // Close log and stop handling signals and mark the command context as done. Calling while a command
