@@ -120,13 +120,19 @@ var undeployCanceled = MockBackend{
 
 var runFlow = []string{"deploy", "protect", "failover", "relocate", "unprotect", "undeploy"}
 
-func TestRunPassed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
+func testCommand(t *testing.T, name string) *command.Command {
+	cmd, err := command.ForTest(name, &testEnv, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer cmd.Close()
+	t.Cleanup(func() {
+		cmd.Close()
+	})
+	return cmd
+}
+
+func TestRunPassed(t *testing.T) {
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &MockBackend{}, testOptions)
 
 	if err := test.Run(); err != nil {
@@ -150,12 +156,7 @@ func TestRunPassed(t *testing.T) {
 }
 
 func TestRunValidateFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &validateFailed, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -171,12 +172,7 @@ func TestRunValidateFailed(t *testing.T) {
 }
 
 func TestRunValidateCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &validateCanceled, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -192,12 +188,7 @@ func TestRunValidateCanceled(t *testing.T) {
 }
 
 func TestRunSetupFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &setupFailed, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -215,12 +206,7 @@ func TestRunSetupFailed(t *testing.T) {
 }
 
 func TestRunSetupCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &setupCanceled, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -238,12 +224,7 @@ func TestRunSetupCanceled(t *testing.T) {
 }
 
 func TestRunTestsFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &failoverFailed, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -267,12 +248,7 @@ func TestRunTestsFailed(t *testing.T) {
 }
 
 func TestRunDisappFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &disappFailoverFailed, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -300,12 +276,7 @@ func TestRunDisappFailed(t *testing.T) {
 }
 
 func TestRunTestsCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-run")
 	test := newCommand(cmd, &testConfig, &failoverCanceled, testOptions)
 
 	if err := test.Run(); err == nil {
@@ -329,12 +300,7 @@ func TestRunTestsCanceled(t *testing.T) {
 }
 
 func TestCleanPassed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &MockBackend{}, testOptions)
 
 	if err := test.Clean(); err != nil {
@@ -358,12 +324,7 @@ func TestCleanPassed(t *testing.T) {
 }
 
 func TestCleanValidateFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &validateFailed, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -379,12 +340,7 @@ func TestCleanValidateFailed(t *testing.T) {
 }
 
 func TestCleanValidateCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &validateCanceled, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -400,12 +356,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 }
 
 func TestCleanUnprotectFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &unprotectFailed, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -427,12 +378,7 @@ func TestCleanUnprotectFailed(t *testing.T) {
 }
 
 func TestCleanUndeployFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &undeployFailed, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -454,12 +400,7 @@ func TestCleanUndeployFailed(t *testing.T) {
 }
 
 func TestCleanUnprotectCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &unprotectCanceled, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -481,12 +422,7 @@ func TestCleanUnprotectCanceled(t *testing.T) {
 }
 
 func TestCleanUndeployCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &undeployCanceled, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -508,12 +444,7 @@ func TestCleanUndeployCanceled(t *testing.T) {
 }
 
 func TestCleanCleanupFailed(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &cleanupFailed, testOptions)
 
 	if err := test.Clean(); err == nil {
@@ -537,12 +468,7 @@ func TestCleanCleanupFailed(t *testing.T) {
 }
 
 func TestCleanCleanupCanceled(t *testing.T) {
-	outputDir := t.TempDir()
-	cmd, err := command.ForTest("test-run", &testEnv, outputDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cmd.Close()
+	cmd := testCommand(t, "test-clean")
 	test := newCommand(cmd, &testConfig, &cleanupCanceled, testOptions)
 
 	if err := test.Clean(); err == nil {
