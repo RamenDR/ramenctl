@@ -8,9 +8,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ramendr/ramen/e2e/config"
-	"github.com/ramendr/ramen/e2e/deployers"
-	"github.com/ramendr/ramen/e2e/workloads"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 
@@ -39,18 +36,6 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 		return fmt.Errorf("failed to create %q: %w", filename, err)
 	}
 	return nil
-}
-
-func ReadConfig(filename string) (*config.Config, error) {
-	options := config.Options{
-		Workloads: workloads.AvailableNames(),
-		Deployers: deployers.AvailableNames(),
-	}
-	config, err := config.ReadConfig(filename, options)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read config: %w", err)
-	}
-	return config, nil
 }
 
 func createFile(name string, content []byte) error {
