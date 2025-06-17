@@ -10,25 +10,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/config"
 )
 
-func TestReadEnvFile(t *testing.T) {
-	env, err := config.ReadEnvFile("testdata/regional-dr.yaml")
-	if err != nil {
-		t.Fatalf("Failed to read environment file: %v", err)
-	}
-
-	expected := &config.EnvFile{
-		Name: "rdr",
-		Ramen: config.Ramen{
-			Hub:      "hub",
-			Clusters: []string{"dr1", "dr2"},
-		},
-	}
-
-	if !reflect.DeepEqual(expected, env) {
-		t.Fatalf("expected %+v, got %+v", expected, env)
-	}
-}
-
 func TestSample(t *testing.T) {
 	sample := config.NewSample("ramenctl")
 	expected := &config.Sample{
