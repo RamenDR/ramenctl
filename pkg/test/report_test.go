@@ -335,14 +335,6 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("different duration", func(t *testing.T) {
-		r2 := createReport()
-		r2.Duration += 1.0
-		if r1.Equal(r2) {
-			t.Error("reports with different duration should not be equal")
-		}
-	})
-
 	t.Run("different step length", func(t *testing.T) {
 		r2 := createReport()
 		r2.Steps = []*Step{

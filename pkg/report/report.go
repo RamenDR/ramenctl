@@ -34,11 +34,12 @@ type Build struct {
 
 // Report created by ramenctl command.
 type Report struct {
-	Host    Host      `json:"host"`
-	Build   *Build    `json:"build,omitempty"`
-	Created time.Time `json:"created"`
-	Name    string    `json:"name"`
-	Status  Status    `json:"status,omitempty"`
+	Host     Host      `json:"host"`
+	Build    *Build    `json:"build,omitempty"`
+	Created  time.Time `json:"created"`
+	Name     string    `json:"name"`
+	Status   Status    `json:"status,omitempty"`
+	Duration float64   `json:"duration,omitempty"`
 }
 
 // New create a new generic report. Commands embed the report in the command report.
@@ -87,6 +88,9 @@ func (r *Report) Equal(o *Report) bool {
 		return false
 	}
 	if r.Status != o.Status {
+		return false
+	}
+	if r.Duration != o.Duration {
 		return false
 	}
 	return true

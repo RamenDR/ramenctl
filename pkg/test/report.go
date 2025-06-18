@@ -41,10 +41,9 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Config   *e2econfig.Config `json:"config"`
-	Steps    []*Step           `json:"steps"`
-	Summary  Summary           `json:"summary"`
-	Duration float64           `json:"duration,omitempty"`
+	Config  *e2econfig.Config `json:"config"`
+	Steps   []*Step           `json:"steps"`
+	Summary Summary           `json:"summary"`
 }
 
 func newReport(commandName string, config *e2econfig.Config) *Report {
@@ -105,9 +104,6 @@ func (r *Report) Equal(o *Report) bool {
 		return false
 	}
 	if r.Summary != o.Summary {
-		return false
-	}
-	if r.Duration != o.Duration {
 		return false
 	}
 	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {

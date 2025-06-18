@@ -141,6 +141,13 @@ func TestReportNotEqual(t *testing.T) {
 			t.Fatal("reports with different status should not be equal")
 		}
 	})
+	t.Run("duration", func(t *testing.T) {
+		r2 := report.New("name")
+		r2.Duration += 1.0
+		if r1.Equal(r2) {
+			t.Error("reports with different duration should not be equal")
+		}
+	})
 }
 
 var fakeNow = time.Now()
