@@ -30,10 +30,10 @@ func TestHost(t *testing.T) {
 func TestBuildInfo(t *testing.T) {
 	savedVersion := build.Version
 	savedCommit := build.Commit
-	defer func() {
+	t.Cleanup(func() {
 		build.Version = savedVersion
 		build.Commit = savedCommit
-	}()
+	})
 	t.Run("available", func(t *testing.T) {
 		build.Version = "fake-version"
 		build.Commit = "fake-commit"
