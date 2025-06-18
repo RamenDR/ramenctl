@@ -16,7 +16,7 @@ import (
 )
 
 func TestHost(t *testing.T) {
-	r := report.New()
+	r := report.New("name")
 	expected := report.Host{
 		OS:   runtime.GOOS,
 		Arch: runtime.GOARCH,
@@ -30,14 +30,14 @@ func TestHost(t *testing.T) {
 func TestBuildInfo(t *testing.T) {
 	savedVersion := build.Version
 	savedCommit := build.Commit
-	defer func() {
+	t.Cleanup(func() {
 		build.Version = savedVersion
 		build.Commit = savedCommit
-	}()
+	})
 	t.Run("available", func(t *testing.T) {
 		build.Version = "fake-version"
 		build.Commit = "fake-commit"
-		r := report.New()
+		r := report.New("name")
 		if r.Build == nil {
 			t.Fatalf("build info omitted")
 		}
@@ -52,7 +52,7 @@ func TestBuildInfo(t *testing.T) {
 	t.Run("missing", func(t *testing.T) {
 		build.Version = ""
 		build.Commit = ""
-		r := report.New()
+		r := report.New("name")
 		if r.Build != nil {
 			t.Fatalf("build info not omitted: %+v", r.Build)
 		}
@@ -61,14 +61,14 @@ func TestBuildInfo(t *testing.T) {
 
 func TestCreatedTime(t *testing.T) {
 	fakeTime(t)
-	r := report.New()
+	r := report.New("name")
 	if r.Created != time.Now().Local() {
 		t.Fatalf("expected %v, got %v", time.Now().Local(), r.Created)
 	}
 }
 
 func TestRoundtrip(t *testing.T) {
-	r1 := report.New()
+	r1 := report.New("name")
 	b, err := yaml.Marshal(r1)
 	if err != nil {
 		t.Fatalf("failed to marshal yaml: %s", err)

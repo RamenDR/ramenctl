@@ -10,6 +10,15 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
+type Status string
+
+const (
+	Passed   = Status("passed")
+	Failed   = Status("failed")
+	Skipped  = Status("skipped")
+	Canceled = Status("canceled")
+)
+
 // Host describes the host ramenctl is running on.
 type Host struct {
 	OS   string `json:"os"`
@@ -25,14 +34,18 @@ type Build struct {
 
 // Report created by ramenctl command.
 type Report struct {
-	Host    Host      `json:"host"`
-	Build   *Build    `json:"build,omitempty"`
-	Created time.Time `json:"created"`
+	Host     Host      `json:"host"`
+	Build    *Build    `json:"build,omitempty"`
+	Created  time.Time `json:"created"`
+	Name     string    `json:"name"`
+	Status   Status    `json:"status,omitempty"`
+	Duration float64   `json:"duration,omitempty"`
 }
 
 // New create a new generic report. Commands embed the report in the command report.
-func New() *Report {
+func New(commandName string) *Report {
 	r := &Report{
+		Name: commandName,
 		Host: Host{
 			OS:   runtime.GOOS,
 			Arch: runtime.GOARCH,
@@ -64,13 +77,12 @@ func (r *Report) Equal(o *Report) bool {
 	if !r.Created.Equal(o.Created) {
 		return false
 	}
-	if r.Build != o.Build {
-		if r.Build == nil || o.Build == nil {
-			return false
-		}
+	if r.Build != nil && o.Build != nil {
 		if *r.Build != *o.Build {
 			return false
 		}
+	} else if r.Build != o.Build {
+		return false
 	}
 	return true
 }

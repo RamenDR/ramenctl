@@ -15,13 +15,6 @@ import (
 type Status string
 
 const (
-	Passed   = Status("passed")
-	Failed   = Status("failed")
-	Skipped  = Status("skipped")
-	Canceled = Status("canceled")
-)
-
-const (
 	ValidateStep = "validate"
 	SetupStep    = "setup"
 	TestsStep    = "tests"
@@ -30,11 +23,10 @@ const (
 
 // A step is a test command step.
 type Step struct {
-	Name     string          `json:"name"`
-	Status   Status          `json:"status,omitempty"`
-	Duration float64         `json:"duration,omitempty"`
-	Config   *e2econfig.Test `json:"config,omitempty"`
-	Items    []*Step         `json:"items,omitempty"`
+	Name     string        `json:"name"`
+	Status   report.Status `json:"status,omitempty"`
+	Duration float64       `json:"duration,omitempty"`
+	Items    []*Step       `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -48,12 +40,9 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Name     string            `json:"name"`
-	Config   *e2econfig.Config `json:"config"`
-	Steps    []*Step           `json:"steps"`
-	Summary  Summary           `json:"summary"`
-	Status   Status            `json:"status,omitempty"`
-	Duration float64           `json:"duration,omitempty"`
+	Config  *e2econfig.Config `json:"config"`
+	Steps   []*Step           `json:"steps"`
+	Summary Summary           `json:"summary"`
 }
 
 func newReport(commandName string, config *e2econfig.Config) *Report {
@@ -61,8 +50,7 @@ func newReport(commandName string, config *e2econfig.Config) *Report {
 		panic("config must not be nil")
 	}
 	return &Report{
-		Report: report.New(),
-		Name:   commandName,
+		Report: report.New(commandName),
 		Config: config,
 	}
 }
@@ -76,15 +64,15 @@ func (r *Report) AddStep(step *Step) {
 	r.Duration += step.Duration
 
 	switch step.Status {
-	case Passed, Skipped:
+	case report.Passed, report.Skipped:
 		if r.Status == "" {
-			r.Status = Passed
+			r.Status = report.Passed
 		}
-	case Failed:
-		if r.Status != Canceled {
+	case report.Failed:
+		if r.Status != report.Canceled {
 			r.Status = step.Status
 		}
-	case Canceled:
+	case report.Canceled:
 		r.Status = step.Status
 	}
 
@@ -145,7 +133,6 @@ func (r *Report) findStep(name string) *Step {
 func (s *Step) AddTest(t *Test) {
 	result := &Step{
 		Name:     t.Name(),
-		Config:   t.Config,
 		Status:   t.Status,
 		Items:    t.Steps,
 		Duration: t.Duration,
@@ -154,15 +141,15 @@ func (s *Step) AddTest(t *Test) {
 	s.Items = append(s.Items, result)
 
 	switch t.Status {
-	case Passed, Skipped:
+	case report.Passed, report.Skipped:
 		if s.Status == "" {
-			s.Status = Passed
+			s.Status = report.Passed
 		}
-	case Failed:
-		if s.Status != Canceled {
+	case report.Failed:
+		if s.Status != report.Canceled {
 			s.Status = t.Status
 		}
-	case Canceled:
+	case report.Canceled:
 		s.Status = t.Status
 	}
 }
@@ -184,14 +171,6 @@ func (s *Step) Equal(o *Step) bool {
 	if s.Duration != o.Duration {
 		return false
 	}
-	if s.Config != o.Config {
-		if s.Config == nil || o.Config == nil {
-			return false
-		}
-		if *s.Config != *o.Config {
-			return false
-		}
-	}
 	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
 		if a == nil {
 			return b == nil
@@ -202,13 +181,13 @@ func (s *Step) Equal(o *Step) bool {
 
 func (s *Summary) AddTest(t *Step) {
 	switch t.Status {
-	case Passed:
+	case report.Passed:
 		s.Passed++
-	case Failed:
+	case report.Failed:
 		s.Failed++
-	case Skipped:
+	case report.Skipped:
 		s.Skipped++
-	case Canceled:
+	case report.Canceled:
 		s.Canceled++
 	}
 }
