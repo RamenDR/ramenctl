@@ -64,13 +64,12 @@ func (r *Report) Equal(o *Report) bool {
 	if !r.Created.Equal(o.Created) {
 		return false
 	}
-	if r.Build != o.Build {
-		if r.Build == nil || o.Build == nil {
-			return false
-		}
+	if r.Build != nil && o.Build != nil {
 		if *r.Build != *o.Build {
 			return false
 		}
+	} else if r.Build != o.Build {
+		return false
 	}
 	return true
 }
