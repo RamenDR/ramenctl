@@ -16,6 +16,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
+	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
@@ -23,7 +24,7 @@ import (
 type Test struct {
 	*Context
 	Backend     e2e.Testing
-	Status      Status
+	Status      report.Status
 	Config      *e2econfig.Test
 	Steps       []*Step
 	Duration    float64
@@ -50,7 +51,7 @@ func newTest(tc e2econfig.Test, cmd *Command) *Test {
 	return &Test{
 		Context: newContext(cmd, workload, deployer),
 		Backend: cmd.backend,
-		Status:  Passed,
+		Status:  report.Passed,
 		Config:  &tc,
 	}
 }
@@ -160,10 +161,10 @@ func (t *Test) failStep(err error) bool {
 	step.Duration = time.Since(t.stepStarted).Seconds()
 	t.Duration += step.Duration
 	if errors.Is(err, context.Canceled) {
-		step.Status = Canceled
+		step.Status = report.Canceled
 		console.Error("Canceled application %q %s", t.Name(), step.Name)
 	} else {
-		step.Status = Failed
+		step.Status = report.Failed
 		console.Error("Failed to %s application %q", step.Name, t.Name())
 	}
 	t.Status = step.Status
@@ -175,7 +176,7 @@ func (t *Test) passStep() bool {
 	step := t.Steps[len(t.Steps)-1]
 	step.Duration = time.Since(t.stepStarted).Seconds()
 	t.Duration += step.Duration
-	step.Status = Passed
+	step.Status = report.Passed
 	t.Logger().Infof("Step %q passed", step.Name)
 	return true
 }

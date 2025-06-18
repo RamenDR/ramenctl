@@ -10,6 +10,15 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
+type Status string
+
+const (
+	Passed   = Status("passed")
+	Failed   = Status("failed")
+	Skipped  = Status("skipped")
+	Canceled = Status("canceled")
+)
+
 // Host describes the host ramenctl is running on.
 type Host struct {
 	OS   string `json:"os"`
@@ -28,6 +37,7 @@ type Report struct {
 	Host    Host      `json:"host"`
 	Build   *Build    `json:"build,omitempty"`
 	Created time.Time `json:"created"`
+	Status  Status    `json:"status,omitempty"`
 }
 
 // New create a new generic report. Commands embed the report in the command report.
@@ -69,6 +79,9 @@ func (r *Report) Equal(o *Report) bool {
 			return false
 		}
 	} else if r.Build != o.Build {
+		return false
+	}
+	if r.Status != o.Status {
 		return false
 	}
 	return true

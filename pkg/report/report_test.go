@@ -128,6 +128,13 @@ func TestReportNotEqual(t *testing.T) {
 			t.Fatal("reports with different host should not be equal")
 		}
 	})
+	t.Run("status", func(t *testing.T) {
+		r2 := report.New()
+		r2.Status = report.Failed
+		if r1.Equal(r2) {
+			t.Fatal("reports with different status should not be equal")
+		}
+	})
 }
 
 var fakeNow = time.Now()

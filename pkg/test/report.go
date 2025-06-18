@@ -15,13 +15,6 @@ import (
 type Status string
 
 const (
-	Passed   = Status("passed")
-	Failed   = Status("failed")
-	Skipped  = Status("skipped")
-	Canceled = Status("canceled")
-)
-
-const (
 	ValidateStep = "validate"
 	SetupStep    = "setup"
 	TestsStep    = "tests"
@@ -31,7 +24,7 @@ const (
 // A step is a test command step.
 type Step struct {
 	Name     string          `json:"name"`
-	Status   Status          `json:"status,omitempty"`
+	Status   report.Status   `json:"status,omitempty"`
 	Duration float64         `json:"duration,omitempty"`
 	Config   *e2econfig.Test `json:"config,omitempty"`
 	Items    []*Step         `json:"items,omitempty"`
@@ -52,7 +45,6 @@ type Report struct {
 	Config   *e2econfig.Config `json:"config"`
 	Steps    []*Step           `json:"steps"`
 	Summary  Summary           `json:"summary"`
-	Status   Status            `json:"status,omitempty"`
 	Duration float64           `json:"duration,omitempty"`
 }
 
@@ -76,15 +68,15 @@ func (r *Report) AddStep(step *Step) {
 	r.Duration += step.Duration
 
 	switch step.Status {
-	case Passed, Skipped:
+	case report.Passed, report.Skipped:
 		if r.Status == "" {
-			r.Status = Passed
+			r.Status = report.Passed
 		}
-	case Failed:
-		if r.Status != Canceled {
+	case report.Failed:
+		if r.Status != report.Canceled {
 			r.Status = step.Status
 		}
-	case Canceled:
+	case report.Canceled:
 		r.Status = step.Status
 	}
 
@@ -115,9 +107,6 @@ func (r *Report) Equal(o *Report) bool {
 			return false
 		}
 	} else if r.Config != o.Config {
-		return false
-	}
-	if r.Status != o.Status {
 		return false
 	}
 	if r.Summary != o.Summary {
@@ -153,15 +142,15 @@ func (s *Step) AddTest(t *Test) {
 	s.Items = append(s.Items, result)
 
 	switch t.Status {
-	case Passed, Skipped:
+	case report.Passed, report.Skipped:
 		if s.Status == "" {
-			s.Status = Passed
+			s.Status = report.Passed
 		}
-	case Failed:
-		if s.Status != Canceled {
+	case report.Failed:
+		if s.Status != report.Canceled {
 			s.Status = t.Status
 		}
-	case Canceled:
+	case report.Canceled:
 		s.Status = t.Status
 	}
 }
@@ -201,13 +190,13 @@ func (s *Step) Equal(o *Step) bool {
 
 func (s *Summary) AddTest(t *Step) {
 	switch t.Status {
-	case Passed:
+	case report.Passed:
 		s.Passed++
-	case Failed:
+	case report.Failed:
 		s.Failed++
-	case Skipped:
+	case report.Skipped:
 		s.Skipped++
-	case Canceled:
+	case report.Canceled:
 		s.Canceled++
 	}
 }

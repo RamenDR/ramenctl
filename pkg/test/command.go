@@ -20,6 +20,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/e2e"
 	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
@@ -232,10 +233,10 @@ func (c *Command) startStep(name string) {
 func (c *Command) failStep(err error) bool {
 	c.current.Duration = time.Since(c.stepStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
-		c.current.Status = Canceled
+		c.current.Status = report.Canceled
 		console.Error("Canceled %s", c.current.Name)
 	} else {
-		c.current.Status = Failed
+		c.current.Status = report.Failed
 		console.Error("Failed to %s", c.current.Name)
 	}
 	c.Logger().Errorf("Step %q %s: %s", c.current.Name, c.current.Status, err)
@@ -246,7 +247,7 @@ func (c *Command) failStep(err error) bool {
 
 func (c *Command) passStep() bool {
 	c.current.Duration = time.Since(c.stepStarted).Seconds()
-	c.current.Status = Passed
+	c.current.Status = report.Passed
 	c.Logger().Infof("Step %q passed", c.current.Name)
 	c.report.AddStep(c.current)
 	c.current = nil
@@ -258,7 +259,7 @@ func (c *Command) finishStep() bool {
 	c.Logger().Infof("Step %q finished", c.current.Name)
 	c.report.AddStep(c.current)
 	c.current = nil
-	return c.report.Status == Passed
+	return c.report.Status == report.Passed
 }
 
 func (c *Command) runFlowFunc(f flowFunc) bool {
@@ -279,7 +280,7 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 
 	res := c.finishStep()
-	if c.report.Status == Failed && c.options.GatherData {
+	if c.report.Status == report.Failed && c.options.GatherData {
 		c.gatherData()
 	}
 	return res
@@ -317,7 +318,7 @@ func (c *Command) namespacesToGather() []string {
 
 	// Add application resources for failed tests.
 	for _, test := range c.tests {
-		if test.Status == Failed {
+		if test.Status == report.Failed {
 			seen[test.AppNamespace()] = struct{}{}
 			seen[test.ManagementNamespace()] = struct{}{}
 		}

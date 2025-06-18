@@ -74,14 +74,14 @@ func TestReportEmpty(t *testing.T) {
 
 func TestReportAddPassedStep(t *testing.T) {
 	fakeTime(t)
-	passedStep := &Step{Name: "passed_step", Status: Passed, Duration: 1.0}
+	passedStep := &Step{Name: "passed_step", Status: report.Passed, Duration: 1.0}
 
 	// Adding a passed test should set the report status.
 	t.Run("empty", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
 		r.AddStep(passedStep)
-		if r.Status != Passed {
-			t.Errorf("expected status %s, got %s", Passed, r.Status)
+		if r.Status != report.Passed {
+			t.Errorf("expected status %s, got %s", report.Passed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{passedStep}) {
 			t.Errorf("expected steps to br equal, got %v", r.Steps)
@@ -91,10 +91,10 @@ func TestReportAddPassedStep(t *testing.T) {
 	// Adding a passed test should not modify failed status.
 	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Failed
+		r.Status = report.Failed
 		r.AddStep(passedStep)
-		if r.Status != Failed {
-			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		if r.Status != report.Failed {
+			t.Errorf("expected status %s, got %s", report.Failed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{passedStep}) {
 			t.Errorf("expected steps to br equal, got %v", r.Steps)
@@ -104,10 +104,10 @@ func TestReportAddPassedStep(t *testing.T) {
 	// Adding a passed test should not modify canceled status.
 	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Canceled
+		r.Status = report.Canceled
 		r.AddStep(passedStep)
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		if r.Status != report.Canceled {
+			t.Errorf("expected status %s, got %s", report.Canceled, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{passedStep}) {
 			t.Errorf("expected steps to br equal, got %v", r.Steps)
@@ -117,15 +117,15 @@ func TestReportAddPassedStep(t *testing.T) {
 
 func TestReportAddFailedStep(t *testing.T) {
 	fakeTime(t)
-	failedStep := &Step{Name: "failed_step", Status: Failed, Duration: 1.0}
+	failedStep := &Step{Name: "failed_step", Status: report.Failed, Duration: 1.0}
 
 	// Failed status should override existing Passed status.
 	t.Run("passed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Passed
+		r.Status = report.Passed
 		r.AddStep(failedStep)
-		if r.Status != Failed {
-			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		if r.Status != report.Failed {
+			t.Errorf("expected status %s, got %s", report.Failed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{failedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -135,10 +135,10 @@ func TestReportAddFailedStep(t *testing.T) {
 	// If a report is canceled, adding a failed test should not change the status.
 	t.Run("canceled", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Canceled
+		r.Status = report.Canceled
 		r.AddStep(failedStep)
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		if r.Status != report.Canceled {
+			t.Errorf("expected status %s, got %s", report.Canceled, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{failedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -148,15 +148,15 @@ func TestReportAddFailedStep(t *testing.T) {
 
 func TestReportAddCanceledStep(t *testing.T) {
 	fakeTime(t)
-	canceledStep := &Step{Name: "canceled_step", Status: Canceled, Duration: 1.0}
+	canceledStep := &Step{Name: "canceled_step", Status: report.Canceled, Duration: 1.0}
 
 	// Adding canceled step mark the report as canceled.
 	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Failed
+		r.Status = report.Failed
 		r.AddStep(canceledStep)
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		if r.Status != report.Canceled {
+			t.Errorf("expected status %s, got %s", report.Canceled, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{canceledStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -166,10 +166,10 @@ func TestReportAddCanceledStep(t *testing.T) {
 	// Adding canceled step mark the report as canceled.
 	t.Run("passed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Passed
+		r.Status = report.Passed
 		r.AddStep(canceledStep)
-		if r.Status != Canceled {
-			t.Errorf("expected status %s, got %s", Canceled, r.Status)
+		if r.Status != report.Canceled {
+			t.Errorf("expected status %s, got %s", report.Canceled, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{canceledStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -179,14 +179,14 @@ func TestReportAddCanceledStep(t *testing.T) {
 
 func TestReportAddSkippedStep(t *testing.T) {
 	fakeTime(t)
-	skippedStep := &Step{Name: "skipped-step", Status: Skipped, Duration: 0.0}
+	skippedStep := &Step{Name: "skipped-step", Status: report.Skipped, Duration: 0.0}
 
 	// Skipped step with empty status should result in Passed.
 	t.Run("empty", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
 		r.AddStep(skippedStep)
-		if r.Status != Passed {
-			t.Errorf("expected status %s, got %s", Passed, r.Status)
+		if r.Status != report.Passed {
+			t.Errorf("expected status %s, got %s", report.Passed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -196,10 +196,10 @@ func TestReportAddSkippedStep(t *testing.T) {
 	// Failed status should not be overridden by Skipped.
 	t.Run("failed", func(t *testing.T) {
 		r := newReport("test-command", reportConfig)
-		r.Status = Failed
+		r.Status = report.Failed
 		r.AddStep(skippedStep)
-		if r.Status != Failed {
-			t.Errorf("expected status %s, got %s", Failed, r.Status)
+		if r.Status != report.Failed {
+			t.Errorf("expected status %s, got %s", report.Failed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*Step{skippedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
@@ -210,11 +210,11 @@ func TestReportAddSkippedStep(t *testing.T) {
 func TestReportDuration(t *testing.T) {
 	r := newReport("test-command", reportConfig)
 	steps := []*Step{
-		{Name: "step1", Status: Passed, Duration: 1.0},
-		{Name: "step2", Status: Passed, Duration: 1.0},
-		{Name: "step3", Status: Skipped, Duration: 1.0},
-		{Name: "step4", Status: Failed, Duration: 1.0},
-		{Name: "step5", Status: Canceled, Duration: 1.0},
+		{Name: "step1", Status: report.Passed, Duration: 1.0},
+		{Name: "step2", Status: report.Passed, Duration: 1.0},
+		{Name: "step3", Status: report.Skipped, Duration: 1.0},
+		{Name: "step4", Status: report.Failed, Duration: 1.0},
+		{Name: "step5", Status: report.Canceled, Duration: 1.0},
 	}
 	for _, step := range steps {
 		r.AddStep(step)
@@ -230,11 +230,11 @@ func TestReportDuration(t *testing.T) {
 
 func TestReportAddDuplicateStep(t *testing.T) {
 	r := newReport("test-command", reportConfig)
-	step := &Step{Name: "unique-step", Status: Passed, Duration: 1.0}
+	step := &Step{Name: "unique-step", Status: report.Passed, Duration: 1.0}
 	r.AddStep(step)
 
 	// Adding another step with the same name should panic.
-	dup := &Step{Name: "unique-step", Status: Failed, Duration: 1.0}
+	dup := &Step{Name: "unique-step", Status: report.Failed, Duration: 1.0}
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("expected panic when adding duplicate step, but it didn't happen")
@@ -247,13 +247,13 @@ func TestReportSummary(t *testing.T) {
 	r := newReport("test-command", reportConfig)
 	testsStep := &Step{
 		Name:     TestsStep,
-		Status:   Passed,
+		Status:   report.Passed,
 		Duration: 1.0,
 		Items: []*Step{
-			{Name: "test1", Status: Passed, Duration: 1.0},
-			{Name: "test2", Status: Failed, Duration: 1.0},
-			{Name: "test3", Status: Skipped, Duration: 1.0},
-			{Name: "test4", Status: Canceled, Duration: 1.0},
+			{Name: "test1", Status: report.Passed, Duration: 1.0},
+			{Name: "test2", Status: report.Failed, Duration: 1.0},
+			{Name: "test3", Status: report.Skipped, Duration: 1.0},
+			{Name: "test4", Status: report.Canceled, Duration: 1.0},
 		},
 	}
 	r.AddStep(testsStep)
@@ -269,11 +269,11 @@ func TestReportEqual(t *testing.T) {
 	// Helper function to create a standard report
 	createReport := func() *Report {
 		r := newReport("test-command", reportConfig)
-		r.Status = Passed
+		r.Status = report.Passed
 		r.Duration = 1.0
 		r.Steps = []*Step{
-			{Name: "step1", Status: Passed, Duration: 1.0},
-			{Name: "step2", Status: Passed, Duration: 1.0},
+			{Name: "step1", Status: report.Passed, Duration: 1.0},
+			{Name: "step2", Status: report.Passed, Duration: 1.0},
 		}
 		r.Summary = Summary{Passed: 2}
 		return r
@@ -335,14 +335,6 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("different status", func(t *testing.T) {
-		r2 := createReport()
-		r2.Status = Failed
-		if r1.Equal(r2) {
-			t.Error("reports with different status should not be equal")
-		}
-	})
-
 	t.Run("different summary", func(t *testing.T) {
 		r2 := createReport()
 		r2.Summary = Summary{Passed: 1, Failed: 1}
@@ -362,7 +354,7 @@ func TestReportEqual(t *testing.T) {
 	t.Run("different step length", func(t *testing.T) {
 		r2 := createReport()
 		r2.Steps = []*Step{
-			{Name: "step1", Status: Passed, Duration: 1.0},
+			{Name: "step1", Status: report.Passed, Duration: 1.0},
 		}
 		if r1.Equal(r2) {
 			t.Error("reports with different step counts should not be equal")
@@ -372,8 +364,8 @@ func TestReportEqual(t *testing.T) {
 	t.Run("different steps content", func(t *testing.T) {
 		r2 := createReport()
 		r2.Steps = []*Step{
-			{Name: "step1", Status: Passed, Duration: 1.0},
-			{Name: "different", Status: Passed, Duration: 2.0},
+			{Name: "step1", Status: report.Passed, Duration: 1.0},
+			{Name: "different", Status: report.Passed, Duration: 2.0},
 		}
 		if r1.Equal(r2) {
 			t.Error("reports with different step content should not be equal")
@@ -384,21 +376,21 @@ func TestReportEqual(t *testing.T) {
 func TestReportMarshaling(t *testing.T) {
 	fakeTime(t)
 	r := newReport("test-command", reportConfig)
-	r.Status = Failed
+	r.Status = report.Failed
 	r.Duration = 2.0
 	r.Steps = []*Step{
 		{
 			Name:     "step1",
-			Status:   Passed,
+			Status:   report.Passed,
 			Duration: 1.0,
 			Items: []*Step{
-				{Name: "subitem1", Status: Passed, Duration: 1.0},
-				{Name: "subitem2", Status: Passed, Duration: 1.0},
+				{Name: "subitem1", Status: report.Passed, Duration: 1.0},
+				{Name: "subitem2", Status: report.Passed, Duration: 1.0},
 			},
 		},
 		{
 			Name:     "step2",
-			Status:   Failed,
+			Status:   report.Failed,
 			Duration: 1.0,
 		},
 	}
@@ -411,16 +403,16 @@ func TestReportMarshaling(t *testing.T) {
 func TestStepAddPassedTest(t *testing.T) {
 	passedTest := &Test{
 		Context:  &Context{name: "passing_test"},
-		Status:   Passed,
+		Status:   report.Passed,
 		Config:   &reportConfig.Tests[0],
 		Duration: 6.0,
 		Steps: []*Step{
-			{Name: "deploy", Status: Passed, Duration: 1.0},
-			{Name: "protect", Status: Passed, Duration: 1.0},
-			{Name: "failover", Status: Passed, Duration: 1.0},
-			{Name: "relocate", Status: Passed, Duration: 1.0},
-			{Name: "unprotect", Status: Passed, Duration: 1.0},
-			{Name: "undeploy", Status: Passed, Duration: 1.0},
+			{Name: "deploy", Status: report.Passed, Duration: 1.0},
+			{Name: "protect", Status: report.Passed, Duration: 1.0},
+			{Name: "failover", Status: report.Passed, Duration: 1.0},
+			{Name: "relocate", Status: report.Passed, Duration: 1.0},
+			{Name: "unprotect", Status: report.Passed, Duration: 1.0},
+			{Name: "undeploy", Status: report.Passed, Duration: 1.0},
 		},
 	}
 
@@ -430,7 +422,7 @@ func TestStepAddPassedTest(t *testing.T) {
 		s1.AddTest(passedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Passed,
+			Status: report.Passed,
 			Items: []*Step{
 				{
 					Name:     passedTest.Name(),
@@ -448,11 +440,11 @@ func TestStepAddPassedTest(t *testing.T) {
 
 	// If a report is failed adding new step should not change the status.
 	t.Run("failed", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Failed}
+		s1 := &Step{Name: "root", Status: report.Failed}
 		s1.AddTest(passedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Failed,
+			Status: report.Failed,
 			Items: []*Step{
 				{
 					Name:     passedTest.Name(),
@@ -470,11 +462,11 @@ func TestStepAddPassedTest(t *testing.T) {
 
 	// If a report is failed adding new step should not change the status.
 	t.Run("canceled", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Canceled}
+		s1 := &Step{Name: "root", Status: report.Canceled}
 		s1.AddTest(passedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Canceled,
+			Status: report.Canceled,
 			Items: []*Step{
 				{
 					Name:     passedTest.Name(),
@@ -494,11 +486,11 @@ func TestStepAddPassedTest(t *testing.T) {
 func TestStepAddFailedTest(t *testing.T) {
 	failedTest := &Test{
 		Context:  &Context{name: "failing_test"},
-		Status:   Failed,
+		Status:   report.Failed,
 		Config:   &reportConfig.Tests[0],
 		Duration: 1.0,
 		Steps: []*Step{
-			{Name: "undeploy", Status: Failed, Duration: 1.0},
+			{Name: "undeploy", Status: report.Failed, Duration: 1.0},
 		},
 	}
 
@@ -508,7 +500,7 @@ func TestStepAddFailedTest(t *testing.T) {
 		s1.AddTest(failedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Failed,
+			Status: report.Failed,
 			Items: []*Step{
 				{
 					Name:     failedTest.Name(),
@@ -526,12 +518,12 @@ func TestStepAddFailedTest(t *testing.T) {
 
 	// Adding failed tests shuuld change report status.
 	t.Run("passed", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Passed}
+		s1 := &Step{Name: "root", Status: report.Passed}
 		s1.AddTest(failedTest)
 		s2 := &Step{
 			Name: s1.Name,
 			// Passed status should be changed to Failed
-			Status: Failed,
+			Status: report.Failed,
 			Items: []*Step{
 				{
 					Name:     failedTest.Name(),
@@ -549,11 +541,11 @@ func TestStepAddFailedTest(t *testing.T) {
 
 	// Adding failed step should not change canceled report.
 	t.Run("canceled", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Canceled}
+		s1 := &Step{Name: "root", Status: report.Canceled}
 		s1.AddTest(failedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Canceled,
+			Status: report.Canceled,
 			Items: []*Step{
 				{
 					Name:     failedTest.Name(),
@@ -573,20 +565,20 @@ func TestStepAddFailedTest(t *testing.T) {
 func TestStepAddCanceledTest(t *testing.T) {
 	canceledTest := &Test{
 		Context:  &Context{name: "canceled_test"},
-		Status:   Canceled,
+		Status:   report.Canceled,
 		Duration: 1.0,
 		Steps: []*Step{
-			{Name: "deploy", Status: Canceled, Duration: 1.0},
+			{Name: "deploy", Status: report.Canceled, Duration: 1.0},
 		},
 	}
 
 	// Adding canceled test should override failed status.
 	t.Run("failed", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Failed}
+		s1 := &Step{Name: "root", Status: report.Failed}
 		s1.AddTest(canceledTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Canceled,
+			Status: report.Canceled,
 			Items: []*Step{
 				{
 					Name:     canceledTest.Name(),
@@ -603,11 +595,11 @@ func TestStepAddCanceledTest(t *testing.T) {
 
 	// Adding canceled test should override passed status.
 	t.Run("passed", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Passed}
+		s1 := &Step{Name: "root", Status: report.Passed}
 		s1.AddTest(canceledTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Canceled,
+			Status: report.Canceled,
 			Items: []*Step{
 				{
 					Name:     canceledTest.Name(),
@@ -626,7 +618,7 @@ func TestStepAddCanceledTest(t *testing.T) {
 func TestStepAddSkippedTest(t *testing.T) {
 	skippedTest := &Test{
 		Context:  &Context{name: "skipped_test"},
-		Status:   Skipped,
+		Status:   report.Skipped,
 		Duration: 0.0,
 	}
 
@@ -636,7 +628,7 @@ func TestStepAddSkippedTest(t *testing.T) {
 		s1.AddTest(skippedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Passed,
+			Status: report.Passed,
 			Items: []*Step{
 				{
 					Name:     skippedTest.Name(),
@@ -652,11 +644,11 @@ func TestStepAddSkippedTest(t *testing.T) {
 
 	// Adding skipped test should not modify failed status.
 	t.Run("failed", func(t *testing.T) {
-		s1 := &Step{Name: "root", Status: Failed}
+		s1 := &Step{Name: "root", Status: report.Failed}
 		s1.AddTest(skippedTest)
 		s2 := &Step{
 			Name:   s1.Name,
-			Status: Failed,
+			Status: report.Failed,
 			Items: []*Step{
 				{
 					Name:     skippedTest.Name(),
@@ -673,12 +665,12 @@ func TestStepAddSkippedTest(t *testing.T) {
 func TestStepMarshal(t *testing.T) {
 	step := &Step{
 		Name:     "test",
-		Status:   Passed,
+		Status:   report.Passed,
 		Duration: 2.0,
 		Config:   &reportConfig.Tests[0],
 		Items: []*Step{
-			{Name: "subtest1", Status: Passed, Duration: 1.0},
-			{Name: "subtest2", Status: Failed, Duration: 1.0},
+			{Name: "subtest1", Status: report.Passed, Duration: 1.0},
+			{Name: "subtest2", Status: report.Failed, Duration: 1.0},
 		},
 	}
 
@@ -697,7 +689,12 @@ func TestStepMarshal(t *testing.T) {
 }
 
 func TestStepEqual(t *testing.T) {
-	s1 := Step{Name: "base_test", Status: Passed, Duration: 1.0, Config: &reportConfig.Tests[0]}
+	s1 := Step{
+		Name:     "base_test",
+		Status:   report.Passed,
+		Duration: 1.0,
+		Config:   &reportConfig.Tests[0],
+	}
 
 	t.Run("equal to self", func(t *testing.T) {
 		if !s1.Equal(&s1) {
@@ -721,7 +718,7 @@ func TestStepEqual(t *testing.T) {
 
 	t.Run("different status", func(t *testing.T) {
 		s2 := s1
-		s2.Status = Failed
+		s2.Status = report.Failed
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different status should not be equal")
 		}
@@ -752,7 +749,7 @@ func TestStepEqual(t *testing.T) {
 	})
 
 	t.Run("both nil config", func(t *testing.T) {
-		s1 := Step{Name: "test", Status: Passed, Duration: 1.0, Config: nil}
+		s1 := Step{Name: "test", Status: report.Passed, Duration: 1.0, Config: nil}
 		s2 := s1
 		if !s1.Equal(&s2) {
 			t.Fatalf("steps with nil config should be equal")
@@ -762,9 +759,12 @@ func TestStepEqual(t *testing.T) {
 	t.Run("equal subitems", func(t *testing.T) {
 		s1 := Step{
 			Name:     "parent",
-			Status:   Passed,
+			Status:   report.Passed,
 			Duration: 1.0,
-			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
+			Items: []*Step{
+				{Name: "child1", Status: report.Passed},
+				{Name: "child2", Status: report.Failed},
+			},
 		}
 		s2 := s1
 		if !s1.Equal(&s2) {
@@ -775,12 +775,18 @@ func TestStepEqual(t *testing.T) {
 	t.Run("different subitem name", func(t *testing.T) {
 		s1 := Step{
 			Name:     "parent",
-			Status:   Passed,
+			Status:   report.Passed,
 			Duration: 1.0,
-			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
+			Items: []*Step{
+				{Name: "child1", Status: report.Passed},
+				{Name: "child2", Status: report.Failed},
+			},
 		}
 		s2 := s1
-		s2.Items = []*Step{{Name: "child1", Status: Passed}, {Name: "different", Status: Failed}}
+		s2.Items = []*Step{
+			{Name: "child1", Status: report.Passed},
+			{Name: "different", Status: report.Failed},
+		}
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different subitem names should not be equal")
 		}
@@ -789,12 +795,15 @@ func TestStepEqual(t *testing.T) {
 	t.Run("different number of subitems", func(t *testing.T) {
 		s1 := Step{
 			Name:     "parent",
-			Status:   Passed,
+			Status:   report.Passed,
 			Duration: 1.0,
-			Items:    []*Step{{Name: "child1", Status: Passed}, {Name: "child2", Status: Failed}},
+			Items: []*Step{
+				{Name: "child1", Status: report.Passed},
+				{Name: "child2", Status: report.Failed},
+			},
 		}
 		s2 := s1
-		s2.Items = []*Step{{Name: "child1", Status: Passed}}
+		s2.Items = []*Step{{Name: "child1", Status: report.Passed}}
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different number of subitems should not be equal")
 		}
@@ -832,12 +841,12 @@ func TestSummaryCount(t *testing.T) {
 	summary := Summary{}
 
 	// Add multiple tests of different status
-	summary.AddTest(&Step{Status: Passed})
-	summary.AddTest(&Step{Status: Passed})
-	summary.AddTest(&Step{Status: Failed})
-	summary.AddTest(&Step{Status: Skipped})
-	summary.AddTest(&Step{Status: Canceled})
-	summary.AddTest(&Step{Status: Passed})
+	summary.AddTest(&Step{Status: report.Passed})
+	summary.AddTest(&Step{Status: report.Passed})
+	summary.AddTest(&Step{Status: report.Failed})
+	summary.AddTest(&Step{Status: report.Skipped})
+	summary.AddTest(&Step{Status: report.Canceled})
+	summary.AddTest(&Step{Status: report.Passed})
 
 	expectedSummary := Summary{Passed: 3, Failed: 1, Skipped: 1, Canceled: 1}
 	if summary != expectedSummary {
