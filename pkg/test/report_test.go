@@ -51,7 +51,7 @@ func TestReportEmpty(t *testing.T) {
 	r := newReport("test-run", reportConfig)
 
 	// Host and ramenctl info is ready.
-	expectedReport := report.New()
+	expectedReport := report.New("test-run")
 	if !r.Report.Equal(expectedReport) {
 		t.Errorf("expected report %+v, got %+v", expectedReport, r.Report)
 	}
@@ -299,14 +299,6 @@ func TestReportEqual(t *testing.T) {
 		r2 := createReport()
 		if !r1.Equal(r2) {
 			t.Error("reports with identical content should be equal")
-		}
-	})
-
-	t.Run("different name", func(t *testing.T) {
-		r2 := createReport()
-		r2.Name = "different-command"
-		if r1.Equal(r2) {
-			t.Error("reports with different names should not be equal")
 		}
 	})
 

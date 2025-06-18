@@ -41,7 +41,6 @@ type Summary struct {
 // Report created by test sub commands.
 type Report struct {
 	*report.Report
-	Name     string            `json:"name"`
 	Config   *e2econfig.Config `json:"config"`
 	Steps    []*Step           `json:"steps"`
 	Summary  Summary           `json:"summary"`
@@ -53,8 +52,7 @@ func newReport(commandName string, config *e2econfig.Config) *Report {
 		panic("config must not be nil")
 	}
 	return &Report{
-		Report: report.New(),
-		Name:   commandName,
+		Report: report.New(commandName),
 		Config: config,
 	}
 }
@@ -97,9 +95,6 @@ func (r *Report) Equal(o *Report) bool {
 		return false
 	}
 	if !r.Report.Equal(o.Report) {
-		return false
-	}
-	if r.Name != o.Name {
 		return false
 	}
 	if r.Config != nil && o.Config != nil {
