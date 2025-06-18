@@ -388,7 +388,6 @@ func TestStepAddPassedTest(t *testing.T) {
 	passedTest := &Test{
 		Context:  &Context{name: "passing_test"},
 		Status:   report.Passed,
-		Config:   &reportConfig.Tests[0],
 		Duration: 6.0,
 		Steps: []*Step{
 			{Name: "deploy", Status: report.Passed, Duration: 1.0},
@@ -412,7 +411,6 @@ func TestStepAddPassedTest(t *testing.T) {
 					Name:     passedTest.Name(),
 					Status:   passedTest.Status,
 					Duration: passedTest.Duration,
-					Config:   passedTest.Config,
 					Items:    passedTest.Steps,
 				},
 			},
@@ -434,7 +432,6 @@ func TestStepAddPassedTest(t *testing.T) {
 					Name:     passedTest.Name(),
 					Status:   passedTest.Status,
 					Duration: passedTest.Duration,
-					Config:   passedTest.Config,
 					Items:    passedTest.Steps,
 				},
 			},
@@ -456,7 +453,6 @@ func TestStepAddPassedTest(t *testing.T) {
 					Name:     passedTest.Name(),
 					Status:   passedTest.Status,
 					Duration: passedTest.Duration,
-					Config:   passedTest.Config,
 					Items:    passedTest.Steps,
 				},
 			},
@@ -471,7 +467,6 @@ func TestStepAddFailedTest(t *testing.T) {
 	failedTest := &Test{
 		Context:  &Context{name: "failing_test"},
 		Status:   report.Failed,
-		Config:   &reportConfig.Tests[0],
 		Duration: 1.0,
 		Steps: []*Step{
 			{Name: "undeploy", Status: report.Failed, Duration: 1.0},
@@ -490,7 +485,6 @@ func TestStepAddFailedTest(t *testing.T) {
 					Name:     failedTest.Name(),
 					Status:   failedTest.Status,
 					Duration: failedTest.Duration,
-					Config:   failedTest.Config,
 					Items:    failedTest.Steps,
 				},
 			},
@@ -513,7 +507,6 @@ func TestStepAddFailedTest(t *testing.T) {
 					Name:     failedTest.Name(),
 					Status:   failedTest.Status,
 					Duration: failedTest.Duration,
-					Config:   failedTest.Config,
 					Items:    failedTest.Steps,
 				},
 			},
@@ -535,7 +528,6 @@ func TestStepAddFailedTest(t *testing.T) {
 					Name:     failedTest.Name(),
 					Status:   failedTest.Status,
 					Duration: failedTest.Duration,
-					Config:   failedTest.Config,
 					Items:    failedTest.Steps,
 				},
 			},
@@ -651,7 +643,6 @@ func TestStepMarshal(t *testing.T) {
 		Name:     "test",
 		Status:   report.Passed,
 		Duration: 2.0,
-		Config:   &reportConfig.Tests[0],
 		Items: []*Step{
 			{Name: "subtest1", Status: report.Passed, Duration: 1.0},
 			{Name: "subtest2", Status: report.Failed, Duration: 1.0},
@@ -673,12 +664,7 @@ func TestStepMarshal(t *testing.T) {
 }
 
 func TestStepEqual(t *testing.T) {
-	s1 := Step{
-		Name:     "base_test",
-		Status:   report.Passed,
-		Duration: 1.0,
-		Config:   &reportConfig.Tests[0],
-	}
+	s1 := Step{Name: "base_test", Status: report.Passed, Duration: 1.0}
 
 	t.Run("equal to self", func(t *testing.T) {
 		if !s1.Equal(&s1) {
@@ -713,30 +699,6 @@ func TestStepEqual(t *testing.T) {
 		s2.Duration = 2.0
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different duration should not be equal")
-		}
-	})
-
-	t.Run("different config", func(t *testing.T) {
-		s2 := s1
-		s2.Config = &reportConfig.Tests[1]
-		if s1.Equal(&s2) {
-			t.Fatalf("steps with different config should not be equal")
-		}
-	})
-
-	t.Run("one nil config", func(t *testing.T) {
-		s2 := s1
-		s2.Config = nil
-		if s1.Equal(&s2) {
-			t.Fatalf("step with config should not be equal to step without config")
-		}
-	})
-
-	t.Run("both nil config", func(t *testing.T) {
-		s1 := Step{Name: "test", Status: report.Passed, Duration: 1.0, Config: nil}
-		s2 := s1
-		if !s1.Equal(&s2) {
-			t.Fatalf("steps with nil config should be equal")
 		}
 	})
 

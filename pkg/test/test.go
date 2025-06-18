@@ -25,7 +25,6 @@ type Test struct {
 	*Context
 	Backend     e2e.Testing
 	Status      report.Status
-	Config      *e2econfig.Test
 	Steps       []*Step
 	Duration    float64
 	stepStarted time.Time
@@ -52,7 +51,6 @@ func newTest(tc e2econfig.Test, cmd *Command) *Test {
 		Context: newContext(cmd, workload, deployer),
 		Backend: cmd.backend,
 		Status:  report.Passed,
-		Config:  &tc,
 	}
 }
 

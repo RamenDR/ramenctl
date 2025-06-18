@@ -23,11 +23,10 @@ const (
 
 // A step is a test command step.
 type Step struct {
-	Name     string          `json:"name"`
-	Status   report.Status   `json:"status,omitempty"`
-	Duration float64         `json:"duration,omitempty"`
-	Config   *e2econfig.Test `json:"config,omitempty"`
-	Items    []*Step         `json:"items,omitempty"`
+	Name     string        `json:"name"`
+	Status   report.Status `json:"status,omitempty"`
+	Duration float64       `json:"duration,omitempty"`
+	Items    []*Step       `json:"items,omitempty"`
 }
 
 // Summary summaries a test run or clean.
@@ -124,7 +123,6 @@ func (r *Report) findStep(name string) *Step {
 func (s *Step) AddTest(t *Test) {
 	result := &Step{
 		Name:     t.Name(),
-		Config:   t.Config,
 		Status:   t.Status,
 		Items:    t.Steps,
 		Duration: t.Duration,
@@ -162,14 +160,6 @@ func (s *Step) Equal(o *Step) bool {
 	}
 	if s.Duration != o.Duration {
 		return false
-	}
-	if s.Config != o.Config {
-		if s.Config == nil || o.Config == nil {
-			return false
-		}
-		if *s.Config != *o.Config {
-			return false
-		}
 	}
 	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
 		if a == nil {

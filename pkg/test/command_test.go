@@ -520,9 +520,6 @@ func checkTest(t *testing.T, test *Step, tc e2econfig.Test, status report.Status
 	if name != test.Name {
 		t.Fatalf("expected step %q, got %q", name, test.Name)
 	}
-	if test.Config == nil || tc != *test.Config {
-		t.Fatalf("expected config %+v, got %+v", tc, test.Config)
-	}
 	if status != test.Status {
 		t.Fatalf("expected status %q, got %q", status, test.Status)
 	}

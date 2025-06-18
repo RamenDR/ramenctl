@@ -261,10 +261,6 @@ steps:
   status: passed
 - duration: 695.576189625
   items:
-  - config:
-      deployer: appset
-      pvcSpec: rbd
-      workload: deploy
     duration: 695.576118209
     items:
     - duration: 0.013429167
