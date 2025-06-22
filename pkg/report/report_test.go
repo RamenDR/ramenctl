@@ -4,7 +4,6 @@
 package report_test
 
 import (
-	"reflect"
 	"runtime"
 	"testing"
 
@@ -22,7 +21,7 @@ func TestHost(t *testing.T) {
 		Arch: runtime.GOARCH,
 		Cpus: runtime.NumCPU(),
 	}
-	if !reflect.DeepEqual(r.Host, expected) {
+	if r.Host != expected {
 		t.Fatalf("expected host %+v, got %+v", expected, r.Host)
 	}
 }
@@ -41,11 +40,11 @@ func TestBuildInfo(t *testing.T) {
 		if r.Build == nil {
 			t.Fatalf("build info omitted")
 		}
-		expected := &report.Build{
+		expected := report.Build{
 			Version: build.Version,
 			Commit:  build.Commit,
 		}
-		if !reflect.DeepEqual(r.Build, expected) {
+		if *r.Build != expected {
 			t.Fatalf("expected build info %+v, got %+v", expected, r.Build)
 		}
 	})
