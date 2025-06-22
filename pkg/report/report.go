@@ -4,7 +4,9 @@
 package report
 
 import (
+	"fmt"
 	"runtime"
+	"slices"
 
 	"github.com/ramendr/ramenctl/pkg/build"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -32,6 +34,13 @@ type Build struct {
 	Commit  string `json:"commit,omitempty"`
 }
 
+type Step struct {
+	Name     string  `json:"name"`
+	Status   Status  `json:"status,omitempty"`
+	Duration float64 `json:"duration,omitempty"`
+	Items    []*Step `json:"items,omitempty"`
+}
+
 // Report created by ramenctl command.
 type Report struct {
 	Host     Host      `json:"host"`
@@ -40,6 +49,7 @@ type Report struct {
 	Name     string    `json:"name"`
 	Status   Status    `json:"status,omitempty"`
 	Duration float64   `json:"duration,omitempty"`
+	Steps    []*Step   `json:"steps"`
 }
 
 // New create a new generic report. Commands embed the report in the command report.
@@ -93,5 +103,84 @@ func (r *Report) Equal(o *Report) bool {
 	if r.Duration != o.Duration {
 		return false
 	}
-	return true
+	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
+		return a.Equal(b)
+	})
+}
+
+// AddStep adds a step to the report.
+func (r *Report) AddStep(step *Step) {
+	if findStep(r.Steps, step.Name) != nil {
+		panic(fmt.Sprintf("step %q exists", step.Name))
+	}
+	r.Steps = append(r.Steps, step)
+	r.Duration += step.Duration
+
+	switch step.Status {
+	case Passed, Skipped:
+		if r.Status == "" {
+			r.Status = Passed
+		}
+	case Failed:
+		if r.Status != Canceled {
+			r.Status = step.Status
+		}
+	case Canceled:
+		r.Status = step.Status
+	}
+}
+
+// AddStep records a completed sub step.
+func (s *Step) AddStep(sub *Step) {
+	if findStep(s.Items, sub.Name) != nil {
+		panic(fmt.Sprintf("step %q exists", sub.Name))
+	}
+	s.Items = append(s.Items, sub)
+
+	switch sub.Status {
+	case Passed, Skipped:
+		if s.Status == "" {
+			s.Status = Passed
+		}
+	case Failed:
+		if s.Status != Canceled {
+			s.Status = sub.Status
+		}
+	case Canceled:
+		s.Status = sub.Status
+	}
+}
+
+// Equal return true if step is equal to other step.
+func (s *Step) Equal(o *Step) bool {
+	if s == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if s.Name != o.Name {
+		return false
+	}
+	if s.Status != o.Status {
+		return false
+	}
+	if s.Duration != o.Duration {
+		return false
+	}
+	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
+		if a == nil {
+			return b == nil
+		}
+		return a.Equal(b)
+	})
+}
+
+func findStep(steps []*Step, name string) *Step {
+	for _, step := range steps {
+		if step.Name == name {
+			return step
+		}
+	}
+	return nil
 }

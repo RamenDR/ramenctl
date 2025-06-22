@@ -25,7 +25,7 @@ type Test struct {
 	*Context
 	Backend     e2e.Testing
 	Status      report.Status
-	Steps       []*Step
+	Steps       []*report.Step
 	Duration    float64
 	stepStarted time.Time
 }
@@ -148,7 +148,7 @@ func (t *Test) Cleanup() bool {
 }
 
 func (t *Test) startStep(name string) {
-	step := &Step{Name: name}
+	step := &report.Step{Name: name}
 	t.stepStarted = time.Now()
 	t.Steps = append(t.Steps, step)
 	t.Logger().Infof("Step %q started", step.Name)

@@ -5,7 +5,6 @@ package test
 
 import (
 	"fmt"
-	"slices"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 
@@ -21,14 +20,6 @@ const (
 	CleanupStep  = "cleanup"
 )
 
-// A step is a test command step.
-type Step struct {
-	Name     string        `json:"name"`
-	Status   report.Status `json:"status,omitempty"`
-	Duration float64       `json:"duration,omitempty"`
-	Items    []*Step       `json:"items,omitempty"`
-}
-
 // Summary summaries a test run or clean.
 type Summary struct {
 	Passed   int `json:"passed"`
@@ -41,7 +32,6 @@ type Summary struct {
 type Report struct {
 	*report.Report
 	Config  *e2econfig.Config `json:"config"`
-	Steps   []*Step           `json:"steps"`
 	Summary Summary           `json:"summary"`
 }
 
@@ -56,25 +46,8 @@ func newReport(commandName string, config *e2econfig.Config) *Report {
 }
 
 // AddStep adds a step to the report.
-func (r *Report) AddStep(step *Step) {
-	if r.findStep(step.Name) != nil {
-		panic(fmt.Sprintf("step %q exists", step.Name))
-	}
-	r.Steps = append(r.Steps, step)
-	r.Duration += step.Duration
-
-	switch step.Status {
-	case report.Passed, report.Skipped:
-		if r.Status == "" {
-			r.Status = report.Passed
-		}
-	case report.Failed:
-		if r.Status != report.Canceled {
-			r.Status = step.Status
-		}
-	case report.Canceled:
-		r.Status = step.Status
-	}
+func (r *Report) AddStep(step *report.Step) {
+	r.Report.AddStep(step)
 
 	// Handle the special "tests" step.
 	if step.Name == TestsStep {
@@ -105,71 +78,10 @@ func (r *Report) Equal(o *Report) bool {
 	if r.Summary != o.Summary {
 		return false
 	}
-	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
-		return a.Equal(b)
-	})
+	return true
 }
 
-func (r *Report) findStep(name string) *Step {
-	for _, step := range r.Steps {
-		if step.Name == name {
-			return step
-		}
-	}
-	return nil
-}
-
-// AddTest records a completed test. A failed test marks the step as failed.
-func (s *Step) AddTest(t *Test) {
-	result := &Step{
-		Name:     t.Name(),
-		Status:   t.Status,
-		Items:    t.Steps,
-		Duration: t.Duration,
-	}
-
-	s.Items = append(s.Items, result)
-
-	switch t.Status {
-	case report.Passed, report.Skipped:
-		if s.Status == "" {
-			s.Status = report.Passed
-		}
-	case report.Failed:
-		if s.Status != report.Canceled {
-			s.Status = t.Status
-		}
-	case report.Canceled:
-		s.Status = t.Status
-	}
-}
-
-// Equal return true if step is equal to other step.
-func (s *Step) Equal(o *Step) bool {
-	if s == o {
-		return true
-	}
-	if o == nil {
-		return false
-	}
-	if s.Name != o.Name {
-		return false
-	}
-	if s.Status != o.Status {
-		return false
-	}
-	if s.Duration != o.Duration {
-		return false
-	}
-	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
-		if a == nil {
-			return b == nil
-		}
-		return a.Equal(b)
-	})
-}
-
-func (s *Summary) AddTest(t *Step) {
+func (s *Summary) AddTest(t *report.Step) {
 	switch t.Status {
 	case report.Passed:
 		s.Passed++

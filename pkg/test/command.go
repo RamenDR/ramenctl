@@ -56,7 +56,7 @@ type Command struct {
 	tests []*Test
 
 	// current test step
-	current *Step
+	current *report.Step
 
 	// Command report, stored at the output directory on completion.
 	report *Report
@@ -225,7 +225,7 @@ func (c *Command) passed() {
 }
 
 func (c *Command) startStep(name string) {
-	c.current = &Step{Name: name}
+	c.current = &report.Step{Name: name}
 	c.stepStarted = time.Now()
 	c.Logger().Infof("Step %q started", c.current.Name)
 }
@@ -276,7 +276,13 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	wg.Wait()
 
 	for _, test := range c.tests {
-		c.current.AddTest(test)
+		step := &report.Step{
+			Name:     test.Name(),
+			Status:   test.Status,
+			Duration: test.Duration,
+			Items:    test.Steps,
+		}
+		c.current.AddStep(step)
 	}
 
 	res := c.finishStep()

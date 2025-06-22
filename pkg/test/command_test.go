@@ -505,7 +505,7 @@ func checkReport(t *testing.T, report *Report, status report.Status, summary Sum
 	}
 }
 
-func checkStep(t *testing.T, step *Step, name string, status report.Status) {
+func checkStep(t *testing.T, step *report.Step, name string, status report.Status) {
 	if name != step.Name {
 		t.Fatalf("expected step %q, got %q", name, step.Name)
 	}
@@ -515,7 +515,13 @@ func checkStep(t *testing.T, step *Step, name string, status report.Status) {
 	// We cannot check duration since it may be zero on windows.
 }
 
-func checkTest(t *testing.T, test *Step, tc e2econfig.Test, status report.Status, flow ...string) {
+func checkTest(
+	t *testing.T,
+	test *report.Step,
+	tc e2econfig.Test,
+	status report.Status,
+	flow ...string,
+) {
 	name := fmt.Sprintf("%s-%s-%s", tc.Deployer, tc.Workload, tc.PVCSpec)
 	if name != test.Name {
 		t.Fatalf("expected step %q, got %q", name, test.Name)
@@ -537,7 +543,7 @@ func checkTest(t *testing.T, test *Step, tc e2econfig.Test, status report.Status
 	checkStep(t, test.Items[last], flow[last], test.Status)
 }
 
-func totalDuration(steps []*Step) float64 {
+func totalDuration(steps []*report.Step) float64 {
 	var total float64
 	for _, step := range steps {
 		total += step.Duration
