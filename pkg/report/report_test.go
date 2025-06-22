@@ -81,6 +81,55 @@ func TestRoundtrip(t *testing.T) {
 	}
 }
 
+func TestReportEqual(t *testing.T) {
+	fakeTime(t)
+	r1 := report.New()
+	t.Run("equal to self", func(t *testing.T) {
+		r2 := r1
+		if !r1.Equal(r2) {
+			t.Fatal("report should be equal itself")
+		}
+	})
+	t.Run("equal reports", func(t *testing.T) {
+		r2 := report.New()
+		if !r1.Equal(r2) {
+			t.Fatalf("expected report %+v, got %+v", r1, r2)
+		}
+	})
+}
+
+func TestReportNotEqual(t *testing.T) {
+	fakeTime(t)
+	r1 := report.New()
+	t.Run("nil", func(t *testing.T) {
+		if r1.Equal(nil) {
+			t.Fatal("report should not be equal to nil")
+		}
+	})
+	t.Run("created", func(t *testing.T) {
+		r2 := report.New()
+		r2.Created = r2.Created.Add(1)
+		if r1.Equal(r2) {
+			t.Fatal("reports with different create time should not be equal")
+		}
+	})
+	t.Run("host", func(t *testing.T) {
+		r2 := report.New()
+		r2.Host.OS = "modified"
+		if r1.Equal(r2) {
+			t.Fatal("reports with different host should not be equal")
+		}
+	})
+	t.Run("build", func(t *testing.T) {
+		r2 := report.New()
+		// Build is either nil or have version and commit, empty Build cannot match.
+		r2.Build = &report.Build{}
+		if r1.Equal(r2) {
+			t.Fatal("reports with different host should not be equal")
+		}
+	})
+}
+
 var fakeNow = time.Now()
 
 func fakeTime(t *testing.T) {
