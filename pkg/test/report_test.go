@@ -77,10 +77,9 @@ func TestReportEqual(t *testing.T) {
 
 	r1 := createReport()
 
-	// Intentionally comparing report to itself
-	//nolint:gocritic
 	t.Run("equal to self", func(t *testing.T) {
-		if !r1.Equal(r1) {
+		r2 := r1
+		if !r1.Equal(r2) {
 			t.Error("report should be equal itself")
 		}
 	})
