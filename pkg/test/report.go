@@ -110,13 +110,12 @@ func (r *Report) Equal(o *Report) bool {
 	if r.Name != o.Name {
 		return false
 	}
-	if r.Config != o.Config {
-		if r.Config == nil || o.Config == nil {
-			return false
-		}
+	if r.Config != nil && o.Config != nil {
 		if !r.Config.Equal(o.Config) {
 			return false
 		}
+	} else if r.Config != o.Config {
+		return false
 	}
 	if r.Status != o.Status {
 		return false
