@@ -19,12 +19,17 @@ import (
 )
 
 // Namespaces gathers namespaces from all clusters storing data in outputDir.
-func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.SugaredLogger) {
+func Namespaces(
+	clusters []*types.Cluster,
+	namespaces []string,
+	outputDir string,
+	log *zap.SugaredLogger,
+) {
 	start := time.Now()
-	log.Infof("Gather namespaces %q from all clusters", namespaces)
+	log.Infof("Gather namespaces %q from clusters %q", namespaces, clusterNames(clusters))
 
 	var wg sync.WaitGroup
-	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
+	for _, cluster := range clusters {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -39,7 +44,15 @@ func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.
 	}
 	wg.Wait()
 
-	log.Infof("Gathered all clusters in %.2f seconds", time.Since(start).Seconds())
+	log.Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
+}
+
+func clusterNames(clusters []*types.Cluster) []string {
+	names := []string{}
+	for _, cluster := range clusters {
+		names = append(names, cluster.Name)
+	}
+	return names
 }
 
 func gatherCluster(

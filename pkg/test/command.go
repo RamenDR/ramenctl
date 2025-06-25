@@ -205,9 +205,11 @@ func (c *Command) cleanTests() bool {
 
 func (c *Command) gatherData() {
 	console.Step("Gather data")
+	env := c.Env()
+	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 	namespaces := c.namespacesToGather()
 	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
-	gather.Namespaces(c.Env(), namespaces, outputDir, c.Logger())
+	gather.Namespaces(clusters, namespaces, outputDir, c.Logger())
 }
 
 func (c *Command) failed() error {
