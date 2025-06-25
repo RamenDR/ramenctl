@@ -32,9 +32,9 @@ var testConfig = e2econfig.Config{
 }
 
 var testEnv = types.Env{
-	Hub: types.Cluster{Name: "hub"},
-	C1:  types.Cluster{Name: "c1"},
-	C2:  types.Cluster{Name: "c2"},
+	Hub: &types.Cluster{Name: "hub"},
+	C1:  &types.Cluster{Name: "c1"},
+	C2:  &types.Cluster{Name: "c2"},
 }
 
 var testOptions Options

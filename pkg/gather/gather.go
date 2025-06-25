@@ -24,7 +24,7 @@ func Namespaces(env *types.Env, namespaces []string, outputDir string, log *zap.
 	log.Infof("Gather namespaces %q from all clusters", namespaces)
 
 	var wg sync.WaitGroup
-	for _, cluster := range []*types.Cluster{&env.Hub, &env.C1, &env.C2} {
+	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
