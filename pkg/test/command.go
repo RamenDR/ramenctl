@@ -209,7 +209,26 @@ func (c *Command) gatherData() {
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 	namespaces := c.namespacesToGather()
 	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
-	gather.Namespaces(clusters, namespaces, outputDir, c.Logger())
+	start := time.Now()
+	c.Logger().Infof("Gathering namespaces %q from clusters %q", namespaces, clusterNames(clusters))
+	for r := range gather.Namespaces(clusters, namespaces, outputDir, c.Logger()) {
+		if r.Err != nil {
+			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
+			console.Error(msg)
+			c.Logger().Errorf("%s: %s", msg, r.Err)
+		} else {
+			console.Pass("Gathered data from cluster %q", r.Name)
+		}
+	}
+	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
+}
+
+func clusterNames(clusters []*types.Cluster) []string {
+	names := []string{}
+	for _, cluster := range clusters {
+		names = append(names, cluster.Name)
+	}
+	return names
 }
 
 func (c *Command) failed() error {

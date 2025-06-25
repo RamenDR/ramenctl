@@ -4,7 +4,6 @@
 package gather
 
 import (
-	"fmt"
 	"path/filepath"
 	"sync"
 	"time"
@@ -14,45 +13,41 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/ramendr/ramenctl/pkg/console"
 )
 
-// Namespaces gathers namespaces from all clusters storing data in outputDir.
+type Result struct {
+	Name string
+	Err  error
+}
+
+// Namespaces gathers namespaces from all clusters storing data in outputDir. Returns a channel for
+// getting gather results. The channel is closed when all clusters are gathered.
 func Namespaces(
 	clusters []*types.Cluster,
 	namespaces []string,
 	outputDir string,
 	log *zap.SugaredLogger,
-) {
-	start := time.Now()
-	log.Infof("Gather namespaces %q from clusters %q", namespaces, clusterNames(clusters))
-
+) <-chan Result {
+	results := make(chan Result)
 	var wg sync.WaitGroup
+
+	// Start gathering in parallel for all clusters.
 	for _, cluster := range clusters {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := gatherCluster(cluster, namespaces, outputDir, log); err != nil {
-				msg := fmt.Sprintf("Failed to gather data from cluster %q", cluster.Name)
-				console.Error(msg)
-				log.Errorf("%s: %s", msg, err)
-				return
-			}
-			console.Pass("Gathered data from cluster %q", cluster.Name)
+			err := gatherCluster(cluster, namespaces, outputDir, log)
+			results <- Result{Name: cluster.Name, Err: err}
 		}()
 	}
-	wg.Wait()
 
-	log.Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
-}
+	// Close results channel when done to make client code nicer.
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
 
-func clusterNames(clusters []*types.Cluster) []string {
-	names := []string{}
-	for _, cluster := range clusters {
-		names = append(names, cluster.Name)
-	}
-	return names
+	return results
 }
 
 func gatherCluster(
