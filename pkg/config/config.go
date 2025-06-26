@@ -84,6 +84,7 @@ func ReadConfig(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	console.Info("Using config %q", filename)
 	return cfg, nil
 }
 
