@@ -84,9 +84,13 @@ must modify it to match your clusters and storage.
 ## Clusters configuration.
 # - Modify clusters "kubeconfig" to match your hub and managed clusters
 #   kubeconfig files.
+# - Modify "passive-hub" kubeconfig for optional passive hub cluster,
+#   leave it empty if not using passive hub.
 clusters:
   hub:
     kubeconfig: hub/config
+  passive-hub:
+    kubeconfig: ""
   c1:
     kubeconfig: primary/config
   c2:
