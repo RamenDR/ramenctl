@@ -55,14 +55,12 @@ type Command struct {
 	// tests to run or clean.
 	tests []*Test
 
-	// current test step
-	current *report.Step
-
 	// Command report, stored at the output directory on completion.
 	report *Report
 
-	// stepStarted records the time when the step execution began, used for duration tracking.
-	stepStarted time.Time
+	// current test step
+	current        *report.Step
+	currentStarted time.Time
 }
 
 // Ensure that command implements types.Context.
@@ -247,12 +245,12 @@ func (c *Command) passed() {
 
 func (c *Command) startStep(name string) {
 	c.current = &report.Step{Name: name}
-	c.stepStarted = time.Now()
+	c.currentStarted = time.Now()
 	c.Logger().Infof("Step %q started", c.current.Name)
 }
 
 func (c *Command) failStep(err error) bool {
-	c.current.Duration = time.Since(c.stepStarted).Seconds()
+	c.current.Duration = time.Since(c.currentStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
 		c.current.Status = report.Canceled
 		console.Error("Canceled %s", c.current.Name)
@@ -267,7 +265,7 @@ func (c *Command) failStep(err error) bool {
 }
 
 func (c *Command) passStep() bool {
-	c.current.Duration = time.Since(c.stepStarted).Seconds()
+	c.current.Duration = time.Since(c.currentStarted).Seconds()
 	c.current.Status = report.Passed
 	c.Logger().Infof("Step %q passed", c.current.Name)
 	c.report.AddStep(c.current)
@@ -276,7 +274,7 @@ func (c *Command) passStep() bool {
 }
 
 func (c *Command) finishStep() bool {
-	c.current.Duration = time.Since(c.stepStarted).Seconds()
+	c.current.Duration = time.Since(c.currentStarted).Seconds()
 	c.Logger().Infof("Step %q finished", c.current.Name)
 	c.report.AddStep(c.current)
 	c.current = nil
