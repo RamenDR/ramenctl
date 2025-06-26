@@ -147,9 +147,9 @@ func (c *Command) Config() *e2econfig.Config {
 	return c.config
 }
 
-// WithTimeout returns a derived command with a deadline. Call cancel to release resources
+// withTimeout returns a derived command with a deadline. Call cancel to release resources
 // associated with the context as soon as the operation running in the context complete.
-func (c Command) WithTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
+func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(c.context, d)
 	c.context = ctx
 	return &c, cancel
@@ -158,7 +158,7 @@ func (c Command) WithTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 func (c *Command) validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
-	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
+	timedCmd, cancel := c.withTimeout(30 * stdtime.Second)
 	defer cancel()
 	if err := c.backend.Validate(timedCmd); err != nil {
 		return c.failStep(err)
@@ -170,7 +170,7 @@ func (c *Command) validate() bool {
 func (c *Command) setup() bool {
 	c.startStep(SetupStep)
 	console.Step("Setup environment")
-	timedCmd, cancel := c.WithTimeout(30 * stdtime.Second)
+	timedCmd, cancel := c.withTimeout(30 * stdtime.Second)
 	defer cancel()
 	if err := c.backend.Setup(timedCmd); err != nil {
 		return c.failStep(err)
@@ -182,7 +182,7 @@ func (c *Command) setup() bool {
 func (c *Command) cleanup() bool {
 	c.startStep(CleanupStep)
 	console.Step("Clean environment")
-	timedCmd, cancel := c.WithTimeout(1 * stdtime.Minute)
+	timedCmd, cancel := c.withTimeout(1 * stdtime.Minute)
 	defer cancel()
 	if err := c.backend.Cleanup(timedCmd); err != nil {
 		return c.failStep(err)
