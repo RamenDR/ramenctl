@@ -102,6 +102,25 @@ func TestReadConfigTest(t *testing.T) {
 	}
 }
 
+func TestReadConfigWithPassiveHub(t *testing.T) {
+	c, err := config.ReadConfig("testdata/passive-hub.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := &config.Config{
+		Clusters: map[string]e2econfig.Cluster{
+			"hub":         {Kubeconfig: "hub/config"},
+			"passive-hub": {Kubeconfig: "passive-hub/config"},
+			"c1":          {Kubeconfig: "dr1/config"},
+			"c2":          {Kubeconfig: "dr2/config"},
+		},
+		ClusterSet: "default",
+	}
+	if !c.Equal(expected) {
+		t.Fatalf("expected %+v, got %+v", expected, c)
+	}
+}
+
 func TestConfigEqual(t *testing.T) {
 	c1 := testConfig()
 	t.Run("equal to itself", func(t *testing.T) {
