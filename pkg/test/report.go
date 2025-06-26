@@ -11,8 +11,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
-type Status string
-
 const (
 	ValidateStep = "validate"
 	SetupStep    = "setup"
