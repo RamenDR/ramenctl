@@ -18,10 +18,9 @@ var ValidateClustersCmd = &cobra.Command{
 	Use:   "clusters",
 	Short: "Validate clusters configuration",
 	Run: func(c *cobra.Command, args []string) {
-		if err := validate.Clusters(outputDir); err != nil {
+		if err := validate.Clusters(configFile, outputDir); err != nil {
 			console.Fatal(err)
 		}
-		console.Completed("Validation completed successfully")
 	},
 }
 
