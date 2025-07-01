@@ -5,7 +5,7 @@ package test
 
 import (
 	"github.com/ramendr/ramenctl/pkg/command"
-	"github.com/ramendr/ramenctl/pkg/e2e"
+	"github.com/ramendr/ramenctl/pkg/testing"
 )
 
 func Run(configFile string, outputDir string) error {
@@ -20,6 +20,6 @@ func Run(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	test := newCommand(cmd, cfg, e2e.Backend{}, Options{GatherData: true})
+	test := newCommand(cmd, cfg, testing.Backend{}, Options{GatherData: true})
 	return test.Run()
 }

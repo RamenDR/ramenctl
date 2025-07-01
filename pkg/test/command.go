@@ -18,9 +18,9 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
-	"github.com/ramendr/ramenctl/pkg/e2e"
 	"github.com/ramendr/ramenctl/pkg/gather"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
@@ -44,7 +44,7 @@ type Command struct {
 	context context.Context
 
 	// backend is used to perform testing operations.
-	backend e2e.Testing
+	backend testing.Testing
 
 	// options for test commands.
 	options Options
@@ -74,7 +74,7 @@ type flowFunc func(t *Test)
 func newCommand(
 	cmd *command.Command,
 	cfg *e2econfig.Config,
-	backend e2e.Testing,
+	backend testing.Testing,
 	options Options,
 ) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
