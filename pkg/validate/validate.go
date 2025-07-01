@@ -6,6 +6,7 @@ package validate
 import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 func Clusters(configFile string, outputDir string) error {
@@ -20,6 +21,6 @@ func Clusters(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	validate := newCommand(cmd, cfg)
+	validate := newCommand(cmd, cfg, validation.Backend{})
 	return validate.Clusters()
 }
