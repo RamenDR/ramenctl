@@ -105,6 +105,18 @@ func (c *Config) Equal(o *Config) bool {
 	return maps.Equal(c.Clusters, o.Clusters)
 }
 
+func (c *Config) SetDistro(d string) {
+	switch d {
+	case config.DistroOcp:
+		c.Namespaces = config.OcpNamespaces
+	case config.DistroK8s:
+		c.Namespaces = config.K8sNamespaces
+	default:
+		panic(fmt.Sprintf("invalid distro: %q", d))
+	}
+	c.Distro = d
+}
+
 func (c *Config) validateDistro() error {
 	if c.Distro == "" {
 		// Will be detected when accessing the clusters.
