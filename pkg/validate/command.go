@@ -5,15 +5,19 @@ package validate
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	stdtime "time"
 
 	"github.com/ramendr/ramen/e2e/types"
+	"go.uber.org/zap"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
+	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 type Command struct {
@@ -22,6 +26,9 @@ type Command struct {
 
 	// config is the config for this command.
 	config *config.Config
+
+	// backend implementing the validation interface.
+	backend validation.Validation
 
 	// content is used to set deadlines.
 	context context.Context
@@ -34,14 +41,38 @@ type Command struct {
 	currentStarted time.Time
 }
 
-func newCommand(cmd *command.Command, cfg *config.Config) *Command {
+// Ensure that command implements validation.Context.
+var _ validation.Context = &Command{}
+
+func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Validation) *Command {
 	return &Command{
 		command: cmd,
 		config:  cfg,
+		backend: backend,
 		context: cmd.Context(),
 		report:  newReport(cmd.Name(), cfg),
 	}
 }
+
+// validation.Context interface.
+
+func (c *Command) Env() *types.Env {
+	return c.command.Env()
+}
+
+func (c *Command) Config() *config.Config {
+	return c.config
+}
+
+func (c *Command) Logger() *zap.SugaredLogger {
+	return c.command.Logger()
+}
+
+func (c *Command) Context() context.Context {
+	return c.context
+}
+
+// Command interface.
 
 func (c *Command) Clusters() error {
 	if !c.validateConfig() {
@@ -54,13 +85,26 @@ func (c *Command) Clusters() error {
 	return nil
 }
 
+// Validation.
+
+// withTimeout returns a derived command with a deadline. Call cancel to release resources
+// associated with the context as soon as the operation running in the context complete.
+func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(c.context, d)
+	c.context = ctx
+	return &c, cancel
+}
+
 func (c *Command) validateConfig() bool {
 	console.Step("Validate config")
 	c.startStep("validate config")
-	// TODO: Detect distro
-	// TODO: Validate managed clusters in clusterset
+	timedCmd, cancel := c.withTimeout(30 * stdtime.Second)
+	defer cancel()
+	if err := c.backend.Validate(timedCmd); err != nil {
+		return c.failStep(err)
+	}
 	c.passStep()
-	console.Pass("config validated")
+	console.Pass("Config validated")
 	return true
 }
 
@@ -92,6 +136,8 @@ func (c *Command) passed() {
 	console.Completed("Validation completed")
 }
 
+// Managing steps.
+
 func (c *Command) startStep(name string) {
 	c.current = &report.Step{Name: name}
 	c.currentStarted = time.Now()
@@ -105,6 +151,21 @@ func (c *Command) passStep() bool {
 	c.report.AddStep(c.current)
 	c.current = nil
 	return true
+}
+
+func (c *Command) failStep(err error) bool {
+	c.current.Duration = time.Since(c.currentStarted).Seconds()
+	if errors.Is(err, context.Canceled) {
+		c.current.Status = report.Canceled
+		console.Error("Canceled %s", c.current.Name)
+	} else {
+		c.current.Status = report.Failed
+		console.Error("Failed to %s", c.current.Name)
+	}
+	c.command.Logger().Errorf("Step %q %s: %s", c.current.Name, c.current.Status, err)
+	c.report.AddStep(c.current)
+	c.current = nil
+	return false
 }
 
 func (c *Command) finishStep() bool {

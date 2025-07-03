@@ -15,15 +15,15 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ramendr/ramenctl/pkg/console"
-	"github.com/ramendr/ramenctl/pkg/e2e"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 // Test perform DR opetaions for testing DR flow.
 type Test struct {
 	*Context
-	Backend     e2e.Testing
+	Backend     testing.Testing
 	Status      report.Status
 	Steps       []*report.Step
 	Duration    float64

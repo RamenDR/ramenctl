@@ -6,14 +6,14 @@ package test
 import (
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/e2e"
+	"github.com/ramendr/ramenctl/pkg/testing"
 )
 
 type ContextFunc func(types.Context) error
 type TestContextFunc func(types.TestContext) error
 
-// MockBackend implements the e2e.Testing interface. All operations succeed without accessing the
-// clusters. To cause operations to fail, set a function returning an error.
+// MockBackend implements the testing.Testing interface. All operations succeed without accessing
+// the clusters. To cause operations to fail, set a function returning an error.
 type MockBackend struct {
 	// Operations on types.Context
 	ValidateFunc ContextFunc
@@ -29,7 +29,7 @@ type MockBackend struct {
 	RelocateFunc  TestContextFunc
 }
 
-var _ e2e.Testing = &MockBackend{}
+var _ testing.Testing = &MockBackend{}
 
 func (m *MockBackend) Validate(ctx types.Context) error {
 	if m.ValidateFunc != nil {

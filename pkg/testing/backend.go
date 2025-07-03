@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package e2e
+package testing
 
 import (
 	"github.com/ramendr/ramen/e2e/dractions"
