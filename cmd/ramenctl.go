@@ -15,6 +15,7 @@ func main() {
 	commands.RootCmd.AddCommand(
 		commands.InitCmd,
 		commands.TestCmd,
+		commands.GatherCmd,
 		commands.ValidateCmd,
 	)
 
