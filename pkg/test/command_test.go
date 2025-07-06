@@ -17,110 +17,113 @@ import (
 	rtesting "github.com/ramendr/ramenctl/pkg/testing"
 )
 
-var testConfig = e2econfig.Config{
-	PVCSpecs: []e2econfig.PVCSpec{
-		{Name: "block", StorageClassName: "block-storage"},
-		{Name: "file", StorageClassName: "file-storage"},
-	},
-	Tests: []e2econfig.Test{
-		{Workload: "deploy", Deployer: "appset", PVCSpec: "block"},
-		{Workload: "deploy", Deployer: "appset", PVCSpec: "file"},
-		{Workload: "deploy", Deployer: "subscr", PVCSpec: "block"},
-		{Workload: "deploy", Deployer: "subscr", PVCSpec: "file"},
-		{Workload: "deploy", Deployer: "disapp", PVCSpec: "block"},
-		{Workload: "deploy", Deployer: "disapp", PVCSpec: "file"},
-	},
-}
+var (
+	testConfig = e2econfig.Config{
+		PVCSpecs: []e2econfig.PVCSpec{
+			{Name: "block", StorageClassName: "block-storage"},
+			{Name: "file", StorageClassName: "file-storage"},
+		},
+		Tests: []e2econfig.Test{
+			{Workload: "deploy", Deployer: "appset", PVCSpec: "block"},
+			{Workload: "deploy", Deployer: "appset", PVCSpec: "file"},
+			{Workload: "deploy", Deployer: "subscr", PVCSpec: "block"},
+			{Workload: "deploy", Deployer: "subscr", PVCSpec: "file"},
+			{Workload: "deploy", Deployer: "disapp", PVCSpec: "block"},
+			{Workload: "deploy", Deployer: "disapp", PVCSpec: "file"},
+		},
+	}
 
-var testEnv = types.Env{
-	Hub: &types.Cluster{Name: "hub"},
-	C1:  &types.Cluster{Name: "c1"},
-	C2:  &types.Cluster{Name: "c2"},
-}
+	testEnv = types.Env{
+		Hub: &types.Cluster{Name: "hub"},
+		C1:  &types.Cluster{Name: "c1"},
+		C2:  &types.Cluster{Name: "c2"},
+	}
 
-var testOptions Options
+	testOptions Options
 
-var validateFailed = rtesting.Mock{
-	ValidateFunc: func(ctx types.Context) error {
-		return errors.New("No validate for you!")
-	},
-}
+	validateFailed = rtesting.Mock{
+		ValidateFunc: func(ctx types.Context) error {
+			return errors.New("No validate for you!")
+		},
+	}
 
-var validateCanceled = rtesting.Mock{
-	ValidateFunc: func(ctx types.Context) error {
-		return context.Canceled
-	},
-}
+	validateCanceled = rtesting.Mock{
+		ValidateFunc: func(ctx types.Context) error {
+			return context.Canceled
+		},
+	}
 
-var setupFailed = rtesting.Mock{
-	SetupFunc: func(ctx types.Context) error {
-		return errors.New("No setup for you!")
-	},
-}
-var setupCanceled = rtesting.Mock{
-	SetupFunc: func(ctx types.Context) error {
-		return context.Canceled
-	},
-}
+	setupFailed = rtesting.Mock{
+		SetupFunc: func(ctx types.Context) error {
+			return errors.New("No setup for you!")
+		},
+	}
 
-var cleanupFailed = rtesting.Mock{
-	CleanupFunc: func(ctx types.Context) error {
-		return errors.New("No cleanup for you!")
-	},
-}
+	setupCanceled = rtesting.Mock{
+		SetupFunc: func(ctx types.Context) error {
+			return context.Canceled
+		},
+	}
 
-var cleanupCanceled = rtesting.Mock{
-	CleanupFunc: func(ctx types.Context) error {
-		return context.Canceled
-	},
-}
+	cleanupFailed = rtesting.Mock{
+		CleanupFunc: func(ctx types.Context) error {
+			return errors.New("No cleanup for you!")
+		},
+	}
 
-var failoverFailed = rtesting.Mock{
-	FailoverFunc: func(ctx types.TestContext) error {
-		return errors.New("No failover for you!")
-	},
-}
+	cleanupCanceled = rtesting.Mock{
+		CleanupFunc: func(ctx types.Context) error {
+			return context.Canceled
+		},
+	}
 
-var failoverCanceled = rtesting.Mock{
-	FailoverFunc: func(ctx types.TestContext) error {
-		return context.Canceled
-	},
-}
-
-var disappFailoverFailed = rtesting.Mock{
-	FailoverFunc: func(ctx types.TestContext) error {
-		if ctx.Deployer().IsDiscovered() {
+	failoverFailed = rtesting.Mock{
+		FailoverFunc: func(ctx types.TestContext) error {
 			return errors.New("No failover for you!")
-		}
-		return nil
-	},
-}
+		},
+	}
 
-var unprotectFailed = rtesting.Mock{
-	UnprotectFunc: func(ctx types.TestContext) error {
-		return errors.New("No unprotect for you!")
-	},
-}
+	failoverCanceled = rtesting.Mock{
+		FailoverFunc: func(ctx types.TestContext) error {
+			return context.Canceled
+		},
+	}
 
-var unprotectCanceled = rtesting.Mock{
-	UnprotectFunc: func(ctx types.TestContext) error {
-		return context.Canceled
-	},
-}
+	disappFailoverFailed = rtesting.Mock{
+		FailoverFunc: func(ctx types.TestContext) error {
+			if ctx.Deployer().IsDiscovered() {
+				return errors.New("No failover for you!")
+			}
+			return nil
+		},
+	}
 
-var undeployFailed = rtesting.Mock{
-	UndeployFunc: func(ctx types.TestContext) error {
-		return errors.New("No undeploy for you!")
-	},
-}
+	unprotectFailed = rtesting.Mock{
+		UnprotectFunc: func(ctx types.TestContext) error {
+			return errors.New("No unprotect for you!")
+		},
+	}
 
-var undeployCanceled = rtesting.Mock{
-	UndeployFunc: func(ctx types.TestContext) error {
-		return context.Canceled
-	},
-}
+	unprotectCanceled = rtesting.Mock{
+		UnprotectFunc: func(ctx types.TestContext) error {
+			return context.Canceled
+		},
+	}
 
-var runFlow = []string{"deploy", "protect", "failover", "relocate", "unprotect", "undeploy"}
+	undeployFailed = rtesting.Mock{
+		UndeployFunc: func(ctx types.TestContext) error {
+			return errors.New("No undeploy for you!")
+		},
+	}
+
+	undeployCanceled = rtesting.Mock{
+		UndeployFunc: func(ctx types.TestContext) error {
+			return context.Canceled
+		},
+	}
+
+	runFlow = []string{"deploy", "protect", "failover", "relocate", "unprotect", "undeploy"}
+)
 
 func TestRunPassed(t *testing.T) {
 	test := testCommand(t, "test-run", &rtesting.Mock{})
