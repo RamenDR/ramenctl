@@ -40,54 +40,54 @@ var testEnv = types.Env{
 
 var testOptions Options
 
-var validateFailed = MockBackend{
+var validateFailed = rtesting.Mock{
 	ValidateFunc: func(ctx types.Context) error {
 		return errors.New("No validate for you!")
 	},
 }
 
-var validateCanceled = MockBackend{
+var validateCanceled = rtesting.Mock{
 	ValidateFunc: func(ctx types.Context) error {
 		return context.Canceled
 	},
 }
 
-var setupFailed = MockBackend{
+var setupFailed = rtesting.Mock{
 	SetupFunc: func(ctx types.Context) error {
 		return errors.New("No setup for you!")
 	},
 }
-var setupCanceled = MockBackend{
+var setupCanceled = rtesting.Mock{
 	SetupFunc: func(ctx types.Context) error {
 		return context.Canceled
 	},
 }
 
-var cleanupFailed = MockBackend{
+var cleanupFailed = rtesting.Mock{
 	CleanupFunc: func(ctx types.Context) error {
 		return errors.New("No cleanup for you!")
 	},
 }
 
-var cleanupCanceled = MockBackend{
+var cleanupCanceled = rtesting.Mock{
 	CleanupFunc: func(ctx types.Context) error {
 		return context.Canceled
 	},
 }
 
-var failoverFailed = MockBackend{
+var failoverFailed = rtesting.Mock{
 	FailoverFunc: func(ctx types.TestContext) error {
 		return errors.New("No failover for you!")
 	},
 }
 
-var failoverCanceled = MockBackend{
+var failoverCanceled = rtesting.Mock{
 	FailoverFunc: func(ctx types.TestContext) error {
 		return context.Canceled
 	},
 }
 
-var disappFailoverFailed = MockBackend{
+var disappFailoverFailed = rtesting.Mock{
 	FailoverFunc: func(ctx types.TestContext) error {
 		if ctx.Deployer().IsDiscovered() {
 			return errors.New("No failover for you!")
@@ -96,25 +96,25 @@ var disappFailoverFailed = MockBackend{
 	},
 }
 
-var unprotectFailed = MockBackend{
+var unprotectFailed = rtesting.Mock{
 	UnprotectFunc: func(ctx types.TestContext) error {
 		return errors.New("No unprotect for you!")
 	},
 }
 
-var unprotectCanceled = MockBackend{
+var unprotectCanceled = rtesting.Mock{
 	UnprotectFunc: func(ctx types.TestContext) error {
 		return context.Canceled
 	},
 }
 
-var undeployFailed = MockBackend{
+var undeployFailed = rtesting.Mock{
 	UndeployFunc: func(ctx types.TestContext) error {
 		return errors.New("No undeploy for you!")
 	},
 }
 
-var undeployCanceled = MockBackend{
+var undeployCanceled = rtesting.Mock{
 	UndeployFunc: func(ctx types.TestContext) error {
 		return context.Canceled
 	},
@@ -123,7 +123,7 @@ var undeployCanceled = MockBackend{
 var runFlow = []string{"deploy", "protect", "failover", "relocate", "unprotect", "undeploy"}
 
 func TestRunPassed(t *testing.T) {
-	test := testCommand(t, "test-run", &MockBackend{})
+	test := testCommand(t, "test-run", &rtesting.Mock{})
 
 	if err := test.Run(); err != nil {
 		t.Fatal(err)
@@ -283,7 +283,7 @@ func TestRunTestsCanceled(t *testing.T) {
 }
 
 func TestCleanPassed(t *testing.T) {
-	test := testCommand(t, "test-clean", &MockBackend{})
+	test := testCommand(t, "test-clean", &rtesting.Mock{})
 
 	if err := test.Clean(); err != nil {
 		t.Fatal(err)
