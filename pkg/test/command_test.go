@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	testConfig = e2econfig.Config{
+	testConfig = &e2econfig.Config{
 		PVCSpecs: []e2econfig.PVCSpec{
 			{Name: "block", StorageClassName: "block-storage"},
 			{Name: "file", StorageClassName: "file-storage"},
@@ -33,7 +33,7 @@ var (
 		},
 	}
 
-	testEnv = types.Env{
+	testEnv = &types.Env{
 		Hub: &types.Cluster{Name: "hub"},
 		C1:  &types.Cluster{Name: "c1"},
 		C2:  &types.Cluster{Name: "c2"},
@@ -41,55 +41,55 @@ var (
 
 	testOptions Options
 
-	validateFailed = rtesting.Mock{
+	validateFailed = &rtesting.Mock{
 		ValidateFunc: func(ctx types.Context) error {
 			return errors.New("No validate for you!")
 		},
 	}
 
-	validateCanceled = rtesting.Mock{
+	validateCanceled = &rtesting.Mock{
 		ValidateFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	setupFailed = rtesting.Mock{
+	setupFailed = &rtesting.Mock{
 		SetupFunc: func(ctx types.Context) error {
 			return errors.New("No setup for you!")
 		},
 	}
 
-	setupCanceled = rtesting.Mock{
+	setupCanceled = &rtesting.Mock{
 		SetupFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	cleanupFailed = rtesting.Mock{
+	cleanupFailed = &rtesting.Mock{
 		CleanupFunc: func(ctx types.Context) error {
 			return errors.New("No cleanup for you!")
 		},
 	}
 
-	cleanupCanceled = rtesting.Mock{
+	cleanupCanceled = &rtesting.Mock{
 		CleanupFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	failoverFailed = rtesting.Mock{
+	failoverFailed = &rtesting.Mock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			return errors.New("No failover for you!")
 		},
 	}
 
-	failoverCanceled = rtesting.Mock{
+	failoverCanceled = &rtesting.Mock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
 	}
 
-	disappFailoverFailed = rtesting.Mock{
+	disappFailoverFailed = &rtesting.Mock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			if ctx.Deployer().IsDiscovered() {
 				return errors.New("No failover for you!")
@@ -98,25 +98,25 @@ var (
 		},
 	}
 
-	unprotectFailed = rtesting.Mock{
+	unprotectFailed = &rtesting.Mock{
 		UnprotectFunc: func(ctx types.TestContext) error {
 			return errors.New("No unprotect for you!")
 		},
 	}
 
-	unprotectCanceled = rtesting.Mock{
+	unprotectCanceled = &rtesting.Mock{
 		UnprotectFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
 	}
 
-	undeployFailed = rtesting.Mock{
+	undeployFailed = &rtesting.Mock{
 		UndeployFunc: func(ctx types.TestContext) error {
 			return errors.New("No undeploy for you!")
 		},
 	}
 
-	undeployCanceled = rtesting.Mock{
+	undeployCanceled = &rtesting.Mock{
 		UndeployFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
@@ -149,7 +149,7 @@ func TestRunPassed(t *testing.T) {
 }
 
 func TestRunValidateFailed(t *testing.T) {
-	test := testCommand(t, "test-run", &validateFailed)
+	test := testCommand(t, "test-run", validateFailed)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -164,7 +164,7 @@ func TestRunValidateFailed(t *testing.T) {
 }
 
 func TestRunValidateCanceled(t *testing.T) {
-	test := testCommand(t, "test-run", &validateCanceled)
+	test := testCommand(t, "test-run", validateCanceled)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -179,7 +179,7 @@ func TestRunValidateCanceled(t *testing.T) {
 }
 
 func TestRunSetupFailed(t *testing.T) {
-	test := testCommand(t, "test-run", &setupFailed)
+	test := testCommand(t, "test-run", setupFailed)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -196,7 +196,7 @@ func TestRunSetupFailed(t *testing.T) {
 }
 
 func TestRunSetupCanceled(t *testing.T) {
-	test := testCommand(t, "test-run", &setupCanceled)
+	test := testCommand(t, "test-run", setupCanceled)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -213,7 +213,7 @@ func TestRunSetupCanceled(t *testing.T) {
 }
 
 func TestRunTestsFailed(t *testing.T) {
-	test := testCommand(t, "test-run", &failoverFailed)
+	test := testCommand(t, "test-run", failoverFailed)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -236,7 +236,7 @@ func TestRunTestsFailed(t *testing.T) {
 }
 
 func TestRunDisappFailed(t *testing.T) {
-	test := testCommand(t, "test-run", &disappFailoverFailed)
+	test := testCommand(t, "test-run", disappFailoverFailed)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -263,7 +263,7 @@ func TestRunDisappFailed(t *testing.T) {
 }
 
 func TestRunTestsCanceled(t *testing.T) {
-	test := testCommand(t, "test-run", &failoverCanceled)
+	test := testCommand(t, "test-run", failoverCanceled)
 
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
@@ -309,7 +309,7 @@ func TestCleanPassed(t *testing.T) {
 }
 
 func TestCleanValidateFailed(t *testing.T) {
-	test := testCommand(t, "test-clean", &validateFailed)
+	test := testCommand(t, "test-clean", validateFailed)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -324,7 +324,7 @@ func TestCleanValidateFailed(t *testing.T) {
 }
 
 func TestCleanValidateCanceled(t *testing.T) {
-	test := testCommand(t, "test-clean", &validateCanceled)
+	test := testCommand(t, "test-clean", validateCanceled)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -339,7 +339,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 }
 
 func TestCleanUnprotectFailed(t *testing.T) {
-	test := testCommand(t, "test-clean", &unprotectFailed)
+	test := testCommand(t, "test-clean", unprotectFailed)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -360,7 +360,7 @@ func TestCleanUnprotectFailed(t *testing.T) {
 }
 
 func TestCleanUndeployFailed(t *testing.T) {
-	test := testCommand(t, "test-clean", &undeployFailed)
+	test := testCommand(t, "test-clean", undeployFailed)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -381,7 +381,7 @@ func TestCleanUndeployFailed(t *testing.T) {
 }
 
 func TestCleanUnprotectCanceled(t *testing.T) {
-	test := testCommand(t, "test-clean", &unprotectCanceled)
+	test := testCommand(t, "test-clean", unprotectCanceled)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -402,7 +402,7 @@ func TestCleanUnprotectCanceled(t *testing.T) {
 }
 
 func TestCleanUndeployCanceled(t *testing.T) {
-	test := testCommand(t, "test-clean", &undeployCanceled)
+	test := testCommand(t, "test-clean", undeployCanceled)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -423,7 +423,7 @@ func TestCleanUndeployCanceled(t *testing.T) {
 }
 
 func TestCleanCleanupFailed(t *testing.T) {
-	test := testCommand(t, "test-clean", &cleanupFailed)
+	test := testCommand(t, "test-clean", cleanupFailed)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -446,7 +446,7 @@ func TestCleanCleanupFailed(t *testing.T) {
 }
 
 func TestCleanCleanupCanceled(t *testing.T) {
-	test := testCommand(t, "test-clean", &cleanupCanceled)
+	test := testCommand(t, "test-clean", cleanupCanceled)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -471,14 +471,14 @@ func TestCleanCleanupCanceled(t *testing.T) {
 // Test hellpers.
 
 func testCommand(t *testing.T, name string, backend rtesting.Testing) *Command {
-	cmd, err := command.ForTest(name, &testEnv, t.TempDir())
+	cmd, err := command.ForTest(name, testEnv, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, &testConfig, backend, testOptions)
+	return newCommand(cmd, testConfig, backend, testOptions)
 }
 
 func checkReport(t *testing.T, report *Report, status report.Status, summary Summary) {
