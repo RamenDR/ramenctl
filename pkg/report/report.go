@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/ramendr/ramenctl/pkg/build"
+	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
@@ -50,6 +51,12 @@ type Base struct {
 	Status   Status    `json:"status,omitempty"`
 	Duration float64   `json:"duration,omitempty"`
 	Steps    []*Step   `json:"steps"`
+}
+
+// Report is used by all ramenctl commands except the test commands.
+type Report struct {
+	*Base
+	Config *config.Config `json:"config"`
 }
 
 // NewBase create a new base report for ramenctl commands reports.
@@ -128,6 +135,37 @@ func (r *Base) AddStep(step *Step) {
 	case Canceled:
 		r.Status = step.Status
 	}
+}
+
+func NewReport(commandName string, cfg *config.Config) *Report {
+	if cfg == nil {
+		panic("cfg must not be nil")
+	}
+	return &Report{
+		Base:   NewBase(commandName),
+		Config: cfg,
+	}
+}
+
+// Equal return true if report is equal to other report.
+func (r *Report) Equal(o *Report) bool {
+	if r == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if !r.Base.Equal(o.Base) {
+		return false
+	}
+	if r.Config != nil && o.Config != nil {
+		if !r.Config.Equal(o.Config) {
+			return false
+		}
+	} else if r.Config != o.Config {
+		return false
+	}
+	return true
 }
 
 // AddStep records a completed sub step.

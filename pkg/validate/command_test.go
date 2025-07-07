@@ -90,7 +90,7 @@ func testCommand(t *testing.T, name string, backend validation.Validation) *Comm
 	return newCommand(cmd, testConfig, backend)
 }
 
-func checkReport(t *testing.T, report *Report, status report.Status) {
+func checkReport(t *testing.T, report *report.Report, status report.Status) {
 	if report.Status != status {
 		t.Fatalf("expected status %q, got %q", status, report.Status)
 	}
