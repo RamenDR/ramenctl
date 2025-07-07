@@ -35,6 +35,6 @@ var TestCleanCmd = &cobra.Command{
 }
 
 func init() {
-	addOutputFlag(TestCmd)
+	addOutputFlags(TestCmd)
 	TestCmd.AddCommand(TestRunCmd, TestCleanCmd)
 }

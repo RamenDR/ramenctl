@@ -25,6 +25,6 @@ var ValidateClustersCmd = &cobra.Command{
 }
 
 func init() {
-	addOutputFlag(ValidateCmd)
+	addOutputFlags(ValidateCmd)
 	ValidateCmd.AddCommand(ValidateClustersCmd)
 }
