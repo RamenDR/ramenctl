@@ -10,7 +10,7 @@ import (
 
 // Report created by validate sub commands.
 type Report struct {
-	*report.Report
+	*report.Base
 	Config *config.Config `json:"config"`
 }
 
@@ -19,7 +19,7 @@ func newReport(commandName string, cfg *config.Config) *Report {
 		panic("cfg must not be nil")
 	}
 	return &Report{
-		Report: report.New(commandName),
+		Base:   report.NewBase(commandName),
 		Config: cfg,
 	}
 }
@@ -32,7 +32,7 @@ func (r *Report) Equal(o *Report) bool {
 	if o == nil {
 		return false
 	}
-	if !r.Report.Equal(o.Report) {
+	if !r.Base.Equal(o.Base) {
 		return false
 	}
 	if r.Config != nil && o.Config != nil {

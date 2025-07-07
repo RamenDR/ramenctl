@@ -28,7 +28,7 @@ type Summary struct {
 
 // Report created by test sub commands.
 type Report struct {
-	*report.Report
+	*report.Base
 	Config  *e2econfig.Config `json:"config"`
 	Summary Summary           `json:"summary"`
 }
@@ -38,14 +38,14 @@ func newReport(commandName string, config *e2econfig.Config) *Report {
 		panic("config must not be nil")
 	}
 	return &Report{
-		Report: report.New(commandName),
+		Base:   report.NewBase(commandName),
 		Config: config,
 	}
 }
 
 // AddStep adds a step to the report.
 func (r *Report) AddStep(step *report.Step) {
-	r.Report.AddStep(step)
+	r.Base.AddStep(step)
 
 	// Handle the special "tests" step.
 	if step.Name == TestsStep {
@@ -63,7 +63,7 @@ func (r *Report) Equal(o *Report) bool {
 	if o == nil {
 		return false
 	}
-	if !r.Report.Equal(o.Report) {
+	if !r.Base.Equal(o.Base) {
 		return false
 	}
 	if r.Config != nil && o.Config != nil {

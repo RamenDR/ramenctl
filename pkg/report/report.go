@@ -41,8 +41,8 @@ type Step struct {
 	Items    []*Step `json:"items,omitempty"`
 }
 
-// Report created by ramenctl command.
-type Report struct {
+// Base report for ramenctl commands report.
+type Base struct {
 	Host     Host      `json:"host"`
 	Build    *Build    `json:"build,omitempty"`
 	Created  time.Time `json:"created"`
@@ -52,9 +52,9 @@ type Report struct {
 	Steps    []*Step   `json:"steps"`
 }
 
-// New create a new generic report. Commands embed the report in the command report.
-func New(commandName string) *Report {
-	r := &Report{
+// NewBase create a new base report for ramenctl commands reports.
+func NewBase(commandName string) *Base {
+	r := &Base{
 		Name: commandName,
 		Host: Host{
 			OS:   runtime.GOOS,
@@ -74,7 +74,7 @@ func New(commandName string) *Report {
 }
 
 // Equal returns true if report is equal to other report.
-func (r *Report) Equal(o *Report) bool {
+func (r *Base) Equal(o *Base) bool {
 	if r == o {
 		return true
 	}
@@ -109,7 +109,7 @@ func (r *Report) Equal(o *Report) bool {
 }
 
 // AddStep adds a step to the report.
-func (r *Report) AddStep(step *Step) {
+func (r *Base) AddStep(step *Step) {
 	if findStep(r.Steps, step.Name) != nil {
 		panic(fmt.Sprintf("step %q exists", step.Name))
 	}

@@ -15,8 +15,8 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
-func TestHost(t *testing.T) {
-	r := report.New("name")
+func TestBaseHost(t *testing.T) {
+	r := report.NewBase("name")
 	expected := report.Host{
 		OS:   runtime.GOOS,
 		Arch: runtime.GOARCH,
@@ -37,7 +37,7 @@ func TestBuildInfo(t *testing.T) {
 	t.Run("available", func(t *testing.T) {
 		build.Version = "fake-version"
 		build.Commit = "fake-commit"
-		r := report.New("name")
+		r := report.NewBase("name")
 		if r.Build == nil {
 			t.Fatalf("build info omitted")
 		}
@@ -52,28 +52,28 @@ func TestBuildInfo(t *testing.T) {
 	t.Run("missing", func(t *testing.T) {
 		build.Version = ""
 		build.Commit = ""
-		r := report.New("name")
+		r := report.NewBase("name")
 		if r.Build != nil {
 			t.Fatalf("build info not omitted: %+v", r.Build)
 		}
 	})
 }
 
-func TestCreatedTime(t *testing.T) {
+func TestBaseCreatedTime(t *testing.T) {
 	fakeTime(t)
-	r := report.New("name")
+	r := report.NewBase("name")
 	if r.Created != time.Now().Local() {
 		t.Fatalf("expected %v, got %v", time.Now().Local(), r.Created)
 	}
 }
 
-func TestRoundtrip(t *testing.T) {
-	r1 := report.New("name")
+func TestBaseRoundtrip(t *testing.T) {
+	r1 := report.NewBase("name")
 	b, err := yaml.Marshal(r1)
 	if err != nil {
 		t.Fatalf("failed to marshal yaml: %s", err)
 	}
-	r2 := &report.Report{}
+	r2 := &report.Base{}
 	if err := yaml.Unmarshal(b, r2); err != nil {
 		t.Fatalf("failed to unmarshal yaml: %s", err)
 	}
@@ -82,9 +82,9 @@ func TestRoundtrip(t *testing.T) {
 	}
 }
 
-func TestReportEqual(t *testing.T) {
+func TestBaseEqual(t *testing.T) {
 	fakeTime(t)
-	r1 := report.New("name")
+	r1 := report.NewBase("name")
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
 		if !r1.Equal(r2) {
@@ -92,37 +92,37 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 	t.Run("equal reports", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		if !r1.Equal(r2) {
 			t.Fatalf("expected report %+v, got %+v", r1, r2)
 		}
 	})
 }
 
-func TestReportNotEqual(t *testing.T) {
+func TestBaseNotEqual(t *testing.T) {
 	fakeTime(t)
-	r1 := report.New("name")
+	r1 := report.NewBase("name")
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
 			t.Fatal("report should not be equal to nil")
 		}
 	})
 	t.Run("created", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		r2.Created = r2.Created.Add(1)
 		if r1.Equal(r2) {
 			t.Fatal("reports with different create time should not be equal")
 		}
 	})
 	t.Run("host", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		r2.Host.OS = "modified"
 		if r1.Equal(r2) {
 			t.Fatal("reports with different host should not be equal")
 		}
 	})
 	t.Run("build", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		// Build is either nil or have version and commit, empty Build cannot match.
 		r2.Build = &report.Build{}
 		if r1.Equal(r2) {
@@ -130,27 +130,27 @@ func TestReportNotEqual(t *testing.T) {
 		}
 	})
 	t.Run("name", func(t *testing.T) {
-		r2 := report.New("other")
+		r2 := report.NewBase("other")
 		if r1.Equal(r2) {
 			t.Error("reports with different names should not be equal")
 		}
 	})
 	t.Run("status", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		r2.Status = report.Failed
 		if r1.Equal(r2) {
 			t.Fatal("reports with different status should not be equal")
 		}
 	})
 	t.Run("duration", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		r2.Duration += 1.0
 		if r1.Equal(r2) {
 			t.Error("reports with different duration should not be equal")
 		}
 	})
 	t.Run("steps", func(t *testing.T) {
-		r2 := report.New("name")
+		r2 := report.NewBase("name")
 		r2.Steps = []*report.Step{
 			{Name: "new step", Status: report.Passed, Duration: 1.0},
 		}
@@ -161,7 +161,7 @@ func TestReportNotEqual(t *testing.T) {
 }
 
 func TestReportDuration(t *testing.T) {
-	r := report.New("name")
+	r := report.NewBase("name")
 	steps := []*report.Step{
 		{Name: "step1", Status: report.Passed, Duration: 1.0},
 		{Name: "step2", Status: report.Passed, Duration: 1.0},
@@ -181,8 +181,8 @@ func TestReportDuration(t *testing.T) {
 	}
 }
 
-func TestReportAddDuplicateStep(t *testing.T) {
-	r := report.New("name")
+func TestBaseAddDuplicateStep(t *testing.T) {
+	r := report.NewBase("name")
 	step := &report.Step{Name: "unique", Status: report.Passed, Duration: 1.0}
 	r.AddStep(step)
 
@@ -201,7 +201,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should set the report status.
 	t.Run("empty", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.AddStep(passedStep)
 		if r.Status != report.Passed {
 			t.Errorf("expected status %s, got %s", report.Passed, r.Status)
@@ -213,7 +213,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should not modify failed status.
 	t.Run("failed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Failed
 		r.AddStep(passedStep)
 		if r.Status != report.Failed {
@@ -226,7 +226,7 @@ func TestReportAddPassedStep(t *testing.T) {
 
 	// Adding a passed test should not modify canceled status.
 	t.Run("failed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Canceled
 		r.AddStep(passedStep)
 		if r.Status != report.Canceled {
@@ -243,7 +243,7 @@ func TestReportAddFailedStep(t *testing.T) {
 
 	// Failed status should override existing Passed status.
 	t.Run("passed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Passed
 		r.AddStep(failedStep)
 		if r.Status != report.Failed {
@@ -256,7 +256,7 @@ func TestReportAddFailedStep(t *testing.T) {
 
 	// If a report is canceled, adding a failed test should not change the status.
 	t.Run("canceled", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Canceled
 		r.AddStep(failedStep)
 		if r.Status != report.Canceled {
@@ -273,7 +273,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 
 	// Adding canceled step mark the report as canceled.
 	t.Run("failed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Failed
 		r.AddStep(canceledStep)
 		if r.Status != report.Canceled {
@@ -286,7 +286,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 
 	// Adding canceled step mark the report as canceled.
 	t.Run("passed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Passed
 		r.AddStep(canceledStep)
 		if r.Status != report.Canceled {
@@ -303,7 +303,7 @@ func TestReportAddSkippedStep(t *testing.T) {
 
 	// Skipped step with empty status should result in Passed.
 	t.Run("empty", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.AddStep(skippedStep)
 		if r.Status != report.Passed {
 			t.Errorf("expected status %s, got %s", report.Passed, r.Status)
@@ -315,7 +315,7 @@ func TestReportAddSkippedStep(t *testing.T) {
 
 	// Failed status should not be overridden by Skipped.
 	t.Run("failed", func(t *testing.T) {
-		r := report.New("name")
+		r := report.NewBase("name")
 		r.Status = report.Failed
 		r.AddStep(skippedStep)
 		if r.Status != report.Failed {
