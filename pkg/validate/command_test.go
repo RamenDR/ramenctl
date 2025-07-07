@@ -42,6 +42,8 @@ var (
 	}
 )
 
+// Validate clusters tests.
+
 func TestValidateClustersPassed(t *testing.T) {
 	validate := testCommand(t, validateClusters, &validation.Mock{})
 	if err := validate.Clusters(); err != nil {
@@ -55,7 +57,7 @@ func TestValidateClustersPassed(t *testing.T) {
 	checkStep(t, validate.report.Steps[1], "validate clusters", report.Passed)
 }
 
-func TestValidateClustersFailed(t *testing.T) {
+func TestValidateClustersValidateFailed(t *testing.T) {
 	validate := testCommand(t, validateClusters, validateConfigFailed)
 	if err := validate.Clusters(); err == nil {
 		t.Fatal("command did not fail")
@@ -67,7 +69,7 @@ func TestValidateClustersFailed(t *testing.T) {
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
 }
 
-func TestValidateClustersCanceled(t *testing.T) {
+func TestValidateClustersValidateCanceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, validateConfigCanceled)
 	if err := validate.Clusters(); err == nil {
 		t.Fatal("command did not fail")
@@ -78,6 +80,8 @@ func TestValidateClustersCanceled(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
 }
+
+// Helpers.
 
 func testCommand(t *testing.T, name string, backend validation.Validation) *Command {
 	cmd, err := command.ForTest(name, testEnv, t.TempDir())
