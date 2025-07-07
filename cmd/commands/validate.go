@@ -24,7 +24,19 @@ var ValidateClustersCmd = &cobra.Command{
 	},
 }
 
+var ValidateApplicationCmd = &cobra.Command{
+	Use:   "application",
+	Short: "Validate protected application",
+	Run: func(c *cobra.Command, args []string) {
+		if err := validate.Application(configFile, outputDir, drpcName, drpcNamespace); err != nil {
+			console.Fatal(err)
+		}
+	},
+}
+
 func init() {
+	addDRPCFlags(ValidateApplicationCmd)
 	addOutputFlags(ValidateCmd)
 	ValidateCmd.AddCommand(ValidateClustersCmd)
+	ValidateCmd.AddCommand(ValidateApplicationCmd)
 }

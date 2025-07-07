@@ -17,7 +17,10 @@ import (
 )
 
 const (
-	validateClusters = "validate-clusters"
+	validateClusters    = "validate-clusters"
+	validateApplication = "validate-application"
+	drpcName            = "drpc-name"
+	drpcNamespace       = "drpc-namespace"
 )
 
 var (
@@ -71,6 +74,45 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, validateConfigCanceled)
+	if err := validate.Clusters(); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Canceled)
+	if len(validate.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
+}
+
+// Validate application tests.
+
+func TestValidateApplicationPassed(t *testing.T) {
+	validate := testCommand(t, validateApplication, &validation.Mock{})
+	if err := validate.Application(drpcName, drpcNamespace); err != nil {
+		t.Fatal(err)
+	}
+	checkReport(t, validate.report, report.Passed)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Passed)
+}
+
+func TestValidateApplicationValidateFailed(t *testing.T) {
+	validate := testCommand(t, validateApplication, validateConfigFailed)
+	if err := validate.Clusters(); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Failed)
+	if len(validate.report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
+}
+
+func TestValidateApplicationValidateCanceled(t *testing.T) {
+	validate := testCommand(t, validateApplication, validateConfigCanceled)
 	if err := validate.Clusters(); err == nil {
 		t.Fatal("command did not fail")
 	}

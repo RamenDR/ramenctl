@@ -24,3 +24,19 @@ func Clusters(configFile string, outputDir string) error {
 	validate := newCommand(cmd, cfg, validation.Backend{})
 	return validate.Clusters()
 }
+
+func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
+	cfg, err := config.ReadConfig(configFile)
+	if err != nil {
+		return err
+	}
+
+	cmd, err := command.New("validate-application", cfg.Clusters, outputDir)
+	if err != nil {
+		return err
+	}
+	defer cmd.Close()
+
+	validate := newCommand(cmd, cfg, validation.Backend{})
+	return validate.Application(drpcName, drpcNamespace)
+}

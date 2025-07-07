@@ -85,6 +85,17 @@ func (c *Command) Clusters() error {
 	return nil
 }
 
+func (c *Command) Application(drpcName, drpcNamespace string) error {
+	if !c.validateConfig() {
+		return c.failed()
+	}
+	if !c.validateApplication(drpcName, drpcNamespace) {
+		return c.failed()
+	}
+	c.passed()
+	return nil
+}
+
 // Validation.
 
 // withTimeout returns a derived command with a deadline. Call cancel to release resources
@@ -114,6 +125,23 @@ func (c *Command) validateClusters() bool {
 	env := c.command.Env()
 	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
 		// TODO: Run parallel validation for hub, passive hub, and managed clusters.
+		c.command.Logger().Infof("Validating cluster %q", cluster.Name)
+		step := &report.Step{Name: cluster.Name, Status: report.Passed}
+		c.current.AddStep(step)
+		console.Pass("Cluster %q validated", cluster.Name)
+	}
+	c.finishStep()
+	return true
+}
+
+func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
+	console.Step("Validate application")
+	c.startStep("validate application")
+	env := c.command.Env()
+	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
+		// TODO: Run parallel validation for hub, passive hub, and managed clusters.
+		c.command.Logger().Infof("Validating application \"%s/%s\" in cluster %q",
+			drpcNamespace, drpcName, cluster.Name)
 		step := &report.Step{Name: cluster.Name, Status: report.Passed}
 		c.current.AddStep(step)
 		console.Pass("Cluster %q validated", cluster.Name)
