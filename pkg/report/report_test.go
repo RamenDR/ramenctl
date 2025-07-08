@@ -160,7 +160,7 @@ func TestBaseNotEqual(t *testing.T) {
 	})
 }
 
-func TestReportDuration(t *testing.T) {
+func TestBaseDuration(t *testing.T) {
 	r := report.NewBase("name")
 	steps := []*report.Step{
 		{Name: "step1", Status: report.Passed, Duration: 1.0},
@@ -196,7 +196,7 @@ func TestBaseAddDuplicateStep(t *testing.T) {
 	r.AddStep(dup)
 }
 
-func TestReportAddPassedStep(t *testing.T) {
+func TestBaseAddPassedStep(t *testing.T) {
 	passedStep := &report.Step{Name: "ok", Status: report.Passed, Duration: 1.0}
 
 	// Adding a passed test should set the report status.
@@ -238,7 +238,7 @@ func TestReportAddPassedStep(t *testing.T) {
 	})
 }
 
-func TestReportAddFailedStep(t *testing.T) {
+func TestBaseAddFailedStep(t *testing.T) {
 	failedStep := &report.Step{Name: "fail", Status: report.Failed, Duration: 1.0}
 
 	// Failed status should override existing Passed status.
@@ -268,7 +268,7 @@ func TestReportAddFailedStep(t *testing.T) {
 	})
 }
 
-func TestReportAddCanceledStep(t *testing.T) {
+func TestBaseAddCanceledStep(t *testing.T) {
 	canceledStep := &report.Step{Name: "cancel", Status: report.Canceled, Duration: 1.0}
 
 	// Adding canceled step mark the report as canceled.
@@ -298,7 +298,7 @@ func TestReportAddCanceledStep(t *testing.T) {
 	})
 }
 
-func TestReportAddSkippedStep(t *testing.T) {
+func TestBaseAddSkippedStep(t *testing.T) {
 	skippedStep := &report.Step{Name: "skip", Status: report.Skipped, Duration: 0.0}
 
 	// Skipped step with empty status should result in Passed.
