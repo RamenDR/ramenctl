@@ -53,10 +53,16 @@ type Base struct {
 	Steps    []*Step   `json:"steps"`
 }
 
+type Application struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
 // Report is used by all ramenctl commands except the test commands.
 type Report struct {
 	*Base
-	Config *config.Config `json:"config"`
+	Config      *config.Config `json:"config"`
+	Application *Application   `json:"application,omitempty"`
 }
 
 // NewBase create a new base report for ramenctl commands reports.
@@ -163,6 +169,13 @@ func (r *Report) Equal(o *Report) bool {
 			return false
 		}
 	} else if r.Config != o.Config {
+		return false
+	}
+	if r.Application != nil && o.Application != nil {
+		if *r.Application != *o.Application {
+			return false
+		}
+	} else if r.Application != o.Application {
 		return false
 	}
 	return true

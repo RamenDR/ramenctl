@@ -32,6 +32,11 @@ var (
 		C2:  &types.Cluster{Name: "c2"},
 	}
 
+	testApplication = &report.Application{
+		Name:      drpcName,
+		Namespace: drpcNamespace,
+	}
+
 	validateConfigFailed = &validation.Mock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return errors.New("No validate for you!")
@@ -53,6 +58,7 @@ func TestValidateClustersPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 	checkReport(t, validate.report, report.Passed)
+	checkApplication(t, validate.report, nil)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -66,6 +72,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Failed)
+	checkApplication(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -78,6 +85,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Canceled)
+	checkApplication(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -92,6 +100,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 	checkReport(t, validate.report, report.Passed)
+	checkApplication(t, validate.report, testApplication)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -105,6 +114,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Failed)
+	checkApplication(t, validate.report, testApplication)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -117,6 +127,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Canceled)
+	checkApplication(t, validate.report, testApplication)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -146,6 +157,16 @@ func checkReport(t *testing.T, report *report.Report, status report.Status) {
 	duration := totalDuration(report.Steps)
 	if report.Duration != duration {
 		t.Fatalf("expected duration %v, got %v", duration, report.Duration)
+	}
+}
+
+func checkApplication(t *testing.T, report *report.Report, expected *report.Application) {
+	if report.Application != nil && expected != nil {
+		if *report.Application != *expected {
+			t.Fatalf("expected application %+v, got %+v", expected, report.Application)
+		}
+	} else if report.Application != expected {
+		t.Fatalf("expected application %+v, got %+v", expected, report.Application)
 	}
 }
 

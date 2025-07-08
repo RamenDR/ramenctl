@@ -86,6 +86,10 @@ func (c *Command) Clusters() error {
 }
 
 func (c *Command) Application(drpcName, drpcNamespace string) error {
+	c.report.Application = &report.Application{
+		Name:      drpcName,
+		Namespace: drpcNamespace,
+	}
 	if !c.validateConfig() {
 		return c.failed()
 	}

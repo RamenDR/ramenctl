@@ -367,6 +367,22 @@ func TestReportNotEqual(t *testing.T) {
 			t.Fatal("reports with different config should not be equal")
 		}
 	})
+	t.Run("nil application", func(t *testing.T) {
+		r2 := report.NewReport("name", testConfig)
+		r2.Application = &report.Application{}
+		if r1.Equal(r2) {
+			t.Fatal("reports with nil application should not be equal")
+		}
+	})
+	t.Run("other application", func(t *testing.T) {
+		r1 := report.NewReport("name", testConfig)
+		r1.Application = &report.Application{Name: "name"}
+		r2 := report.NewReport("name", testConfig)
+		r2.Application = &report.Application{Name: "other"}
+		if r1.Equal(r2) {
+			t.Fatal("reports with different application should not be equal")
+		}
+	})
 }
 
 func TestStepAddPassedStep(t *testing.T) {
