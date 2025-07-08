@@ -101,7 +101,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
 	validate := testCommand(t, validateApplication, validateConfigFailed)
-	if err := validate.Clusters(); err == nil {
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Failed)
@@ -113,7 +113,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
 	validate := testCommand(t, validateApplication, validateConfigCanceled)
-	if err := validate.Clusters(); err == nil {
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate.report, report.Canceled)
