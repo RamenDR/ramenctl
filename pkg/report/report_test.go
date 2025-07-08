@@ -11,9 +11,12 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/build"
+	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
+
+var testConfig = &config.Config{}
 
 func TestBaseHost(t *testing.T) {
 	r := report.NewBase("name")
@@ -323,6 +326,45 @@ func TestBaseAddSkippedStep(t *testing.T) {
 		}
 		if !slices.Equal(r.Steps, []*report.Step{skippedStep}) {
 			t.Errorf("expected steps to be equal, got %v", r.Steps)
+		}
+	})
+}
+
+func TestReportEqual(t *testing.T) {
+	fakeTime(t)
+	r1 := report.NewReport("name", testConfig)
+	t.Run("equal to self", func(t *testing.T) {
+		r2 := r1
+		if !r1.Equal(r2) {
+			t.Fatal("report should be equal itself")
+		}
+	})
+	t.Run("equal reports", func(t *testing.T) {
+		r2 := report.NewReport("name", testConfig)
+		if !r1.Equal(r2) {
+			t.Fatalf("expected report %+v, got %+v", r1, r2)
+		}
+	})
+}
+
+func TestReportNotEqual(t *testing.T) {
+	fakeTime(t)
+	r1 := report.NewReport("name", testConfig)
+	t.Run("nil", func(t *testing.T) {
+		if r1.Equal(nil) {
+			t.Fatal("report should not be equal to nil")
+		}
+	})
+	t.Run("name", func(t *testing.T) {
+		r2 := report.NewReport("other", testConfig)
+		if r1.Equal(r2) {
+			t.Fatal("reports with different name should not be equal")
+		}
+	})
+	t.Run("config", func(t *testing.T) {
+		r2 := report.NewReport("name", &config.Config{Distro: "other"})
+		if r1.Equal(r2) {
+			t.Fatal("reports with different config should not be equal")
 		}
 	})
 }
