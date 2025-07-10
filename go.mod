@@ -9,7 +9,7 @@ toolchain go1.23.8
 require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.8.0
-	github.com/ramendr/ramen/e2e v0.0.0-20250702155156-54e270d8dc49
+	github.com/ramendr/ramen/e2e v0.0.0-20250709222238-987a6b3e182f
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
