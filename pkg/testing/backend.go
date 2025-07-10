@@ -49,3 +49,7 @@ func (Backend) Failover(ctx types.TestContext) error {
 func (Backend) Relocate(ctx types.TestContext) error {
 	return dractions.Relocate(ctx)
 }
+
+func (Backend) Purge(ctx types.TestContext) error {
+	return dractions.Purge(ctx)
+}

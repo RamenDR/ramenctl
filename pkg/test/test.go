@@ -12,7 +12,6 @@ import (
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/workloads"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -120,29 +119,13 @@ func (t *Test) Relocate() bool {
 	return t.passStep()
 }
 
-func (t *Test) Cleanup() bool {
-	var g errgroup.Group
-	timeout := max(util.UndeployTimeout, util.DisableTimeout)
-	timedCtx, cancel := t.WithTimeout(timeout)
+func (t *Test) Purge() bool {
+	t.startStep("purge")
+	timedCtx, cancel := t.WithTimeout(util.PurgeTimeout)
 	defer cancel()
-
-	t.startStep("cleanup")
-	g.Go(func() error {
-		if err := t.Backend.Unprotect(timedCtx); err != nil {
-			return err
-		}
-		return nil
-	})
-	g.Go(func() error {
-		if err := t.Backend.Undeploy(timedCtx); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err := g.Wait(); err != nil {
+	if err := t.Backend.Purge(timedCtx); err != nil {
 		return t.failStep(err)
 	}
-
 	console.Pass("Application %q cleaned up", t.Name())
 	return t.passStep()
 }

@@ -25,6 +25,7 @@ type Mock struct {
 	UnprotectFunc TestContextFunc
 	FailoverFunc  TestContextFunc
 	RelocateFunc  TestContextFunc
+	PurgeFunc     TestContextFunc
 }
 
 var _ Testing = &Mock{}
@@ -88,6 +89,13 @@ func (m *Mock) Failover(ctx types.TestContext) error {
 func (m *Mock) Relocate(ctx types.TestContext) error {
 	if m.RelocateFunc != nil {
 		return m.RelocateFunc(ctx)
+	}
+	return nil
+}
+
+func (m *Mock) Purge(ctx types.TestContext) error {
+	if m.PurgeFunc != nil {
+		return m.PurgeFunc(ctx)
 	}
 	return nil
 }

@@ -103,26 +103,14 @@ var (
 		},
 	}
 
-	unprotectFailed = &rtesting.Mock{
-		UnprotectFunc: func(ctx types.TestContext) error {
-			return errors.New("No unprotect for you!")
+	purgeFailed = &rtesting.Mock{
+		PurgeFunc: func(ctx types.TestContext) error {
+			return errors.New("No purge for you!")
 		},
 	}
 
-	unprotectCanceled = &rtesting.Mock{
-		UnprotectFunc: func(ctx types.TestContext) error {
-			return context.Canceled
-		},
-	}
-
-	undeployFailed = &rtesting.Mock{
-		UndeployFunc: func(ctx types.TestContext) error {
-			return errors.New("No undeploy for you!")
-		},
-	}
-
-	undeployCanceled = &rtesting.Mock{
-		UndeployFunc: func(ctx types.TestContext) error {
+	purgeCanceled = &rtesting.Mock{
+		PurgeFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
 	}
@@ -307,7 +295,7 @@ func TestCleanPassed(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		checkTest(t, result, tc, report.Passed, "cleanup")
+		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, report.Passed)
@@ -343,8 +331,8 @@ func TestCleanValidateCanceled(t *testing.T) {
 	checkStep(t, validate, ValidateStep, report.Canceled)
 }
 
-func TestCleanUnprotectFailed(t *testing.T) {
-	test := testCommand(t, testClean, unprotectFailed)
+func TestCleanPurgeFailed(t *testing.T) {
+	test := testCommand(t, testClean, purgeFailed)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -360,33 +348,12 @@ func TestCleanUnprotectFailed(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		checkTest(t, result, tc, report.Failed, "cleanup")
+		checkTest(t, result, tc, report.Failed, "purge")
 	}
 }
 
-func TestCleanUndeployFailed(t *testing.T) {
-	test := testCommand(t, testClean, undeployFailed)
-
-	if err := test.Clean(); err == nil {
-		t.Fatal("command did not fail")
-	}
-
-	checkReport(t, test.report, report.Failed, Summary{Failed: len(testConfig.Tests)})
-	if len(test.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.report.Steps)
-	}
-	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
-	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Failed)
-	for i, tc := range testConfig.Tests {
-		result := tests.Items[i]
-		checkTest(t, result, tc, report.Failed, "cleanup")
-	}
-}
-
-func TestCleanUnprotectCanceled(t *testing.T) {
-	test := testCommand(t, testClean, unprotectCanceled)
+func TestCleanPurgeCanceled(t *testing.T) {
+	test := testCommand(t, testClean, purgeCanceled)
 
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
@@ -402,28 +369,7 @@ func TestCleanUnprotectCanceled(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Canceled)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		checkTest(t, result, tc, report.Canceled, "cleanup")
-	}
-}
-
-func TestCleanUndeployCanceled(t *testing.T) {
-	test := testCommand(t, testClean, undeployCanceled)
-
-	if err := test.Clean(); err == nil {
-		t.Fatal("command did not fail")
-	}
-
-	checkReport(t, test.report, report.Canceled, Summary{Canceled: len(testConfig.Tests)})
-	if len(test.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", test.report.Steps)
-	}
-	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
-	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Canceled)
-	for i, tc := range testConfig.Tests {
-		result := tests.Items[i]
-		checkTest(t, result, tc, report.Canceled, "cleanup")
+		checkTest(t, result, tc, report.Canceled, "purge")
 	}
 }
 
@@ -444,7 +390,7 @@ func TestCleanCleanupFailed(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		checkTest(t, result, tc, report.Passed, "cleanup")
+		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, report.Failed)
@@ -467,7 +413,7 @@ func TestCleanCleanupCanceled(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Passed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		checkTest(t, result, tc, report.Passed, "cleanup")
+		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
 	checkStep(t, cleanup, CleanupStep, report.Canceled)

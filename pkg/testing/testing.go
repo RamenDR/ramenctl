@@ -19,4 +19,5 @@ type Testing interface {
 	Unprotect(types.TestContext) error
 	Failover(types.TestContext) error
 	Relocate(types.TestContext) error
+	Purge(types.TestContext) error
 }

@@ -331,7 +331,7 @@ func (c *Command) runFlow(test *Test) {
 }
 
 func (c *Command) cleanFlow(test *Test) {
-	test.Cleanup()
+	test.Purge()
 }
 
 func (c *Command) namespacesToGather() []string {
