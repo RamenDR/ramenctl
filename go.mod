@@ -9,6 +9,7 @@ toolchain go1.23.8
 require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.8.0
+	github.com/ramendr/ramen/api v0.0.0-20250710152106-9a4f493138c5
 	github.com/ramendr/ramen/e2e v0.0.0-20250710152106-9a4f493138c5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
@@ -54,7 +55,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/ramendr/ramen/api v0.0.0-20250313143647-8dd671566929 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect

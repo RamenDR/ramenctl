@@ -18,3 +18,12 @@ func (b Backend) Validate(ctx Context) error {
 	}
 	return nil
 }
+
+// ApplicationNamespaces inspects the application DRPC and returns the application namespaces on the
+// hub and managed clusters.
+func (b Backend) ApplicationNamespaces(
+	ctx Context,
+	drpcName, drpcNamespace string,
+) ([]string, error) {
+	return drpcNamespaces(ctx, drpcName, drpcNamespace)
+}
