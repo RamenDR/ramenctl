@@ -5,8 +5,8 @@ package validation
 
 type ContextFunc func(Context) error
 
-// Mock implements the Validation interface. All operations succeed without accessing the
-// clusters. To cause operations to fail, set a function returning an error.
+// Mock implements the Validation interface. All operations succeed without accessing the clusters.
+// To cause operations to fail or return non default values, set a function returning an error.
 type Mock struct {
 	ValidateFunc ContextFunc
 }

@@ -22,6 +22,5 @@ type Context interface {
 
 // Validation provides the validation operations.
 type Validation interface {
-	// Validate the environment. Must be called once before calling other functions.
 	Validate(Context) error
 }
