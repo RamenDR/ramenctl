@@ -4,12 +4,16 @@
 package gather
 
 import (
+	"fmt"
 	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
+	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/validation"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,6 +22,22 @@ import (
 type Result struct {
 	Name string
 	Err  error
+}
+
+func Gather(configFile string, outputDir string, drpcName string, drpcNamespace string) error {
+	config, err := config.ReadConfig(configFile)
+	if err != nil {
+		return fmt.Errorf("unable to read config: %w", err)
+	}
+
+	cmd, err := command.New("gather-application", config.Clusters, outputDir)
+	if err != nil {
+		return err
+	}
+	defer cmd.Close()
+
+	gather := newCommand(cmd, config, validation.Backend{})
+	return gather.Application(drpcName, drpcNamespace)
 }
 
 // Namespaces gathers namespaces from all clusters storing data in outputDir. Returns a channel for
