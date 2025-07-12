@@ -158,6 +158,8 @@ func (c *Command) passed() {
 }
 
 func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
+	start := time.Now()
+
 	seen := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
 		c.config.Namespaces.RamenHubNamespace:       {},
@@ -167,6 +169,8 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 
 	appNamespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
 	if err != nil {
+		step := &report.Step{Name: "inspecting namespaces", Status: report.Failed, Duration: time.Since(start).Seconds()}
+		c.current.AddStep(step)
 		return nil, err
 	}
 	var namespaces []string
@@ -177,6 +181,8 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 		namespaces = append(namespaces, ns)
 	}
 	sort.Strings(namespaces)
+	step := &report.Step{Name: "inspecting namespaces", Status: report.Passed, Duration: time.Since(start).Seconds()}
+	c.current.AddStep(step)
 
 	return namespaces, nil
 }
