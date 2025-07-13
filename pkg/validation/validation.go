@@ -22,6 +22,6 @@ type Context interface {
 
 // Validation provides the validation operations.
 type Validation interface {
-	Validate(Context) error
-	ApplicationNamespaces(Context, string, string) ([]string, error)
+	Validate(ctx Context) error
+	ApplicationNamespaces(ctx Context, drpcName, drpcNamespace string) ([]string, error)
 }

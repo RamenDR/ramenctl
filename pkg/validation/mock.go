@@ -9,7 +9,7 @@ type ContextFunc func(Context) error
 // To cause operations to fail or return non default values, set a function returning an error.
 type Mock struct {
 	ValidateFunc              ContextFunc
-	ApplicationNamespacesFunc func(Context, string, string) ([]string, error)
+	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
 }
 
 var _ Validation = &Mock{}
