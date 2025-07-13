@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
+	"slices"
 	stdtime "time"
 
 	"github.com/ramendr/ramen/e2e/types"
@@ -15,6 +17,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 	"github.com/ramendr/ramenctl/pkg/validation"
@@ -141,16 +144,91 @@ func (c *Command) validateClusters() bool {
 func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 	console.Step("Validate application")
 	c.startStep("validate application")
-	env := c.command.Env()
-	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
-		// TODO: Run parallel validation for hub, passive hub, and managed clusters.
-		c.command.Logger().Infof("Validating application \"%s/%s\" in cluster %q",
-			drpcNamespace, drpcName, cluster.Name)
-		step := &report.Step{Name: cluster.Name, Status: report.Passed}
-		c.current.AddStep(step)
-		console.Pass("Cluster %q validated", cluster.Name)
+
+	namespaces, ok := c.inspectApplication(drpcName, drpcNamespace)
+	if !ok {
+		return c.finishStep()
 	}
+
+	if !c.gatherApplicationNamespaces(namespaces) {
+		return c.finishStep()
+	}
+
+	if !c.validateGatheredData(drpcName, drpcNamespace) {
+		return c.finishStep()
+	}
+
 	c.finishStep()
+	return true
+}
+
+func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, bool) {
+	start := time.Now()
+	step := &report.Step{Name: "inspect application"}
+	c.Logger().Infof("Step %q started", step.Name)
+
+	namespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	if err != nil {
+		step.Duration = time.Since(start).Seconds()
+		if errors.Is(err, context.Canceled) {
+			console.Error("Canceled %s", step.Name)
+			step.Status = report.Canceled
+		} else {
+			console.Error("Failed to %s", step.Name)
+			step.Status = report.Failed
+		}
+		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
+		c.current.AddStep(step)
+
+		return nil, false
+	}
+
+	step.Duration = time.Since(start).Seconds()
+	step.Status = report.Passed
+	c.current.AddStep(step)
+
+	console.Pass("Inspected application")
+	c.Logger().Infof("Step %q passed", step.Name)
+
+	// For consistent gather order and report.
+	slices.Sort(namespaces)
+
+	return namespaces, true
+}
+
+func (c *Command) gatherApplicationNamespaces(namespaces []string) bool {
+	start := time.Now()
+	env := c.Env()
+	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
+	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+
+	c.Logger().Infof("Gathering namespaces %q from clusters %q",
+		namespaces, logging.ClusterNames(clusters))
+
+	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
+		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
+		if r.Err != nil {
+			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
+			console.Error(msg)
+			c.Logger().Errorf("%s: %s", msg, r.Err)
+			step.Status = report.Failed
+		} else {
+			console.Pass("Gathered data from cluster %q", r.Name)
+			step.Status = report.Passed
+		}
+		c.current.AddStep(step)
+	}
+
+	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
+
+	return c.current.Status == report.Passed
+}
+
+func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
+	// TODO: Validate gathered data.
+	step := &report.Step{Name: "validate data", Status: report.Passed}
+	c.current.AddStep(step)
+	console.Pass("Application validated")
 	return true
 }
 
