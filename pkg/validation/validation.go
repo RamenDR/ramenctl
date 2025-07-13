@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
 // Context is validation context, decoupling the ramenctl command from the backend implementation.
@@ -24,4 +25,10 @@ type Context interface {
 type Validation interface {
 	Validate(ctx Context) error
 	ApplicationNamespaces(ctx Context, drpcName, drpcNamespace string) ([]string, error)
+	Gather(
+		ctx Context,
+		clusters []*types.Cluster,
+		namespaces []string,
+		outputDir string,
+	) <-chan gather.Result
 }

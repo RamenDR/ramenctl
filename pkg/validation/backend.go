@@ -3,6 +3,11 @@
 
 package validation
 
+import (
+	"github.com/ramendr/ramen/e2e/types"
+	"github.com/ramendr/ramenctl/pkg/gather"
+)
+
 // Backend performs validation with real clusters.
 type Backend struct{}
 
@@ -26,4 +31,13 @@ func (b Backend) ApplicationNamespaces(
 	drpcName, drpcNamespace string,
 ) ([]string, error) {
 	return drpcNamespaces(ctx, drpcName, drpcNamespace)
+}
+
+func (b Backend) Gather(
+	ctx Context,
+	clusters []*types.Cluster,
+	namespaces []string,
+	outputDir string,
+) <-chan gather.Result {
+	return gather.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
 }
