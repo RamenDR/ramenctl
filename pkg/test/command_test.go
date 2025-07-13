@@ -44,8 +44,6 @@ var (
 		C2:  &types.Cluster{Name: "c2"},
 	}
 
-	testOptions Options
-
 	validateFailed = &rtesting.Mock{
 		ValidateFunc: func(ctx types.Context) error {
 			return errors.New("No validate for you!")
@@ -429,7 +427,7 @@ func testCommand(t *testing.T, name string, backend rtesting.Testing) *Command {
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, testConfig, backend, testOptions)
+	return newCommand(cmd, testConfig, backend)
 }
 
 func checkReport(t *testing.T, report *Report, status report.Status, summary Summary) {

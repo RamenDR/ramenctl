@@ -18,7 +18,6 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
-	"github.com/ramendr/ramenctl/pkg/gather"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -26,11 +25,6 @@ import (
 
 // namespacePrefix is used for all namespaces created by tests.
 const namespacePrefix = "test-"
-
-type Options struct {
-	// Gather data for failed tests.
-	GatherData bool
-}
 
 // Command is a ramenctl test command.
 type Command struct {
@@ -45,9 +39,6 @@ type Command struct {
 
 	// backend is used to perform testing operations.
 	backend testing.Testing
-
-	// options for test commands.
-	options Options
 
 	// PCCSpecs maps pvscpec name to pvcspec.
 	pvcSpecs map[string]e2econfig.PVCSpec
@@ -75,7 +66,6 @@ func newCommand(
 	cmd *command.Command,
 	cfg *e2econfig.Config,
 	backend testing.Testing,
-	options Options,
 ) *Command {
 	// This is not user configurable. We use the same prefix for all namespaces created by the test.
 	cfg.Channel.Namespace = namespacePrefix + "gitops"
@@ -85,7 +75,6 @@ func newCommand(
 		config:   cfg,
 		context:  cmd.Context(),
 		backend:  backend,
-		options:  options,
 		pvcSpecs: e2econfig.PVCSpecsMap(cfg),
 		report:   newReport(cmd.Name(), cfg),
 	}
@@ -209,7 +198,7 @@ func (c *Command) gatherData() {
 	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
 	start := time.Now()
 	c.Logger().Infof("Gathering namespaces %q from clusters %q", namespaces, clusterNames(clusters))
-	for r := range gather.Namespaces(clusters, namespaces, outputDir, c.Logger()) {
+	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
 			console.Error(msg)
@@ -305,7 +294,7 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 
 	res := c.finishStep()
-	if c.report.Status == report.Failed && c.options.GatherData {
+	if c.report.Status == report.Failed {
 		c.gatherData()
 	}
 	return res

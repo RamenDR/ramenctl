@@ -20,6 +20,6 @@ func Clean(configFile string, outputDir string) error {
 	}
 	defer cmd.Close()
 
-	test := newCommand(cmd, cfg, testing.Backend{}, Options{GatherData: true})
+	test := newCommand(cmd, cfg, testing.Backend{})
 	return test.Clean()
 }
