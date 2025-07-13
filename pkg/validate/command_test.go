@@ -12,6 +12,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
@@ -46,6 +47,33 @@ var (
 	validateConfigCanceled = &validation.Mock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return context.Canceled
+		},
+	}
+
+	inspectApplicationFailed = &validation.Mock{
+		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
+			return nil, errors.New("No namespaces for you!")
+		},
+	}
+
+	inspectApplicationCanceled = &validation.Mock{
+		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
+			return nil, context.Canceled
+		},
+	}
+
+	gatherClusterFailed = &validation.Mock{
+		GatherFunc: func(ctx validation.Context, clusters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result {
+			results := make(chan gathering.Result, 3)
+			for _, cluster := range clusters {
+				if cluster.Name == "hub" {
+					results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
+				} else {
+					results <- gathering.Result{Name: cluster.Name}
+				}
+			}
+			close(results)
+			return results
 		},
 	}
 )
@@ -106,6 +134,15 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
 	checkStep(t, validate.report.Steps[1], "validate application", report.Passed)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "validate data", Status: report.Passed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -133,6 +170,72 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
 }
+
+func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
+	validate := testCommand(t, validateApplication, inspectApplicationFailed)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Failed)
+	checkApplication(t, validate.report, testApplication)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+
+	// If inspecting the application has failed we skip the gather step.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+}
+
+func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
+	validate := testCommand(t, validateApplication, inspectApplicationCanceled)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Canceled)
+	checkApplication(t, validate.report, testApplication)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+
+	// If inspecting the application has been canceled we skip the gather step.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Canceled},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+}
+
+func TestValidateApplicationGatherClusterFailed(t *testing.T) {
+	validate := testCommand(t, validateApplication, gatherClusterFailed)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Failed)
+	checkApplication(t, validate.report, testApplication)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+
+	// If gathering data fail for some of the clusters, we skip the validation step.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Failed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+}
+
+// TODO: Test gather cancellation when kubectl-gahter supports it:
+// https://github.com/nirs/kubectl-gather/issues/88
 
 // Helpers.
 
@@ -178,6 +281,15 @@ func checkStep(t *testing.T, step *report.Step, name string, status report.Statu
 		t.Fatalf("expected status %q, got %q", status, step.Status)
 	}
 	// We cannot check duration since it may be zero on windows.
+}
+
+func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
+	if len(expected) != len(step.Items) {
+		t.Fatalf("expected items %+v, got %+v", expected, step.Items)
+	}
+	for i, item := range expected {
+		checkStep(t, step.Items[i], item.Name, item.Status)
+	}
 }
 
 func totalDuration(steps []*report.Step) float64 {
