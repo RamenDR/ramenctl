@@ -9,7 +9,7 @@ import (
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/validate"
 
-	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 
 type Backend struct{}
@@ -61,6 +61,6 @@ func (b Backend) Gather(
 	clusters []*types.Cluster,
 	namespaces []string,
 	outputDir string,
-) <-chan gather.Result {
-	return gather.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
+) <-chan gathering.Result {
+	return gathering.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
 }

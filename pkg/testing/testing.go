@@ -6,7 +6,7 @@ package testing
 import (
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 
 // Testing interface for ramenctl commands.
@@ -31,5 +31,5 @@ type Testing interface {
 		clusters []*types.Cluster,
 		namespaces []string,
 		outputDir string,
-	) <-chan gather.Result
+	) <-chan gathering.Result
 }

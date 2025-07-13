@@ -5,7 +5,7 @@ package validation
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
-	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 
 // Backend performs validation with real clusters.
@@ -38,6 +38,6 @@ func (b Backend) Gather(
 	clusters []*types.Cluster,
 	namespaces []string,
 	outputDir string,
-) <-chan gather.Result {
-	return gather.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
+) <-chan gathering.Result {
+	return gathering.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
 }

@@ -6,7 +6,7 @@ package testing
 import (
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/gather"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 
 type ContextFunc func(types.Context) error
@@ -30,7 +30,7 @@ type Mock struct {
 	PurgeFunc     TestContextFunc
 
 	// Handling failures.
-	GatherFunc func(ctx types.Context, clsuters []*types.Cluster, namespaces []string, outputDir string) <-chan gather.Result
+	GatherFunc func(ctx types.Context, clsuters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result
 }
 
 var _ Testing = &Mock{}
@@ -110,14 +110,14 @@ func (m *Mock) Gather(
 	clusters []*types.Cluster,
 	namespaces []string,
 	outputDir string,
-) <-chan gather.Result {
+) <-chan gathering.Result {
 	if m.GatherFunc != nil {
 		return m.GatherFunc(ctx, clusters, namespaces, outputDir)
 	}
 
-	results := make(chan gather.Result, len(clusters))
+	results := make(chan gathering.Result, len(clusters))
 	for _, cluster := range clusters {
-		results <- gather.Result{Name: cluster.Name, Err: nil}
+		results <- gathering.Result{Name: cluster.Name, Err: nil}
 	}
 	close(results)
 	return results
