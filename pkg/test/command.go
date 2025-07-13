@@ -18,6 +18,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -197,7 +198,10 @@ func (c *Command) gatherData() {
 	namespaces := c.namespacesToGather()
 	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
 	start := time.Now()
-	c.Logger().Infof("Gathering namespaces %q from clusters %q", namespaces, clusterNames(clusters))
+
+	c.Logger().Infof("Gathering namespaces %q from clusters %q",
+		namespaces, logging.ClusterNames(clusters))
+
 	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
@@ -207,15 +211,8 @@ func (c *Command) gatherData() {
 			console.Pass("Gathered data from cluster %q", r.Name)
 		}
 	}
-	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
-}
 
-func clusterNames(clusters []*types.Cluster) []string {
-	names := []string{}
-	for _, cluster := range clusters {
-		names = append(names, cluster.Name)
-	}
-	return names
+	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
 }
 
 func (c *Command) failed() error {
