@@ -8,6 +8,8 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/validate"
+
+	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
 type Backend struct{}
@@ -52,4 +54,13 @@ func (Backend) Relocate(ctx types.TestContext) error {
 
 func (Backend) Purge(ctx types.TestContext) error {
 	return dractions.Purge(ctx)
+}
+
+func (b Backend) Gather(
+	ctx types.Context,
+	clusters []*types.Cluster,
+	namespaces []string,
+	outputDir string,
+) <-chan gather.Result {
+	return gather.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
 }

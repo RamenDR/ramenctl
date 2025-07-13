@@ -3,7 +3,11 @@
 
 package testing
 
-import "github.com/ramendr/ramen/e2e/types"
+import (
+	"github.com/ramendr/ramen/e2e/types"
+
+	"github.com/ramendr/ramenctl/pkg/gather"
+)
 
 // Testing interface for ramenctl commands.
 type Testing interface {
@@ -20,4 +24,12 @@ type Testing interface {
 	Failover(types.TestContext) error
 	Relocate(types.TestContext) error
 	Purge(types.TestContext) error
+
+	// Handling failures.
+	Gather(
+		ctx types.Context,
+		clusters []*types.Cluster,
+		namespaces []string,
+		outputDir string,
+	) <-chan gather.Result
 }
