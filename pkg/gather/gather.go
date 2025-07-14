@@ -16,8 +16,9 @@ import (
 )
 
 type Result struct {
-	Name string
-	Err  error
+	Name     string
+	Err      error
+	Duration float64
 }
 
 // Namespaces gathers namespaces from all clusters storing data in outputDir. Returns a channel for
@@ -36,8 +37,9 @@ func Namespaces(
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			start := time.Now()
 			err := gatherCluster(cluster, namespaces, outputDir, log)
-			results <- Result{Name: cluster.Name, Err: err}
+			results <- Result{Name: cluster.Name, Err: err, Duration: time.Since(start).Seconds()}
 		}()
 	}
 
