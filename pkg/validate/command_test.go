@@ -92,6 +92,14 @@ func TestValidateClustersPassed(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
 	checkStep(t, validate.report.Steps[1], "validate clusters", report.Passed)
+
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "validate cluster data", Status: report.Passed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -118,6 +126,28 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
+}
+
+func TestValidateClusterGatherClusterFailed(t *testing.T) {
+	validate := testCommand(t, validateClusters, gatherClusterFailed)
+	if err := validate.Clusters(); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate.report, report.Failed)
+	checkApplication(t, validate.report, nil)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+
+	// If gathering data fail for some of the clusters, we skip the validation step.
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Failed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
 }
 
 // Validate application tests.
