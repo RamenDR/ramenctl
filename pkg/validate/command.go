@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"slices"
 	stdtime "time"
@@ -129,15 +130,36 @@ func (c *Command) validateConfig() bool {
 func (c *Command) validateClusters() bool {
 	console.Step("Validate clusters")
 	c.startStep("validate clusters")
-	env := c.command.Env()
-	for _, cluster := range []*types.Cluster{env.Hub, env.C1, env.C2} {
-		// TODO: Run parallel validation for hub, passive hub, and managed clusters.
-		c.command.Logger().Infof("Validating cluster %q", cluster.Name)
-		step := &report.Step{Name: cluster.Name, Status: report.Passed}
-		c.current.AddStep(step)
-		console.Pass("Cluster %q validated", cluster.Name)
+
+	namespaces := c.clustersNamespacesToGather()
+	if !c.gatherApplicationNamespaces(namespaces) {
+		return c.finishStep()
 	}
+
+	if !c.validateGatheredClusterData() {
+		return c.finishStep()
+	}
+
 	c.finishStep()
+	return true
+}
+
+func (c *Command) clustersNamespacesToGather() []string {
+	seen := map[string]struct{}{
+		c.config.Namespaces.RamenHubNamespace:       {},
+		c.config.Namespaces.RamenDRClusterNamespace: {},
+	}
+
+	namespaces := slices.Collect(maps.Keys(seen))
+	slices.Sort(namespaces)
+	return namespaces
+}
+
+func (c *Command) validateGatheredClusterData() bool {
+	// TODO: Validate gathered cluster data.
+	step := &report.Step{Name: "validate cluster data", Status: report.Passed}
+	c.current.AddStep(step)
+	console.Pass("Clusters validated")
 	return true
 }
 
