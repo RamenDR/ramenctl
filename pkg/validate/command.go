@@ -132,7 +132,7 @@ func (c *Command) validateClusters() bool {
 	c.startStep("validate clusters")
 
 	namespaces := c.clustersNamespacesToGather()
-	if !c.gatherApplicationNamespaces(namespaces) {
+	if !c.gatherNamespaces(namespaces) {
 		return c.finishStep()
 	}
 
@@ -172,11 +172,11 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 		return c.finishStep()
 	}
 
-	if !c.gatherApplicationNamespaces(namespaces) {
+	if !c.gatherNamespaces(namespaces) {
 		return c.finishStep()
 	}
 
-	if !c.validateGatheredData(drpcName, drpcNamespace) {
+	if !c.validateGatheredApplicationData(drpcName, drpcNamespace) {
 		return c.finishStep()
 	}
 
@@ -218,7 +218,7 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
-func (c *Command) gatherApplicationNamespaces(namespaces []string) bool {
+func (c *Command) gatherNamespaces(namespaces []string) bool {
 	start := time.Now()
 	env := c.Env()
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
@@ -246,7 +246,7 @@ func (c *Command) gatherApplicationNamespaces(namespaces []string) bool {
 	return c.current.Status == report.Passed
 }
 
-func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
+func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string) bool {
 	// TODO: Validate gathered data.
 	step := &report.Step{Name: "validate data", Status: report.Passed}
 	c.current.AddStep(step)
