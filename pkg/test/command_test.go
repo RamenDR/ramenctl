@@ -417,7 +417,7 @@ func TestCleanCleanupCanceled(t *testing.T) {
 	checkStep(t, cleanup, CleanupStep, report.Canceled)
 }
 
-// Test hellpers.
+// Test helpers.
 
 func testCommand(t *testing.T, name string, backend rtesting.Testing) *Command {
 	cmd, err := command.ForTest(name, testEnv, t.TempDir())

@@ -18,7 +18,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
-	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -162,7 +161,7 @@ func (c *Command) gatherApplication(namespaces []string) bool {
 	c.Logger().Infof("Gathering namespaces %q from clusters %q",
 		namespaces, logging.ClusterNames(clusters))
 
-	for r := range gathering.Namespaces(clusters, namespaces, outputDir, c.Logger()) {
+	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
