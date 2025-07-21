@@ -383,6 +383,22 @@ func TestReportNotEqual(t *testing.T) {
 			t.Fatal("reports with different application should not be equal")
 		}
 	})
+	t.Run("nil vs empty namespaces are equal", func(t *testing.T) {
+		r2 := report.NewReport("name", testConfig)
+		r2.Namespaces = []string{}
+		if !r1.Equal(r2) {
+			t.Fatalf("expected reports with nil and empty namespaces to be equal")
+		}
+	})
+	t.Run("different namespaces are not equal", func(t *testing.T) {
+		r1 := report.NewReport("name", testConfig)
+		r1.Namespaces = []string{"ns1", "ns2"}
+		r2 := report.NewReport("name", testConfig)
+		r2.Namespaces = []string{"ns1", "ns3"}
+		if r1.Equal(r2) {
+			t.Fatalf("reports with different namespaces should not be equal")
+		}
+	})
 }
 
 func TestStepAddPassedStep(t *testing.T) {

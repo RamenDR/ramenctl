@@ -63,6 +63,7 @@ type Report struct {
 	*Base
 	Config      *config.Config `json:"config"`
 	Application *Application   `json:"application,omitempty"`
+	Namespaces  []string       `json:"namespaces,omitempty"`
 }
 
 // NewBase create a new base report for ramenctl commands reports.
@@ -176,6 +177,9 @@ func (r *Report) Equal(o *Report) bool {
 			return false
 		}
 	} else if r.Application != o.Application {
+		return false
+	}
+	if !slices.Equal(r.Namespaces, o.Namespaces) {
 		return false
 	}
 	return true

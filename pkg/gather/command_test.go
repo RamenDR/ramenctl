@@ -5,6 +5,7 @@ package gather
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -158,6 +159,36 @@ func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"c2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationNamespaces(t *testing.T) {
+	appNamespaces := []string{
+		"e2e-appset-deploy-cephfs-busybox",
+		"openshift-gitops",
+		"openshift-operators",
+	}
+
+	mockBackend := &validation.Mock{
+		ApplicationNamespacesFunc: func(ctx validation.Context, name, namespace string) ([]string, error) {
+			if name != drpcName || namespace != drpcNamespace {
+				t.Fatalf("unexpected args: name=%s, namespace=%s", drpcName, drpcNamespace)
+			}
+			return appNamespaces, nil
+		},
+	}
+
+	cmd := testCommand(t, mockBackend)
+	err := cmd.Application(drpcName, drpcNamespace)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expectedNamespaces := []string{testConfig.Namespaces.RamenDRClusterNamespace}
+	expectedNamespaces = append(expectedNamespaces, appNamespaces...)
+	slices.Sort(expectedNamespaces)
+
+	if !slices.Equal(cmd.report.Namespaces, expectedNamespaces) {
+		t.Fatalf("expected namespaces %+v, got %+v", expectedNamespaces, cmd.report.Namespaces)
+	}
 }
 
 // Helpers

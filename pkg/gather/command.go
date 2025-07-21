@@ -112,6 +112,7 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 	if !ok {
 		return c.finishStep()
 	}
+	c.report.Namespaces = namespaces
 
 	if !c.gatherApplication(namespaces) {
 		return c.finishStep()
