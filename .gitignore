@@ -9,6 +9,7 @@ cover.out
 
 # Editor files
 /.zed
+/.vscode
 
 # Test results
 /.test
