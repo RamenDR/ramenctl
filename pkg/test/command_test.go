@@ -28,6 +28,11 @@ var (
 			{Name: "block", StorageClassName: "block-storage"},
 			{Name: "file", StorageClassName: "file-storage"},
 		},
+		Deployers: []e2econfig.Deployer{
+			{Name: "appset", Type: "appset"},
+			{Name: "subscr", Type: "subscr"},
+			{Name: "disapp", Type: "disapp"},
+		},
 		Tests: []e2econfig.Test{
 			{Workload: "deploy", Deployer: "appset", PVCSpec: "block"},
 			{Workload: "deploy", Deployer: "appset", PVCSpec: "file"},

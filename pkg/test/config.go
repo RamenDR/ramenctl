@@ -15,7 +15,7 @@ import (
 func readConfig(filename string) (*config.Config, error) {
 	options := config.Options{
 		Workloads: workloads.AvailableNames(),
-		Deployers: deployers.AvailableNames(),
+		Deployers: deployers.AvailableTypes(),
 	}
 	config, err := config.ReadConfig(filename, options)
 	if err != nil {

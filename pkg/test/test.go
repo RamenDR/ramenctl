@@ -36,12 +36,17 @@ func newTest(tc e2econfig.Test, cmd *Command) *Test {
 		panic(fmt.Sprintf("unknown pvcSpec %q", tc.PVCSpec))
 	}
 
+	deployerSpec, ok := cmd.deployers[tc.Deployer]
+	if !ok {
+		panic(fmt.Sprintf("unknown deployer %q", tc.Deployer))
+	}
+
 	workload, err := workloads.New(tc.Workload, cmd.Config().Repo.Branch, pvcSpec)
 	if err != nil {
 		panic(err)
 	}
 
-	deployer, err := deployers.New(tc.Deployer)
+	deployer, err := deployers.New(deployerSpec)
 	if err != nil {
 		panic(err)
 	}

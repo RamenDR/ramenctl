@@ -121,6 +121,9 @@ The default tests use a busybox deployment with one *PVC* using *rbd* storage
 class, deployed via *ApplicationSet*. You can modify the test to use your
 preferred deployment and storage, and add more tests as needed.
 
+The name of the deployer should match the deployer name in the deployers
+section.
+
 The available options are:
 
 - workloads

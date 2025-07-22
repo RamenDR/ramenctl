@@ -44,6 +44,9 @@ type Command struct {
 	// PCCSpecs maps pvscpec name to pvcspec.
 	pvcSpecs map[string]e2econfig.PVCSpec
 
+	// Deployers maps deployer name to deployer
+	deployers map[string]e2econfig.Deployer
+
 	// tests to run or clean.
 	tests []*Test
 
@@ -72,12 +75,13 @@ func newCommand(
 	cfg.Channel.Namespace = namespacePrefix + "gitops"
 
 	testCmd := &Command{
-		command:  cmd,
-		config:   cfg,
-		context:  cmd.Context(),
-		backend:  backend,
-		pvcSpecs: e2econfig.PVCSpecsMap(cfg),
-		report:   newReport(cmd.Name(), cfg),
+		command:   cmd,
+		config:    cfg,
+		context:   cmd.Context(),
+		backend:   backend,
+		pvcSpecs:  e2econfig.PVCSpecsMap(cfg),
+		deployers: e2econfig.DeployersMap(cfg),
+		report:    newReport(cmd.Name(), cfg),
 	}
 
 	for _, tc := range cfg.Tests {
