@@ -84,6 +84,7 @@ Visit the docs below to learn about *ramenctl* commands:
 
 - [init](docs/init.md)
 - [test](docs/test.md)
+- [gather](docs/gather.md)
 
 Check the guides below to learn more:
 
