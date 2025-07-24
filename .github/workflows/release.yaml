@@ -10,12 +10,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 jobs:
   release-matrix:
     name: Release binaries
+    permissions:
+      contents: write
+      packages: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
