@@ -8,11 +8,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   spell:
     name: Spell Check
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -24,8 +25,6 @@ jobs:
 
   lint:
     name: Lint
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -42,8 +41,6 @@ jobs:
 
   build-matrix:
     name: Build
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -77,8 +74,6 @@ jobs:
 
   test-matrix:
     name: Test
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
