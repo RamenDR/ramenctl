@@ -11,5 +11,5 @@ cover.out
 /.zed
 /.vscode
 
-# Test results
-/.test
+# Output directory
+/out
