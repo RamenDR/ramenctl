@@ -21,6 +21,12 @@ type Result struct {
 	Duration float64
 }
 
+// OutputReader is the interface for reading gathered data from the output directory.
+type OutputReader interface {
+	ListResources(namespace, resource string) ([]string, error)
+	ReadResource(namespace, resource, name string) ([]byte, error)
+}
+
 // Namespaces gathers namespaces from all clusters storing data in outputDir. Returns a channel for
 // getting gather results. The channel is closed when all clusters are gathered.
 func Namespaces(
