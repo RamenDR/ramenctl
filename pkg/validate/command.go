@@ -97,16 +97,17 @@ func (c *Command) validateConfig() bool {
 	return true
 }
 
+// Gathering data.
+
 func (c *Command) gatherNamespaces(namespaces []string) bool {
 	start := time.Now()
 	env := c.Env()
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
-	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
 
 	c.Logger().Infof("Gathering namespaces %q from clusters %q",
 		namespaces, logging.ClusterNames(clusters))
 
-	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
+	for r := range c.backend.Gather(c, clusters, namespaces, c.dataDir()) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
@@ -124,6 +125,12 @@ func (c *Command) gatherNamespaces(namespaces []string) bool {
 
 	return c.current.Status == report.Passed
 }
+
+func (c *Command) dataDir() string {
+	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+}
+
+// Completing commands.
 
 func (c *Command) failed() error {
 	if err := c.command.WriteReport(c.report); err != nil {
