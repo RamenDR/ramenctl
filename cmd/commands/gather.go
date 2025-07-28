@@ -17,7 +17,7 @@ var GatherCmd = &cobra.Command{
 
 var GatherApplicationCmd = &cobra.Command{
 	Use:   "application",
-	Short: "Collect data based on application",
+	Short: "Collect data for a protected application",
 	Run: func(c *cobra.Command, args []string) {
 		if err := gather.Gather(configFile, outputDir, drpcName, drpcNamespace); err != nil {
 			console.Fatal(err)
