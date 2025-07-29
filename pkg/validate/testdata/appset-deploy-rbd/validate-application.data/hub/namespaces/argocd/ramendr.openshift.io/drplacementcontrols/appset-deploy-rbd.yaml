@@ -1,0 +1,184 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: DRPlacementControl
+metadata:
+  annotations:
+    drplacementcontrol.ramendr.openshift.io/app-namespace: e2e-appset-deploy-rbd
+    drplacementcontrol.ramendr.openshift.io/last-app-deployment-cluster: dr1
+  creationTimestamp: "2025-07-27T20:41:31Z"
+  finalizers:
+  - drpc.ramendr.openshift.io/finalizer
+  generation: 1
+  labels:
+    app: appset-deploy-rbd
+    cluster.open-cluster-management.io/backup: ramen
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:drplacementcontrol.ramendr.openshift.io/app-namespace: {}
+          f:drplacementcontrol.ramendr.openshift.io/last-app-deployment-cluster: {}
+        f:finalizers:
+          .: {}
+          v:"drpc.ramendr.openshift.io/finalizer": {}
+        f:labels:
+          f:cluster.open-cluster-management.io/backup: {}
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"4eeecce4-e2d4-4638-a2a1-88e07148f27d"}: {}
+    manager: manager
+    operation: Update
+    time: "2025-07-27T20:41:31Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .: {}
+          f:app: {}
+      f:spec:
+        .: {}
+        f:drPolicyRef: {}
+        f:placementRef: {}
+        f:preferredCluster: {}
+        f:pvcSelector: {}
+    manager: ramen-e2e
+    operation: Update
+    time: "2025-07-27T20:41:31Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:actionDuration: {}
+        f:actionStartTime: {}
+        f:conditions: {}
+        f:lastGroupSyncBytes: {}
+        f:lastGroupSyncDuration: {}
+        f:lastGroupSyncTime: {}
+        f:lastUpdateTime: {}
+        f:observedGeneration: {}
+        f:phase: {}
+        f:preferredDecision:
+          .: {}
+          f:clusterName: {}
+          f:clusterNamespace: {}
+        f:progression: {}
+        f:resourceConditions:
+          .: {}
+          f:conditions: {}
+          f:resourceMeta:
+            .: {}
+            f:generation: {}
+            f:kind: {}
+            f:name: {}
+            f:namespace: {}
+            f:protectedpvcs: {}
+            f:resourceVersion: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-07-29T17:23:46Z"
+  name: appset-deploy-rbd
+  namespace: argocd
+  ownerReferences:
+  - apiVersion: cluster.open-cluster-management.io/v1beta1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Placement
+    name: appset-deploy-rbd
+    uid: 4eeecce4-e2d4-4638-a2a1-88e07148f27d
+  resourceVersion: "51679"
+  uid: 8283cb24-39a9-4ccd-b028-3807cdfed996
+spec:
+  drPolicyRef:
+    name: dr-policy
+  placementRef:
+    kind: Placement
+    name: appset-deploy-rbd
+    namespace: argocd
+  preferredCluster: dr1
+  pvcSelector:
+    matchLabels:
+      appname: busybox
+status:
+  actionDuration: 21.070983011s
+  actionStartTime: "2025-07-27T20:41:40Z"
+  conditions:
+  - lastTransitionTime: "2025-07-27T20:41:31Z"
+    message: Initial deployment completed
+    observedGeneration: 1
+    reason: Deployed
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2025-07-27T20:41:31Z"
+    message: Ready
+    observedGeneration: 1
+    reason: Success
+    status: "True"
+    type: PeerReady
+  - lastTransitionTime: "2025-07-27T20:43:01Z"
+    message: VolumeReplicationGroup (e2e-appset-deploy-rbd/appset-deploy-rbd) on cluster
+      dr1 is protecting required resources and data
+    observedGeneration: 1
+    reason: Protected
+    status: "True"
+    type: Protected
+  lastGroupSyncBytes: 81920
+  lastGroupSyncDuration: 0s
+  lastGroupSyncTime: "2025-07-29T17:23:00Z"
+  lastUpdateTime: "2025-07-29T17:23:46Z"
+  observedGeneration: 1
+  phase: Deployed
+  preferredDecision:
+    clusterName: dr1
+    clusterNamespace: dr1
+  progression: Completed
+  resourceConditions:
+    conditions:
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: PVCs in the VolumeReplicationGroup are ready for use
+      observedGeneration: 1
+      reason: Ready
+      status: "True"
+      type: DataReady
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: VolumeReplicationGroup is replicating
+      observedGeneration: 1
+      reason: Replicating
+      status: "False"
+      type: DataProtected
+    - lastTransitionTime: "2025-07-27T20:41:31Z"
+      message: Nothing to restore
+      observedGeneration: 1
+      reason: Restored
+      status: "True"
+      type: ClusterDataReady
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: Cluster data of all PVs are protected. VRG object protected
+      observedGeneration: 1
+      reason: Uploaded
+      status: "True"
+      type: ClusterDataProtected
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: Kube objects restored
+      observedGeneration: 1
+      reason: KubeObjectsRestored
+      status: "True"
+      type: KubeObjectsReady
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: No resource conflict
+      observedGeneration: 1
+      reason: ClusterDataConflictPrimary
+      status: "True"
+      type: NoClusterDataConflict
+    resourceMeta:
+      generation: 1
+      kind: VolumeReplicationGroup
+      name: appset-deploy-rbd
+      namespace: e2e-appset-deploy-rbd
+      protectedpvcs:
+      - busybox-pvc
+      resourceVersion: "77146"

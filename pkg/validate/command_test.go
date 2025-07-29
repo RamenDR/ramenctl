@@ -6,6 +6,9 @@ package validate
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -23,9 +26,9 @@ import (
 const (
 	validateClusters     = "validate-clusters"
 	validateApplication  = "validate-application"
-	drpcName             = "drpc-name"
-	drpcNamespace        = "drpc-namespace"
-	applicationNamespace = "application-namespace"
+	drpcName             = "appset-deploy-rbd"
+	drpcNamespace        = "argocd"
+	applicationNamespace = "e2e-appset-deploy-rbd"
 )
 
 var (
@@ -35,8 +38,8 @@ var (
 
 	testEnv = &types.Env{
 		Hub: &types.Cluster{Name: "hub"},
-		C1:  &types.Cluster{Name: "c1"},
-		C2:  &types.Cluster{Name: "c2"},
+		C1:  &types.Cluster{Name: "dr1"},
+		C2:  &types.Cluster{Name: "dr2"},
 	}
 
 	testApplication = &report.Application{
@@ -129,8 +132,8 @@ func TestValidateClustersPassed(t *testing.T) {
 
 	items := []*report.Step{
 		{Name: "gather \"hub\"", Status: report.Passed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "validate cluster data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
@@ -181,8 +184,8 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	// If gathering data fail for some of the clusters, we skip the validation step.
 	items := []*report.Step{
 		{Name: "gather \"hub\"", Status: report.Failed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
 }
@@ -191,6 +194,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 
 func TestValidateApplicationPassed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationMock)
+	addGatheredData(t, validate, "appset-deploy-rbd")
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -206,8 +210,8 @@ func TestValidateApplicationPassed(t *testing.T) {
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Passed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "validate data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
@@ -301,8 +305,8 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Failed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
 }
@@ -321,6 +325,18 @@ func testCommand(t *testing.T, name string, backend validation.Validation) *Comm
 		cmd.Close()
 	})
 	return newCommand(cmd, testConfig, backend)
+}
+
+// addGatheredData adds fake gathered data to the output directory.
+func addGatheredData(t *testing.T, cmd *Command, name string) {
+	testData := fmt.Sprintf("testdata/%s/%s.data", name, cmd.report.Name)
+	source, err := filepath.Abs(testData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(source, cmd.dataDir()); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func checkReport(t *testing.T, report *report.Report, status report.Status) {
