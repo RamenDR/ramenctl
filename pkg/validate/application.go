@@ -84,9 +84,36 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 }
 
 func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string) bool {
-	// TODO: Validate gathered data.
+	start := time.Now()
 	step := &report.Step{Name: "validate data", Status: report.Passed}
-	c.current.AddStep(step)
+	defer func() {
+		step.Duration = time.Since(start).Seconds()
+		c.current.AddStep(step)
+	}()
+
+	if err := c.validateDRPC(drpcName, drpcNamespace); err != nil {
+		// TODO: need helper to fail a sub step.
+		step.Status = report.Failed
+		console.Error("Failed to %s", step.Name)
+		c.Logger().Errorf("Failed to validate drpc: %s", err)
+		return false
+	}
+
+	step.Status = report.Passed
 	console.Pass("Application validated")
 	return true
+}
+
+func (c *Command) validateDRPC(drpcName, drpcNamespace string) error {
+	reader := c.outputReader(c.Env().Hub.Name)
+	drpc, err := readDRPC(reader, drpcName, drpcNamespace)
+	if err != nil {
+		return err
+	}
+
+	c.Logger().Debugf("Read drpc \"%s/%s\"", drpc.Namespace, drpc.Name)
+
+	// TODO: Update report.Application
+
+	return nil
 }

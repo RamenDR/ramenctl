@@ -1,0 +1,155 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: VolumeReplicationGroup
+metadata:
+  annotations:
+    drplacementcontrol.ramendr.openshift.io/destination-cluster: dr2
+    drplacementcontrol.ramendr.openshift.io/do-not-delete-pvc: ""
+    drplacementcontrol.ramendr.openshift.io/drpc-uid: 8283cb24-39a9-4ccd-b028-3807cdfed996
+    drplacementcontrol.ramendr.openshift.io/use-volsync-for-pvc-protection: ""
+  creationTimestamp: "2025-07-27T20:42:01Z"
+  finalizers:
+  - volumereplicationgroups.ramendr.openshift.io/vrg-protection
+  generation: 1
+  labels:
+    ramendr.openshift.io/created-by-ramen: "true"
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .: {}
+          v:"volumereplicationgroups.ramendr.openshift.io/vrg-protection": {}
+    manager: manager
+    operation: Update
+    time: "2025-07-27T20:42:01Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:drplacementcontrol.ramendr.openshift.io/destination-cluster: {}
+          f:drplacementcontrol.ramendr.openshift.io/do-not-delete-pvc: {}
+          f:drplacementcontrol.ramendr.openshift.io/drpc-uid: {}
+          f:drplacementcontrol.ramendr.openshift.io/use-volsync-for-pvc-protection: {}
+        f:labels:
+          .: {}
+          f:ramendr.openshift.io/created-by-ramen: {}
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"3e925b39-2d09-4b7f-b718-d00107c1c293"}: {}
+      f:spec:
+        .: {}
+        f:async:
+          .: {}
+          f:peerClasses: {}
+          f:replicationClassSelector: {}
+          f:schedulingInterval: {}
+          f:volumeGroupSnapshotClassSelector: {}
+          f:volumeSnapshotClassSelector: {}
+        f:pvcSelector: {}
+        f:replicationState: {}
+        f:s3Profiles: {}
+        f:volSync: {}
+    manager: work-agent
+    operation: Update
+    time: "2025-07-27T20:42:01Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:conditions: {}
+        f:kubeObjectProtection: {}
+        f:lastUpdateTime: {}
+        f:observedGeneration: {}
+        f:state: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-07-27T20:42:02Z"
+  name: appset-deploy-rbd
+  namespace: e2e-appset-deploy-rbd
+  ownerReferences:
+  - apiVersion: work.open-cluster-management.io/v1
+    kind: AppliedManifestWork
+    name: 4fa096b11b4793f1f3c870c9ef0c7c4522a0eac36aa3d97077f9d6c247179787-appset-deploy-rbd-e2e-appset-deploy-rbd-vrg-mw
+    uid: 3e925b39-2d09-4b7f-b718-d00107c1c293
+  resourceVersion: "23388"
+  uid: 77874d08-6d29-4ea5-9224-cb979cc8cbf3
+spec:
+  async:
+    peerClasses:
+    - clusterIDs:
+      - 44c2d38b-4e97-4499-97d1-ddf214cfaa15
+      - 7854b457-d26d-489a-8ff1-c3db14c4811d
+      replicationID: rook-ceph-replication-1
+      storageClassName: rook-ceph-block
+      storageID:
+      - rook-ceph-block-dr1-1
+      - rook-ceph-block-dr2-1
+    - clusterIDs:
+      - 44c2d38b-4e97-4499-97d1-ddf214cfaa15
+      - 7854b457-d26d-489a-8ff1-c3db14c4811d
+      storageClassName: rook-cephfs-fs1
+      storageID:
+      - rook-cephfs-fs1-dr1-1
+      - rook-cephfs-fs1-dr2-1
+    replicationClassSelector: {}
+    schedulingInterval: 1m
+    volumeGroupSnapshotClassSelector: {}
+    volumeSnapshotClassSelector: {}
+  pvcSelector:
+    matchLabels:
+      appname: busybox
+  replicationState: secondary
+  s3Profiles:
+  - minio-on-dr1
+  - minio-on-dr2
+  volSync: {}
+status:
+  conditions:
+  - lastTransitionTime: "2025-07-27T20:42:02Z"
+    message: No PVCs are protected using Volsync scheme. PVC protection as secondary
+      is complete, or no PVCs needed protection using VolumeReplication scheme
+    observedGeneration: 1
+    reason: Unused
+    status: "True"
+    type: DataReady
+  - lastTransitionTime: "2025-07-27T20:42:02Z"
+    message: No PVCs are protected using Volsync scheme. PVC protection as secondary
+      is complete, or no PVCs needed protection using VolumeReplication scheme
+    observedGeneration: 1
+    reason: Unused
+    status: "True"
+    type: DataProtected
+  - lastTransitionTime: "2025-07-27T20:42:01Z"
+    message: PV and PVC restore skipped as Secondary
+    observedGeneration: 1
+    reason: Unused
+    status: "True"
+    type: ClusterDataReady
+  - lastTransitionTime: "2025-07-27T20:42:02Z"
+    message: No PVCs are protected using Volsync scheme. Cluster data is not protected
+      as Secondary
+    observedGeneration: 1
+    reason: Unused
+    status: "True"
+    type: ClusterDataProtected
+  - lastTransitionTime: "2025-07-27T20:42:01Z"
+    message: k8s resource restore skipped as Secondary
+    observedGeneration: 1
+    reason: Unused
+    status: "True"
+    type: KubeObjectsReady
+  - lastTransitionTime: "2025-07-27T20:42:02Z"
+    message: No resource conflict
+    observedGeneration: 1
+    reason: ClusterDataConflictSecondary
+    status: "True"
+    type: NoClusterDataConflict
+  kubeObjectProtection: {}
+  lastUpdateTime: "2025-07-27T20:42:02Z"
+  observedGeneration: 1
+  state: Secondary

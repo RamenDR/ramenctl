@@ -1,0 +1,201 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: VolumeReplicationGroup
+metadata:
+  annotations:
+    drplacementcontrol.ramendr.openshift.io/destination-cluster: dr1
+    drplacementcontrol.ramendr.openshift.io/do-not-delete-pvc: ""
+    drplacementcontrol.ramendr.openshift.io/drpc-uid: 8283cb24-39a9-4ccd-b028-3807cdfed996
+    drplacementcontrol.ramendr.openshift.io/use-volsync-for-pvc-protection: ""
+  creationTimestamp: "2025-07-27T20:41:31Z"
+  finalizers:
+  - volumereplicationgroups.ramendr.openshift.io/vrg-protection
+  generation: 1
+  labels:
+    ramendr.openshift.io/created-by-ramen: "true"
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .: {}
+          v:"volumereplicationgroups.ramendr.openshift.io/vrg-protection": {}
+    manager: manager
+    operation: Update
+    time: "2025-07-27T20:41:31Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:drplacementcontrol.ramendr.openshift.io/destination-cluster: {}
+          f:drplacementcontrol.ramendr.openshift.io/do-not-delete-pvc: {}
+          f:drplacementcontrol.ramendr.openshift.io/drpc-uid: {}
+          f:drplacementcontrol.ramendr.openshift.io/use-volsync-for-pvc-protection: {}
+        f:labels:
+          .: {}
+          f:ramendr.openshift.io/created-by-ramen: {}
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"c94fea0f-df76-41ae-9760-c8ad82ff05db"}: {}
+      f:spec:
+        .: {}
+        f:async:
+          .: {}
+          f:peerClasses: {}
+          f:replicationClassSelector: {}
+          f:schedulingInterval: {}
+          f:volumeGroupSnapshotClassSelector: {}
+          f:volumeSnapshotClassSelector: {}
+        f:pvcSelector: {}
+        f:replicationState: {}
+        f:s3Profiles: {}
+        f:volSync: {}
+    manager: work-agent
+    operation: Update
+    time: "2025-07-27T20:41:31Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:conditions: {}
+        f:kubeObjectProtection: {}
+        f:lastGroupSyncBytes: {}
+        f:lastGroupSyncDuration: {}
+        f:lastGroupSyncTime: {}
+        f:lastUpdateTime: {}
+        f:observedGeneration: {}
+        f:protectedPVCs: {}
+        f:state: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-07-29T17:23:40Z"
+  name: appset-deploy-rbd
+  namespace: e2e-appset-deploy-rbd
+  ownerReferences:
+  - apiVersion: work.open-cluster-management.io/v1
+    kind: AppliedManifestWork
+    name: 4fa096b11b4793f1f3c870c9ef0c7c4522a0eac36aa3d97077f9d6c247179787-appset-deploy-rbd-e2e-appset-deploy-rbd-vrg-mw
+    uid: c94fea0f-df76-41ae-9760-c8ad82ff05db
+  resourceVersion: "77146"
+  uid: 2ab631fe-deac-4875-aaf8-7c04aaafe57c
+spec:
+  async:
+    peerClasses:
+    - clusterIDs:
+      - 44c2d38b-4e97-4499-97d1-ddf214cfaa15
+      - 7854b457-d26d-489a-8ff1-c3db14c4811d
+      replicationID: rook-ceph-replication-1
+      storageClassName: rook-ceph-block
+      storageID:
+      - rook-ceph-block-dr1-1
+      - rook-ceph-block-dr2-1
+    - clusterIDs:
+      - 44c2d38b-4e97-4499-97d1-ddf214cfaa15
+      - 7854b457-d26d-489a-8ff1-c3db14c4811d
+      storageClassName: rook-cephfs-fs1
+      storageID:
+      - rook-cephfs-fs1-dr1-1
+      - rook-cephfs-fs1-dr2-1
+    replicationClassSelector: {}
+    schedulingInterval: 1m
+    volumeGroupSnapshotClassSelector: {}
+    volumeSnapshotClassSelector: {}
+  pvcSelector:
+    matchLabels:
+      appname: busybox
+  replicationState: primary
+  s3Profiles:
+  - minio-on-dr1
+  - minio-on-dr2
+  volSync: {}
+status:
+  conditions:
+  - lastTransitionTime: "2025-07-27T20:41:32Z"
+    message: PVCs in the VolumeReplicationGroup are ready for use
+    observedGeneration: 1
+    reason: Ready
+    status: "True"
+    type: DataReady
+  - lastTransitionTime: "2025-07-27T20:41:32Z"
+    message: VolumeReplicationGroup is replicating
+    observedGeneration: 1
+    reason: Replicating
+    status: "False"
+    type: DataProtected
+  - lastTransitionTime: "2025-07-27T20:41:31Z"
+    message: Nothing to restore
+    observedGeneration: 1
+    reason: Restored
+    status: "True"
+    type: ClusterDataReady
+  - lastTransitionTime: "2025-07-27T20:41:32Z"
+    message: Cluster data of all PVs are protected. VRG object protected
+    observedGeneration: 1
+    reason: Uploaded
+    status: "True"
+    type: ClusterDataProtected
+  - lastTransitionTime: "2025-07-27T20:41:32Z"
+    message: Kube objects restored
+    observedGeneration: 1
+    reason: KubeObjectsRestored
+    status: "True"
+    type: KubeObjectsReady
+  - lastTransitionTime: "2025-07-27T20:41:32Z"
+    message: No resource conflict
+    observedGeneration: 1
+    reason: ClusterDataConflictPrimary
+    status: "True"
+    type: NoClusterDataConflict
+  kubeObjectProtection: {}
+  lastGroupSyncBytes: 81920
+  lastGroupSyncDuration: 0s
+  lastGroupSyncTime: "2025-07-29T17:23:00Z"
+  lastUpdateTime: "2025-07-29T17:23:40Z"
+  observedGeneration: 1
+  protectedPVCs:
+  - accessModes:
+    - ReadWriteOnce
+    conditions:
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: PVC in the VolumeReplicationGroup is ready for use
+      observedGeneration: 1
+      reason: Ready
+      status: "True"
+      type: DataReady
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: PV cluster data already protected for PVC busybox-pvc
+      observedGeneration: 1
+      reason: Uploaded
+      status: "True"
+      type: ClusterDataProtected
+    - lastTransitionTime: "2025-07-27T20:41:32Z"
+      message: PVC in the VolumeReplicationGroup is ready for use
+      observedGeneration: 1
+      reason: Replicating
+      status: "False"
+      type: DataProtected
+    csiProvisioner: rook-ceph.rbd.csi.ceph.com
+    labels:
+      app.kubernetes.io/instance: appset-deploy-rbd-dr1
+      appname: busybox
+      ramendr.openshift.io/owner-name: appset-deploy-rbd
+      ramendr.openshift.io/owner-namespace-name: e2e-appset-deploy-rbd
+    lastSyncBytes: 81920
+    lastSyncDuration: 0s
+    lastSyncTime: "2025-07-29T17:23:00Z"
+    name: busybox-pvc
+    namespace: e2e-appset-deploy-rbd
+    replicationID:
+      id: rook-ceph-replication-1
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: rook-ceph-block
+    storageID:
+      id: rook-ceph-block-dr1-1
+    volumeMode: Filesystem
+  state: Primary
