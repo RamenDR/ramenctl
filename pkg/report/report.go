@@ -53,6 +53,7 @@ type Base struct {
 	Steps    []*Step   `json:"steps"`
 }
 
+// Application is application info.
 type Application struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
@@ -61,9 +62,16 @@ type Application struct {
 // Report is used by all ramenctl commands except the test commands.
 type Report struct {
 	*Base
-	Config      *config.Config `json:"config"`
-	Application *Application   `json:"application,omitempty"`
-	Namespaces  []string       `json:"namespaces,omitempty"`
+	Config *config.Config `json:"config"`
+
+	// Namespaces is set by `validate` and `gather` commands.
+	Namespaces []string `json:"namespaces,omitempty"`
+
+	// Application is set by `validate application` and `gather application` commands.
+	Application *Application `json:"application,omitempty"`
+
+	// ApplicationStatus is set by the `validate application` commmnad.
+	ApplicationStatus *ApplicationStatus `json:"applicationStatus,omitempty"`
 }
 
 // NewBase create a new base report for ramenctl commands reports.
