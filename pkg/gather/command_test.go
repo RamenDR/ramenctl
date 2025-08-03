@@ -27,30 +27,36 @@ var (
 	testConfig = &config.Config{
 		Namespaces: e2econfig.K8sNamespaces,
 	}
+
 	testEnv = &types.Env{
 		Hub: &types.Cluster{Name: "hub"},
 		C1:  &types.Cluster{Name: "c1"},
 		C2:  &types.Cluster{Name: "c2"},
 	}
+
 	testApplication = &report.Application{
 		Name:      drpcName,
 		Namespace: drpcNamespace,
 	}
+
 	validateConfigFailed = &validation.Mock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return errors.New("No validate for you!")
 		},
 	}
+
 	validateConfigCanceled = &validation.Mock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return context.Canceled
 		},
 	}
+
 	inspectApplicationFailed = &validation.Mock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return nil, errors.New("No namespaces for you!")
 		},
 	}
+
 	gatherClusterFailed = &validation.Mock{
 		GatherFunc: func(ctx validation.Context, clusters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result {
 			results := make(chan gathering.Result, 3)
