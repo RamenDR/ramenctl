@@ -205,7 +205,7 @@ func (c *Command) passed() {
 }
 
 func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
-	seen := map[string]struct{}{
+	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
 		c.config.Namespaces.RamenHubNamespace:       {},
 		c.config.Namespaces.RamenDRClusterNamespace: {},
@@ -217,14 +217,10 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 	}
 
 	for _, ns := range appNamespaces {
-		seen[ns] = struct{}{}
+		set[ns] = struct{}{}
 	}
 
-	namespaces := slices.Collect(maps.Keys(seen))
-	slices.Sort(namespaces)
-
-	return namespaces, nil
-
+	return slices.Sorted(maps.Keys(set)), nil
 }
 
 // Managing steps.
