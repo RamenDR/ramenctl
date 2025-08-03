@@ -4,11 +4,9 @@
 package validate
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/sets"
 )
 
 func (c *Command) Clusters() error {
@@ -42,14 +40,10 @@ func (c *Command) validateClusters() bool {
 }
 
 func (c *Command) clustersNamespacesToGather() []string {
-	seen := map[string]struct{}{
-		c.config.Namespaces.RamenHubNamespace:       {},
-		c.config.Namespaces.RamenDRClusterNamespace: {},
-	}
-
-	namespaces := slices.Collect(maps.Keys(seen))
-	slices.Sort(namespaces)
-	return namespaces
+	return sets.Sorted([]string{
+		c.config.Namespaces.RamenHubNamespace,
+		c.config.Namespaces.RamenDRClusterNamespace,
+	})
 }
 
 func (c *Command) validateGatheredClusterData() bool {
