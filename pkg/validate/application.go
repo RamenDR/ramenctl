@@ -37,6 +37,8 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 		return c.finishStep()
 	}
 
+	c.report.Namespaces = namespaces
+
 	if !c.gatherNamespaces(namespaces) {
 		return c.finishStep()
 	}

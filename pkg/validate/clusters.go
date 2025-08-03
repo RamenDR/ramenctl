@@ -27,6 +27,8 @@ func (c *Command) validateClusters() bool {
 	c.startStep("validate clusters")
 
 	namespaces := c.clustersNamespacesToGather()
+	c.report.Namespaces = namespaces
+
 	if !c.gatherNamespaces(namespaces) {
 		return c.finishStep()
 	}

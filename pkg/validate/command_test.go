@@ -6,26 +6,32 @@ package validate
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 const (
-	validateClusters    = "validate-clusters"
-	validateApplication = "validate-application"
-	drpcName            = "drpc-name"
-	drpcNamespace       = "drpc-namespace"
+	validateClusters     = "validate-clusters"
+	validateApplication  = "validate-application"
+	drpcName             = "drpc-name"
+	drpcNamespace        = "drpc-namespace"
+	applicationNamespace = "application-namespace"
 )
 
 var (
-	testConfig = &config.Config{}
+	testConfig = &config.Config{
+		Namespaces: e2econfig.K8sNamespaces,
+	}
 
 	testEnv = &types.Env{
 		Hub: &types.Cluster{Name: "hub"},
@@ -36,6 +42,27 @@ var (
 	testApplication = &report.Application{
 		Name:      drpcName,
 		Namespace: drpcNamespace,
+	}
+
+	applicationNamespaces = sets.Sorted([]string{
+		drpcNamespace,
+		applicationNamespace,
+	})
+
+	validateApplicationNamespaces = sets.Sorted([]string{
+		drpcNamespace,
+		applicationNamespace,
+	})
+
+	validateClustersNamespaces = sets.Sorted([]string{
+		testConfig.Namespaces.RamenHubNamespace,
+		testConfig.Namespaces.RamenDRClusterNamespace,
+	})
+
+	applicationMock = &validation.Mock{
+		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
+			return applicationNamespaces, nil
+		},
 	}
 
 	validateConfigFailed = &validation.Mock{
@@ -63,6 +90,7 @@ var (
 	}
 
 	gatherClusterFailed = &validation.Mock{
+		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherFunc: func(ctx validation.Context, clusters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result {
 			results := make(chan gathering.Result, 3)
 			for _, cluster := range clusters {
@@ -87,6 +115,7 @@ func TestValidateClustersPassed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Passed)
 	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -109,6 +138,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Failed)
 	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -122,6 +152,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Canceled)
 	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -135,6 +166,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Failed)
 	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -153,12 +185,13 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 // Validate application tests.
 
 func TestValidateApplicationPassed(t *testing.T) {
-	validate := testCommand(t, validateApplication, &validation.Mock{})
+	validate := testCommand(t, validateApplication, applicationMock)
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
 	}
 	checkReport(t, validate.report, report.Passed)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -182,6 +215,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Failed)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -195,6 +229,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Canceled)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -208,6 +243,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Failed)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -228,6 +264,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Canceled)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -248,6 +285,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	}
 	checkReport(t, validate.report, report.Failed)
 	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -300,6 +338,12 @@ func checkApplication(t *testing.T, report *report.Report, expected *report.Appl
 		}
 	} else if report.Application != expected {
 		t.Fatalf("expected application %+v, got %+v", expected, report.Application)
+	}
+}
+
+func checkNamespaces(t *testing.T, report *report.Report, expected []string) {
+	if !slices.Equal(report.Namespaces, expected) {
+		t.Fatalf("expected namespaces %q, got %q", expected, report.Namespaces)
 	}
 }
 
