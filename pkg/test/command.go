@@ -7,8 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"path/filepath"
-	"sort"
+	"slices"
 	"sync"
 	stdtime "time"
 
@@ -325,7 +326,7 @@ func (c *Command) cleanFlow(test *Test) {
 }
 
 func (c *Command) namespacesToGather() []string {
-	seen := map[string]struct{}{
+	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
 		c.config.Namespaces.RamenHubNamespace:       {},
 		c.config.Namespaces.RamenDRClusterNamespace: {},
@@ -334,17 +335,10 @@ func (c *Command) namespacesToGather() []string {
 	// Add application resources for failed tests.
 	for _, test := range c.tests {
 		if test.Status == report.Failed {
-			seen[test.AppNamespace()] = struct{}{}
-			seen[test.ManagementNamespace()] = struct{}{}
+			set[test.AppNamespace()] = struct{}{}
+			set[test.ManagementNamespace()] = struct{}{}
 		}
 	}
 
-	var namespaces []string
-	for ns := range seen {
-		namespaces = append(namespaces, ns)
-	}
-
-	sort.Strings(namespaces)
-
-	return namespaces
+	return slices.Sorted(maps.Keys(set))
 }
