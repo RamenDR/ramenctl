@@ -15,12 +15,14 @@ import (
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 const (
-	drpcName      = "drpc-name"
-	drpcNamespace = "drpc-namespace"
+	drpcName             = "drpc-name"
+	drpcNamespace        = "drpc-namespace"
+	applicationNamespace = "application-namespace"
 )
 
 var (
@@ -38,6 +40,18 @@ var (
 		Name:      drpcName,
 		Namespace: drpcNamespace,
 	}
+
+	applicationNamespaces = sets.Sorted([]string{
+		drpcNamespace,
+		applicationNamespace,
+	})
+
+	gatherApplicationNamespaces = sets.Sorted([]string{
+		testConfig.Namespaces.RamenHubNamespace,
+		testConfig.Namespaces.RamenDRClusterNamespace,
+		drpcNamespace,
+		applicationNamespace,
+	})
 
 	validateConfigFailed = &validation.Mock{
 		ValidateFunc: func(ctx validation.Context) error {
@@ -168,18 +182,12 @@ func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 }
 
 func TestGatherApplicationNamespaces(t *testing.T) {
-	appNamespaces := []string{
-		"e2e-appset-deploy-cephfs-busybox",
-		"openshift-gitops",
-		"openshift-operators",
-	}
-
 	mockBackend := &validation.Mock{
 		ApplicationNamespacesFunc: func(ctx validation.Context, name, namespace string) ([]string, error) {
 			if name != drpcName || namespace != drpcNamespace {
 				t.Fatalf("unexpected args: name=%s, namespace=%s", drpcName, drpcNamespace)
 			}
-			return appNamespaces, nil
+			return applicationNamespaces, nil
 		},
 	}
 
@@ -188,12 +196,13 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectedNamespaces := []string{testConfig.Namespaces.RamenDRClusterNamespace}
-	expectedNamespaces = append(expectedNamespaces, appNamespaces...)
-	slices.Sort(expectedNamespaces)
 
-	if !slices.Equal(cmd.report.Namespaces, expectedNamespaces) {
-		t.Fatalf("expected namespaces %+v, got %+v", expectedNamespaces, cmd.report.Namespaces)
+	if !slices.Equal(cmd.report.Namespaces, gatherApplicationNamespaces) {
+		t.Fatalf(
+			"expected namespaces %q, got %q",
+			gatherApplicationNamespaces,
+			cmd.report.Namespaces,
+		)
 	}
 }
 
