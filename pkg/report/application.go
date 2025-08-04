@@ -10,33 +10,33 @@ import (
 
 // ProtectedPVCSummary is the summary of a protected PVC.
 type ProtectedPVCSummary struct {
-	Name       string            `json:"name"`
-	Namespace  string            `json:"namespace"`
-	Deleted    bool              `json:"deleted,omitempty"`
-	Phase      string            `json:"phase,omitempty"`
-	Conditions map[string]string `json:"conditions,omitempty"`
+	Name       string                     `json:"name"`
+	Namespace  string                     `json:"namespace"`
+	Deleted    bool                       `json:"deleted,omitempty"`
+	Phase      string                     `json:"phase,omitempty"`
+	Conditions map[string]ConditionStatus `json:"conditions,omitempty"`
 }
 
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
-	Name        string            `json:"name"`
-	Namespace   string            `json:"namespace"`
-	Deleted     bool              `json:"deleted,omitempty"`
-	DRPolicy    string            `json:"drPolicy"`
-	Action      string            `json:"action,omitempty"`
-	Phase       string            `json:"phase"`
-	Progression string            `json:"progression"`
-	Conditions  map[string]string `json:"conditions,omitempty"`
+	Name        string                     `json:"name"`
+	Namespace   string                     `json:"namespace"`
+	Deleted     bool                       `json:"deleted,omitempty"`
+	DRPolicy    string                     `json:"drPolicy"`
+	Action      string                     `json:"action,omitempty"`
+	Phase       string                     `json:"phase"`
+	Progression string                     `json:"progression"`
+	Conditions  map[string]ConditionStatus `json:"conditions,omitempty"`
 }
 
 // VRGSummary is the summary of a VRG.
 type VRGSummary struct {
-	Name          string                `json:"name"`
-	Namespace     string                `json:"namespace"`
-	Deleted       bool                  `json:"deleted,omitempty"`
-	State         string                `json:"state"`
-	Conditions    map[string]string     `json:"conditions,omitempty"`
-	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
+	Name          string                     `json:"name"`
+	Namespace     string                     `json:"namespace"`
+	Deleted       bool                       `json:"deleted,omitempty"`
+	State         string                     `json:"state"`
+	Conditions    map[string]ConditionStatus `json:"conditions,omitempty"`
+	ProtectedPVCs []ProtectedPVCSummary      `json:"protectedPVCs,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.

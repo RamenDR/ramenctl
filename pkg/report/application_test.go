@@ -205,10 +205,10 @@ func testApplicationStatus() *report.ApplicationStatus {
 				DRPolicy:    "dr-policy-1m",
 				Phase:       "Deployed",
 				Progression: "completed",
-				Conditions: map[string]string{
-					"available": "ok",
-					"peerReady": "ok",
-					"protected": "ok",
+				Conditions: map[string]report.ConditionStatus{
+					"available": report.ConditionOK,
+					"peerReady": report.ConditionOK,
+					"protected": report.ConditionOK,
 				},
 			},
 		},
@@ -218,23 +218,23 @@ func testApplicationStatus() *report.ApplicationStatus {
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
 				State:     "Primary",
-				Conditions: map[string]string{
-					"dataReady":             "ok",
-					"dataProtected":         "ok",
-					"clusterDataReady":      "ok",
-					"clusterDataProtected":  "ok",
-					"kubeObjectsReady":      "ok",
-					"noClusterDataConflict": "ok",
+				Conditions: map[string]report.ConditionStatus{
+					"dataReady":             report.ConditionOK,
+					"dataProtected":         report.ConditionOK,
+					"clusterDataReady":      report.ConditionOK,
+					"clusterDataProtected":  report.ConditionOK,
+					"kubeObjectsReady":      report.ConditionOK,
+					"noClusterDataConflict": report.ConditionOK,
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
 						Name:      "pvc-name",
 						Namespace: "app-namespace",
 						Phase:     "Bound",
-						Conditions: map[string]string{
-							"dataReady":            "ok",
-							"clusterDataProtected": "ok",
-							"dataProtected":        "ok",
+						Conditions: map[string]report.ConditionStatus{
+							"dataReady":            report.ConditionOK,
+							"clusterDataProtected": report.ConditionOK,
+							"dataProtected":        report.ConditionOK,
 						},
 					},
 				},
@@ -246,8 +246,8 @@ func testApplicationStatus() *report.ApplicationStatus {
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
 				State:     "Secondary",
-				Conditions: map[string]string{
-					"noClusterDataConflict": "ok",
+				Conditions: map[string]report.ConditionStatus{
+					"noClusterDataConflict": report.ConditionOK,
 				},
 			},
 		},
