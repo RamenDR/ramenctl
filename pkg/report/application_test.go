@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ramendr/ramenctl/pkg/report"
 	"sigs.k8s.io/yaml"
+
+	"github.com/ramendr/ramenctl/pkg/report"
 )
 
 const (
