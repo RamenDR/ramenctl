@@ -91,7 +91,12 @@ var (
 
 	gatherClusterFailed = &validation.Mock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GatherFunc: func(ctx validation.Context, clusters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result {
+		GatherFunc: func(
+			ctx validation.Context,
+			clusters []*types.Cluster,
+			namespaces []string,
+			outputDir string,
+		) <-chan gathering.Result {
 			results := make(chan gathering.Result, 3)
 			for _, cluster := range clusters {
 				if cluster.Name == "hub" {
