@@ -13,3 +13,6 @@ cover.out
 
 # Output directory
 /out
+
+# macOS junk
+.DS_Store
