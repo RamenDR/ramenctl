@@ -159,8 +159,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/nirs/kubectl-gather v0.9.0 h1:GSrkd9n85z3Zb0o3ji1NW+TtSAdR8myq2SV+MQbQpek=
-github.com/nirs/kubectl-gather v0.9.0/go.mod h1:i6GaOi/I6imJ+8U8NLoEsp9Ukn/4kzXZx2ei6Af8MeI=
+github.com/nirs/kubectl-gather v0.10.0 h1:cjfiiA8EVnv88EubSJ2+Bekd7SgNXnrv3AlU2tATF4Y=
+github.com/nirs/kubectl-gather v0.10.0/go.mod h1:i6GaOi/I6imJ+8U8NLoEsp9Ukn/4kzXZx2ei6Af8MeI=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
