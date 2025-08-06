@@ -6,6 +6,7 @@ package validation
 import (
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 )
 
 // Backend performs validation with real clusters.
@@ -30,7 +31,11 @@ func (b Backend) ApplicationNamespaces(
 	ctx Context,
 	drpcName, drpcNamespace string,
 ) ([]string, error) {
-	return drpcNamespaces(ctx, drpcName, drpcNamespace)
+	drpc, err := ramen.GetDRPC(ctx, drpcName, drpcNamespace)
+	if err != nil {
+		return nil, err
+	}
+	return ramen.ApplicationNamespaces(drpc), nil
 }
 
 func (b Backend) Gather(
