@@ -14,6 +14,7 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -136,6 +137,7 @@ func TestValidateClustersPassed(t *testing.T) {
 		{Name: "validate cluster data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -150,6 +152,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
@@ -164,6 +167,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
@@ -187,6 +191,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 // Validate application tests.
@@ -214,6 +219,63 @@ func TestValidateApplicationPassed(t *testing.T) {
 		{Name: "validate data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+
+	expectedStatus := &report.ApplicationStatus{
+		Hub: report.HubApplicationStatus{
+			DRPC: report.DRPCSummary{
+				Name:        drpcName,
+				Namespace:   drpcNamespace,
+				DRPolicy:    "dr-policy",
+				Phase:       "Deployed",
+				Progression: "Completed",
+				Conditions: map[string]report.ConditionStatus{
+					"Available": report.ConditionOK,
+					"PeerReady": report.ConditionOK,
+					"Protected": report.ConditionOK,
+				},
+			},
+		},
+		PrimaryCluster: report.ClusterApplicationStatus{
+			Name: "dr1",
+			VRG: report.VRGSummary{
+				Name:      drpcName,
+				Namespace: applicationNamespace,
+				State:     "Primary",
+				Conditions: map[string]report.ConditionStatus{
+					"ClusterDataProtected":  report.ConditionOK,
+					"ClusterDataReady":      report.ConditionOK,
+					"DataProtected":         report.ConditionOK,
+					"DataReady":             report.ConditionOK,
+					"KubeObjectsReady":      report.ConditionOK,
+					"NoClusterDataConflict": report.ConditionOK,
+				},
+				ProtectedPVCs: []report.ProtectedPVCSummary{
+					{
+						Name:      "busybox-pvc",
+						Namespace: "e2e-appset-deploy-rbd",
+						Phase:     "Bound",
+						Conditions: map[string]report.ConditionStatus{
+							"ClusterDataProtected": report.ConditionOK,
+							"DataProtected":        report.ConditionOK,
+							"DataReady":            report.ConditionOK,
+						},
+					},
+				},
+			},
+		},
+		SecondaryCluster: report.ClusterApplicationStatus{
+			Name: "dr2",
+			VRG: report.VRGSummary{
+				Name:      drpcName,
+				Namespace: applicationNamespace,
+				State:     "Secondary",
+				Conditions: map[string]report.ConditionStatus{
+					"NoClusterDataConflict": report.ConditionOK,
+				},
+			},
+		},
+	}
+	checkApplicationStatus(t, validate.report, expectedStatus)
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -228,6 +290,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
@@ -242,6 +305,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
@@ -263,6 +327,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 		{Name: "inspect application", Status: report.Failed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
@@ -284,6 +349,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 		{Name: "inspect application", Status: report.Canceled},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
@@ -308,6 +374,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
 }
 
 // TODO: Test gather cancellation when kubectl-gahter supports it:
@@ -384,6 +451,33 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 	for i, item := range expected {
 		checkStep(t, step.Items[i], item.Name, item.Status)
 	}
+}
+
+func checkApplicationStatus(
+	t *testing.T,
+	report *report.Report,
+	expected *report.ApplicationStatus,
+) {
+	// For manual inspection
+	fmt.Print("\n", marshal(t, expected))
+
+	if expected != nil {
+		if !expected.Equal(report.ApplicationStatus) {
+			t.Fatalf("expected application status:\n%s\ngot:\n%s",
+				marshal(t, expected), marshal(t, report.ApplicationStatus))
+		}
+	} else if report.ApplicationStatus != nil {
+		t.Fatalf("expected application status to be nil, got:\n%s",
+			marshal(t, report.ApplicationStatus))
+	}
+}
+
+func marshal(t *testing.T, a any) string {
+	data, err := yaml.Marshal(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
 }
 
 func totalDuration(steps []*report.Step) float64 {

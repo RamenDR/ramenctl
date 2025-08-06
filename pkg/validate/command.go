@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	stdtime "time"
 
+	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
 
@@ -125,6 +126,11 @@ func (c *Command) gatherNamespaces(options gathering.Options) bool {
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
 
 	return c.current.Status == report.Passed
+}
+
+func (c *Command) outputReader(cluster string) gathering.OutputReader {
+	clusterDir := filepath.Join(c.dataDir(), cluster)
+	return gather.NewOutputReader(clusterDir)
 }
 
 func (c *Command) dataDir() string {
