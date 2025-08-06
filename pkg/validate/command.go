@@ -16,6 +16,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -99,15 +100,15 @@ func (c *Command) validateConfig() bool {
 
 // Gathering data.
 
-func (c *Command) gatherNamespaces(namespaces []string) bool {
+func (c *Command) gatherNamespaces(options gathering.Options) bool {
 	start := time.Now()
 	env := c.Env()
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 
-	c.Logger().Infof("Gathering namespaces %q from clusters %q",
-		namespaces, logging.ClusterNames(clusters))
+	c.Logger().Infof("Gathering from clusters %q with options %+v",
+		logging.ClusterNames(clusters), options)
 
-	for r := range c.backend.Gather(c, clusters, namespaces, c.dataDir()) {
+	for r := range c.backend.Gather(c, clusters, options) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)

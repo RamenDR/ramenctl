@@ -72,7 +72,11 @@ var (
 	}
 
 	gatherClusterFailed = &validation.Mock{
-		GatherFunc: func(ctx validation.Context, clusters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result {
+		GatherFunc: func(
+			ctx validation.Context,
+			clusters []*types.Cluster,
+			options gathering.Options,
+		) <-chan gathering.Result {
 			results := make(chan gathering.Result, 3)
 			for _, cluster := range clusters {
 				if cluster.Name == "hub" {

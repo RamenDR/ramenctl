@@ -59,8 +59,7 @@ func (Backend) Purge(ctx types.TestContext) error {
 func (b Backend) Gather(
 	ctx types.Context,
 	clusters []*types.Cluster,
-	namespaces []string,
-	outputDir string,
+	options gathering.Options,
 ) <-chan gathering.Result {
-	return gathering.Namespaces(ctx, clusters, namespaces, outputDir)
+	return gathering.Namespaces(ctx, clusters, options)
 }

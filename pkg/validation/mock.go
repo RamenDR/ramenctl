@@ -15,7 +15,7 @@ type ContextFunc func(Context) error
 type Mock struct {
 	ValidateFunc              ContextFunc
 	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
-	GatherFunc                func(ctx Context, clsuters []*types.Cluster, namespaces []string, outputDir string) <-chan gathering.Result
+	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
 }
 
 var _ Validation = &Mock{}
@@ -40,11 +40,10 @@ func (m *Mock) ApplicationNamespaces(
 func (m *Mock) Gather(
 	ctx Context,
 	clusters []*types.Cluster,
-	namespaces []string,
-	outputDir string,
+	options gathering.Options,
 ) <-chan gathering.Result {
 	if m.GatherFunc != nil {
-		return m.GatherFunc(ctx, clusters, namespaces, outputDir)
+		return m.GatherFunc(ctx, clusters, options)
 	}
 
 	results := make(chan gathering.Result, len(clusters))

@@ -29,7 +29,6 @@ type Testing interface {
 	Gather(
 		ctx types.Context,
 		clusters []*types.Cluster,
-		namespaces []string,
-		outputDir string,
+		options gathering.Options,
 	) <-chan gathering.Result
 }

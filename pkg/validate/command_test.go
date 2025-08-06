@@ -97,8 +97,7 @@ var (
 		GatherFunc: func(
 			ctx validation.Context,
 			clusters []*types.Cluster,
-			namespaces []string,
-			outputDir string,
+			options gathering.Options,
 		) <-chan gathering.Result {
 			results := make(chan gathering.Result, 3)
 			for _, cluster := range clusters {

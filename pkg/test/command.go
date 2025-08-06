@@ -19,6 +19,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/testing"
@@ -200,14 +201,16 @@ func (c *Command) gatherData() {
 	console.Step("Gather data")
 	env := c.Env()
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
-	namespaces := c.namespacesToGather()
-	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".gather")
+	options := gathering.Options{
+		Namespaces: c.namespacesToGather(),
+		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".gather"),
+	}
 	start := time.Now()
 
-	c.Logger().Infof("Gathering namespaces %q from clusters %q",
-		namespaces, logging.ClusterNames(clusters))
+	c.Logger().Infof("Gathering from clusters %q with options %+v",
+		logging.ClusterNames(clusters), options)
 
-	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
+	for r := range c.backend.Gather(c, clusters, options) {
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
 			console.Error(msg)

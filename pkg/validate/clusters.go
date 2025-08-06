@@ -5,6 +5,7 @@ package validate
 
 import (
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
 )
@@ -27,7 +28,11 @@ func (c *Command) validateClusters() bool {
 	namespaces := c.clustersNamespacesToGather()
 	c.report.Namespaces = namespaces
 
-	if !c.gatherNamespaces(namespaces) {
+	options := gathering.Options{
+		Namespaces: namespaces,
+		OutputDir:  c.dataDir(),
+	}
+	if !c.gatherNamespaces(options) {
 		return c.finishStep()
 	}
 

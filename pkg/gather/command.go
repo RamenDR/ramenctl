@@ -18,6 +18,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -114,7 +115,11 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 	}
 	c.report.Namespaces = namespaces
 
-	if !c.gatherApplication(namespaces) {
+	options := gathering.Options{
+		Namespaces: namespaces,
+		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
+	}
+	if !c.gatherApplication(options) {
 		return c.finishStep()
 	}
 
@@ -153,16 +158,15 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
-func (c *Command) gatherApplication(namespaces []string) bool {
+func (c *Command) gatherApplication(options gathering.Options) bool {
 	start := time.Now()
 	env := c.Env()
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
-	outputDir := filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
 
-	c.Logger().Infof("Gathering namespaces %q from clusters %q",
-		namespaces, logging.ClusterNames(clusters))
+	c.Logger().Infof("Gathering from clusters %q with options %+v",
+		logging.ClusterNames(clusters), options)
 
-	for r := range c.backend.Gather(c, clusters, namespaces, outputDir) {
+	for r := range c.backend.Gather(c, clusters, options) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
 			msg := fmt.Sprintf("Failed to gather data from cluster %q", r.Name)

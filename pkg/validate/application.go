@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
@@ -39,7 +40,11 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 
 	c.report.Namespaces = namespaces
 
-	if !c.gatherNamespaces(namespaces) {
+	options := gathering.Options{
+		Namespaces: namespaces,
+		OutputDir:  c.dataDir(),
+	}
+	if !c.gatherNamespaces(options) {
 		return c.finishStep()
 	}
 

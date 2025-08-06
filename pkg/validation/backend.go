@@ -36,8 +36,7 @@ func (b Backend) ApplicationNamespaces(
 func (b Backend) Gather(
 	ctx Context,
 	clusters []*types.Cluster,
-	namespaces []string,
-	outputDir string,
+	options gathering.Options,
 ) <-chan gathering.Result {
-	return gathering.Namespaces(ctx, clusters, namespaces, outputDir)
+	return gathering.Namespaces(ctx, clusters, options)
 }
