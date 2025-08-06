@@ -30,6 +30,7 @@ func (c *Command) validateClusters() bool {
 
 	options := gathering.Options{
 		Namespaces: namespaces,
+		Cluster:    true,
 		OutputDir:  c.dataDir(),
 	}
 	if !c.gatherNamespaces(options) {

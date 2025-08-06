@@ -24,6 +24,7 @@ type Result struct {
 
 type Options struct {
 	Namespaces []string
+	Cluster    bool
 	OutputDir  string
 }
 
@@ -80,6 +81,7 @@ func gatherCluster(ctx Context, cluster *types.Cluster, options Options) error {
 	gatherOptions := gather.Options{
 		Kubeconfig: cluster.Kubeconfig,
 		Namespaces: options.Namespaces,
+		Cluster:    options.Cluster,
 		Log:        log.Named(cluster.Name),
 	}
 
