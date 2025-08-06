@@ -4,6 +4,7 @@
 package gathering
 
 import (
+	"context"
 	"path/filepath"
 	"sync"
 	"time"
@@ -21,6 +22,12 @@ type Result struct {
 	Duration float64
 }
 
+// Context provides logging and Go context access for gathering operations.
+type Context interface {
+	Logger() *zap.SugaredLogger
+	Context() context.Context
+}
+
 // OutputReader is the interface for reading gathered data from the output directory.
 type OutputReader interface {
 	ListResources(namespace, resource string) ([]string, error)
@@ -30,10 +37,10 @@ type OutputReader interface {
 // Namespaces gathers namespaces from all clusters storing data in outputDir. Returns a channel for
 // getting gather results. The channel is closed when all clusters are gathered.
 func Namespaces(
+	ctx Context,
 	clusters []*types.Cluster,
 	namespaces []string,
 	outputDir string,
-	log *zap.SugaredLogger,
 ) <-chan Result {
 	results := make(chan Result)
 	var wg sync.WaitGroup
@@ -44,7 +51,7 @@ func Namespaces(
 		go func() {
 			defer wg.Done()
 			start := time.Now()
-			err := gatherCluster(cluster, namespaces, outputDir, log)
+			err := gatherCluster(ctx, cluster, namespaces, outputDir)
 			results <- Result{Name: cluster.Name, Err: err, Duration: time.Since(start).Seconds()}
 		}()
 	}
@@ -59,12 +66,14 @@ func Namespaces(
 }
 
 func gatherCluster(
+	ctx Context,
 	cluster *types.Cluster,
 	namespaces []string,
 	outputDir string,
-	log *zap.SugaredLogger,
 ) error {
 	start := time.Now()
+	log := ctx.Logger()
+
 	log.Infof("Gather namespaces from cluster %q", cluster.Name)
 
 	config, err := restConfig(cluster.Kubeconfig)

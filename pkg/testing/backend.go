@@ -62,5 +62,5 @@ func (b Backend) Gather(
 	namespaces []string,
 	outputDir string,
 ) <-chan gathering.Result {
-	return gathering.Namespaces(clusters, namespaces, outputDir, ctx.Logger())
+	return gathering.Namespaces(ctx, clusters, namespaces, outputDir)
 }
