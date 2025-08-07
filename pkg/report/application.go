@@ -8,13 +8,22 @@ import (
 	"slices"
 )
 
+type ReplicationType string
+
+const (
+	Volrep   = ReplicationType("volrep")
+	Volsync  = ReplicationType("volsync")
+	External = ReplicationType("external")
+)
+
 // ProtectedPVCSummary is the summary of a protected PVC.
 type ProtectedPVCSummary struct {
-	Name       string                     `json:"name"`
-	Namespace  string                     `json:"namespace"`
-	Deleted    bool                       `json:"deleted,omitempty"`
-	Phase      string                     `json:"phase,omitempty"`
-	Conditions map[string]ConditionStatus `json:"conditions,omitempty"`
+	Name        string                     `json:"name"`
+	Namespace   string                     `json:"namespace"`
+	Replication ReplicationType            `json:"replication,omitempty"`
+	Deleted     bool                       `json:"deleted,omitempty"`
+	Phase       string                     `json:"phase,omitempty"`
+	Conditions  map[string]ConditionStatus `json:"conditions,omitempty"`
 }
 
 // DRPCSummary is the summary of a DRPC.
@@ -184,6 +193,9 @@ func (p *ProtectedPVCSummary) Equal(o *ProtectedPVCSummary) bool {
 		return false
 	}
 	if p.Namespace != o.Namespace {
+		return false
+	}
+	if p.Replication != o.Replication {
 		return false
 	}
 	if p.Deleted != o.Deleted {

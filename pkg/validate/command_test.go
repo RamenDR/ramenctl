@@ -251,9 +251,10 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
-						Name:      "busybox-pvc",
-						Namespace: "e2e-appset-deploy-rbd",
-						Phase:     "Bound",
+						Name:        "busybox-pvc",
+						Namespace:   "e2e-appset-deploy-rbd",
+						Replication: report.Volrep,
+						Phase:       "Bound",
 						Conditions: map[string]report.ConditionStatus{
 							"ClusterDataProtected": report.ConditionOK,
 							"DataProtected":        report.ConditionOK,

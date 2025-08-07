@@ -129,6 +129,11 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Namespace = modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("primary cluster vrg protectedpvcs replication", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Replication = report.Volsync
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("primary cluster vrg protectedpvcs phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Phase = modified
@@ -228,9 +233,10 @@ func testApplicationStatus() *report.ApplicationStatus {
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
-						Name:      "pvc-name",
-						Namespace: "app-namespace",
-						Phase:     "Bound",
+						Name:        "pvc-name",
+						Namespace:   "app-namespace",
+						Replication: report.Volrep,
+						Phase:       "Bound",
 						Conditions: map[string]report.ConditionStatus{
 							"dataReady":            report.ConditionOK,
 							"clusterDataProtected": report.ConditionOK,

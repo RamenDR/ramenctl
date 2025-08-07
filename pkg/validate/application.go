@@ -231,9 +231,10 @@ func (c *Command) validatedProtectedPVCs(
 	for i := range vrg.Status.ProtectedPVCs {
 		ppvc := &vrg.Status.ProtectedPVCs[i]
 		ps := report.ProtectedPVCSummary{
-			Name:       ppvc.Name,
-			Namespace:  ppvc.Namespace,
-			Conditions: c.validatedProtectedPVCConditions(drpc, vrg, ppvc),
+			Name:        ppvc.Name,
+			Namespace:   ppvc.Namespace,
+			Replication: c.protectedPVCReplication(ppvc),
+			Conditions:  c.validatedProtectedPVCConditions(drpc, vrg, ppvc),
 		}
 
 		if pvc, err := readPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
@@ -280,6 +281,14 @@ func (c *Command) validatedVRGConditions(
 		}
 	}
 	return conditions
+}
+
+func (c *Command) protectedPVCReplication(ppvc *ramenapi.ProtectedPVC) report.ReplicationType {
+	// TODO: report external replication.
+	if ppvc.ProtectedByVolSync {
+		return report.Volsync
+	}
+	return report.Volrep
 }
 
 func (c *Command) validatedProtectedPVCConditions(
