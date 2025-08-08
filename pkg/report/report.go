@@ -72,6 +72,9 @@ type Report struct {
 
 	// ApplicationStatus is set by the `validate application` commmnad.
 	ApplicationStatus *ApplicationStatus `json:"applicationStatus,omitempty"`
+
+	// ClusterStatus is set by the `validate cluster` command.
+	ClusterStatus *ClusterStatus `json:"clusterStatus,omitempty"`
 }
 
 // NewBase create a new base report for ramenctl commands reports.
