@@ -138,6 +138,7 @@ func TestValidateClustersPassed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -153,6 +154,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
@@ -168,6 +170,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
@@ -192,6 +195,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 // Validate application tests.
@@ -342,6 +346,8 @@ func TestValidateApplicationPassed(t *testing.T) {
 		},
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
+
+	checkSummary(t, validate.report, Summary{OK: 13})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -357,6 +363,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
@@ -372,6 +379,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
@@ -394,6 +402,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
@@ -416,6 +425,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
@@ -441,6 +451,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
 }
 
 // TODO: Test gather cancellation when kubectl-gahter supports it:
@@ -471,7 +482,7 @@ func addGatheredData(t *testing.T, cmd *Command, name string) {
 	}
 }
 
-func checkReport(t *testing.T, report *report.Report, status report.Status) {
+func checkReport(t *testing.T, report *Report, status report.Status) {
 	if report.Status != status {
 		t.Fatalf("expected status %q, got %q", status, report.Status)
 	}
@@ -484,7 +495,7 @@ func checkReport(t *testing.T, report *report.Report, status report.Status) {
 	}
 }
 
-func checkApplication(t *testing.T, report *report.Report, expected *report.Application) {
+func checkApplication(t *testing.T, report *Report, expected *report.Application) {
 	if report.Application != nil && expected != nil {
 		if *report.Application != *expected {
 			t.Fatalf("expected application %+v, got %+v", expected, report.Application)
@@ -494,7 +505,7 @@ func checkApplication(t *testing.T, report *report.Report, expected *report.Appl
 	}
 }
 
-func checkNamespaces(t *testing.T, report *report.Report, expected []string) {
+func checkNamespaces(t *testing.T, report *Report, expected []string) {
 	if !slices.Equal(report.Namespaces, expected) {
 		t.Fatalf("expected namespaces %q, got %q", expected, report.Namespaces)
 	}
@@ -521,7 +532,7 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 
 func checkApplicationStatus(
 	t *testing.T,
-	report *report.Report,
+	report *Report,
 	expected *report.ApplicationStatus,
 ) {
 	// For manual inspection
@@ -535,6 +546,12 @@ func checkApplicationStatus(
 	} else if report.ApplicationStatus != nil {
 		t.Fatalf("expected application status to be nil, got:\n%s",
 			marshal(t, report.ApplicationStatus))
+	}
+}
+
+func checkSummary(t *testing.T, report *Report, expected Summary) {
+	if report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, report.Summary)
 	}
 }
 

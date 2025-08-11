@@ -131,7 +131,13 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	// TODO: Fail if we found issues and recommend recovery action.
+	if c.report.Summary.HasProblems() {
+		step.Status = report.Failed
+		msg := "Problems found during validation"
+		console.Error(msg)
+		log.Errorf("%s: %s", msg, c.report.Summary)
+		return false
+	}
 
 	step.Status = report.Passed
 	console.Pass("Application validated")
@@ -259,6 +265,7 @@ func (c *Command) validatedDRPCConditions(
 	for i := range drpc.Status.Conditions {
 		condition := &drpc.Status.Conditions[i]
 		validated := validatedCondition(drpc, condition, metav1.ConditionTrue)
+		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
@@ -281,6 +288,7 @@ func (c *Command) validatedVRGConditions(
 		} else {
 			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
 		}
+		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
@@ -308,6 +316,7 @@ func (c *Command) validatedProtectedPVCConditions(
 		} else {
 			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
 		}
+		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions

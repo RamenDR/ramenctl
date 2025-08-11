@@ -38,7 +38,7 @@ type Command struct {
 	context context.Context
 
 	// report describes the command execution.
-	report *report.Report
+	report *Report
 
 	// current validation step.
 	current        *report.Step
@@ -54,7 +54,7 @@ func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Val
 		config:  cfg,
 		backend: backend,
 		context: cmd.Context(),
-		report:  report.NewReport(cmd.Name(), cfg),
+		report:  &Report{Report: report.NewReport(cmd.Name(), cfg)},
 	}
 }
 
@@ -143,14 +143,14 @@ func (c *Command) failed() error {
 	if err := c.command.WriteReport(c.report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	return fmt.Errorf("validation %s", c.report.Status)
+	return fmt.Errorf("validation %s (%s)", c.report.Status, c.report.Summary)
 }
 
 func (c *Command) passed() {
 	if err := c.command.WriteReport(c.report); err != nil {
 		console.Error("failed to write report: %s", err)
 	}
-	console.Completed("Validation completed")
+	console.Completed("Validation completed (%s)", c.report.Summary)
 }
 
 // Managing steps.
