@@ -76,7 +76,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc conditions", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Conditions["Protected"] = modified
+		a2.Hub.DRPC.Conditions[0].State = report.Error
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster name", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg conditions", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.Conditions["dataReady"] = modified
+		a2.PrimaryCluster.VRG.Conditions[0].State = report.Error
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg protectedpvcs nil", func(t *testing.T) {
@@ -146,7 +146,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg protectedpvcs conditions", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Conditions["dataReady"] = modified
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Conditions[0].State = report.Error
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster name", func(t *testing.T) {
@@ -181,7 +181,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("secondary cluster vrg conditions", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.VRG.Conditions["noClusterDataConflict"] = modified
+		a2.SecondaryCluster.VRG.Conditions[0].State = report.Error
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 }
@@ -210,10 +210,25 @@ func testApplicationStatus() *report.ApplicationStatus {
 				DRPolicy:    "dr-policy-1m",
 				Phase:       "Deployed",
 				Progression: "completed",
-				Conditions: map[string]report.ConditionStatus{
-					"available": report.ConditionOK,
-					"peerReady": report.ConditionOK,
-					"protected": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "Available",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "PeerReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "Protected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 			},
 		},
@@ -223,13 +238,43 @@ func testApplicationStatus() *report.ApplicationStatus {
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
 				State:     "Primary",
-				Conditions: map[string]report.ConditionStatus{
-					"dataReady":             report.ConditionOK,
-					"dataProtected":         report.ConditionOK,
-					"clusterDataReady":      report.ConditionOK,
-					"clusterDataProtected":  report.ConditionOK,
-					"kubeObjectsReady":      report.ConditionOK,
-					"noClusterDataConflict": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "DataReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "DataProtected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "ClusterDataReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "ClusterDataProtected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "KubeObjectsReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "NoClusterDataConflict",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
@@ -237,10 +282,25 @@ func testApplicationStatus() *report.ApplicationStatus {
 						Namespace:   "app-namespace",
 						Replication: report.Volrep,
 						Phase:       "Bound",
-						Conditions: map[string]report.ConditionStatus{
-							"dataReady":            report.ConditionOK,
-							"clusterDataProtected": report.ConditionOK,
-							"dataProtected":        report.ConditionOK,
+						Conditions: []report.ValidatedCondition{
+							{
+								Type: "DataReady",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
+							{
+								Type: "ClusterDataProtected",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
+							{
+								Type: "DataProtected",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
 						},
 					},
 				},
@@ -252,8 +312,13 @@ func testApplicationStatus() *report.ApplicationStatus {
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
 				State:     "Secondary",
-				Conditions: map[string]report.ConditionStatus{
-					"noClusterDataConflict": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "NoClusterDataConflict",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 			},
 		},

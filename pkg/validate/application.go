@@ -254,11 +254,12 @@ func (c *Command) validatedProtectedPVCs(
 
 func (c *Command) validatedDRPCConditions(
 	drpc *ramenapi.DRPlacementControl,
-) map[string]report.ConditionStatus {
-	conditions := map[string]report.ConditionStatus{}
+) []report.ValidatedCondition {
+	var conditions []report.ValidatedCondition
 	for i := range drpc.Status.Conditions {
 		condition := &drpc.Status.Conditions[i]
-		conditions[condition.Type] = conditionStatus(drpc, condition, metav1.ConditionTrue)
+		validated := validatedCondition(drpc, condition, metav1.ConditionTrue)
+		conditions = append(conditions, validated)
 	}
 	return conditions
 }
@@ -266,19 +267,21 @@ func (c *Command) validatedDRPCConditions(
 func (c *Command) validatedVRGConditions(
 	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
-) map[string]report.ConditionStatus {
-	conditions := map[string]report.ConditionStatus{}
+) []report.ValidatedCondition {
+	var conditions []report.ValidatedCondition
 	for i := range vrg.Status.Conditions {
 		condition := &vrg.Status.Conditions[i]
 		// On the secondary cluster most conditions are unused.
 		if condition.Reason == ramen.VRGConditionReasonUnused {
 			continue
 		}
+		var validated report.ValidatedCondition
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
-			conditions[condition.Type] = dataProtectedConditionStatus(drpc, vrg, condition)
+			validated = validatedDataProtectedCondition(drpc, vrg, condition)
 		} else {
-			conditions[condition.Type] = conditionStatus(vrg, condition, metav1.ConditionTrue)
+			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
 		}
+		conditions = append(conditions, validated)
 	}
 	return conditions
 }
@@ -295,32 +298,34 @@ func (c *Command) validatedProtectedPVCConditions(
 	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
 	ppvc *ramenapi.ProtectedPVC,
-) map[string]report.ConditionStatus {
-	conditions := map[string]report.ConditionStatus{}
+) []report.ValidatedCondition {
+	var conditions []report.ValidatedCondition
 	for i := range ppvc.Conditions {
 		condition := &ppvc.Conditions[i]
+		var validated report.ValidatedCondition
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
-			conditions[condition.Type] = dataProtectedConditionStatus(drpc, vrg, condition)
+			validated = validatedDataProtectedCondition(drpc, vrg, condition)
 		} else {
-			conditions[condition.Type] = conditionStatus(vrg, condition, metav1.ConditionTrue)
+			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
 		}
+		conditions = append(conditions, validated)
 	}
 	return conditions
 }
 
-// dataProtectedConditionStatus return the status for the special DataProtected contion. The status
-// depends on the action. Most of the time the expected status is False, but it should be True
-// before the application is placed on the secondary cluster, and it becomes False when we start to
-// replicate again from the secondary cluster to the primary.
-func dataProtectedConditionStatus(
+// validatedDataProtectedCondition returns the status for the special DataProtected contion. The
+// status depends on the action. Most of the time the expected status is False, but it should be
+// True before the application is placed on the secondary cluster, and it becomes False when we
+// start to replicate again from the secondary cluster to the primary.
+func validatedDataProtectedCondition(
 	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
 	condition *metav1.Condition,
-) report.ConditionStatus {
+) report.ValidatedCondition {
 	// TODO: Needs testing and probably limit to some progression values, but progression values are
 	// undocumnted.
 	if drpc.Spec.Action == ramenapi.ActionRelocate && drpc.Status.Phase == ramenapi.Relocating {
-		return conditionStatus(vrg, condition, metav1.ConditionTrue)
+		return validatedCondition(vrg, condition, metav1.ConditionTrue)
 	}
-	return conditionStatus(vrg, condition, metav1.ConditionFalse)
+	return validatedCondition(vrg, condition, metav1.ConditionFalse)
 }

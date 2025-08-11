@@ -4,6 +4,8 @@
 package validate
 
 import (
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -14,18 +16,29 @@ func isDeleted(obj client.Object) bool {
 	return !obj.GetDeletionTimestamp().IsZero()
 }
 
-// conditionStatus maps conditions status to report.ConditionStatus. This works only when the
-// expected status is "True".
-func conditionStatus(
+func validatedCondition(
 	obj client.Object,
 	condition *metav1.Condition,
-	expected metav1.ConditionStatus,
-) report.ConditionStatus {
+	expectedStatus metav1.ConditionStatus,
+) report.ValidatedCondition {
+	validated := report.ValidatedCondition{Type: condition.Type}
+
 	if condition.ObservedGeneration != obj.GetGeneration() {
-		return report.ConditionStale
+		validated.State = report.Stale
+		validated.Description = fmt.Sprintf(
+			"Observed generation %d does not match object generation %d",
+			condition.ObservedGeneration,
+			obj.GetGeneration(),
+		)
+		return validated
 	}
-	if condition.Status != expected {
-		return report.ConditionError
+
+	if condition.Status != expectedStatus {
+		validated.State = report.Error
+		validated.Description = condition.Message
+		return validated
 	}
-	return report.ConditionOK
+
+	validated.State = report.OK
+	return validated
 }

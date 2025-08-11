@@ -4,7 +4,6 @@
 package report
 
 import (
-	"maps"
 	"slices"
 )
 
@@ -18,34 +17,34 @@ const (
 
 // ProtectedPVCSummary is the summary of a protected PVC.
 type ProtectedPVCSummary struct {
-	Name        string                     `json:"name"`
-	Namespace   string                     `json:"namespace"`
-	Replication ReplicationType            `json:"replication,omitempty"`
-	Deleted     bool                       `json:"deleted,omitempty"`
-	Phase       string                     `json:"phase,omitempty"`
-	Conditions  map[string]ConditionStatus `json:"conditions,omitempty"`
+	Name        string               `json:"name"`
+	Namespace   string               `json:"namespace"`
+	Replication ReplicationType      `json:"replication,omitempty"`
+	Deleted     bool                 `json:"deleted,omitempty"`
+	Phase       string               `json:"phase,omitempty"`
+	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
 
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
-	Name        string                     `json:"name"`
-	Namespace   string                     `json:"namespace"`
-	Deleted     bool                       `json:"deleted,omitempty"`
-	DRPolicy    string                     `json:"drPolicy"`
-	Action      string                     `json:"action,omitempty"`
-	Phase       string                     `json:"phase"`
-	Progression string                     `json:"progression"`
-	Conditions  map[string]ConditionStatus `json:"conditions,omitempty"`
+	Name        string               `json:"name"`
+	Namespace   string               `json:"namespace"`
+	Deleted     bool                 `json:"deleted,omitempty"`
+	DRPolicy    string               `json:"drPolicy"`
+	Action      string               `json:"action,omitempty"`
+	Phase       string               `json:"phase"`
+	Progression string               `json:"progression"`
+	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
 
 // VRGSummary is the summary of a VRG.
 type VRGSummary struct {
-	Name          string                     `json:"name"`
-	Namespace     string                     `json:"namespace"`
-	Deleted       bool                       `json:"deleted,omitempty"`
-	State         string                     `json:"state"`
-	Conditions    map[string]ConditionStatus `json:"conditions,omitempty"`
-	ProtectedPVCs []ProtectedPVCSummary      `json:"protectedPVCs,omitempty"`
+	Name          string                `json:"name"`
+	Namespace     string                `json:"namespace"`
+	Deleted       bool                  `json:"deleted,omitempty"`
+	State         string                `json:"state"`
+	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
+	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.
@@ -142,7 +141,7 @@ func (d *DRPCSummary) Equal(o *DRPCSummary) bool {
 	if d.Progression != o.Progression {
 		return false
 	}
-	if !maps.Equal(d.Conditions, o.Conditions) {
+	if !slices.Equal(d.Conditions, o.Conditions) {
 		return false
 	}
 	return true
@@ -167,7 +166,7 @@ func (v *VRGSummary) Equal(o *VRGSummary) bool {
 	if v.State != o.State {
 		return false
 	}
-	if !maps.Equal(v.Conditions, o.Conditions) {
+	if !slices.Equal(v.Conditions, o.Conditions) {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -204,7 +203,7 @@ func (p *ProtectedPVCSummary) Equal(o *ProtectedPVCSummary) bool {
 	if p.Phase != o.Phase {
 		return false
 	}
-	if !maps.Equal(p.Conditions, o.Conditions) {
+	if !slices.Equal(p.Conditions, o.Conditions) {
 		return false
 	}
 	return true

@@ -228,10 +228,25 @@ func TestValidateApplicationPassed(t *testing.T) {
 				DRPolicy:    "dr-policy",
 				Phase:       "Deployed",
 				Progression: "Completed",
-				Conditions: map[string]report.ConditionStatus{
-					"Available": report.ConditionOK,
-					"PeerReady": report.ConditionOK,
-					"Protected": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "Available",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "PeerReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "Protected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 			},
 		},
@@ -241,13 +256,43 @@ func TestValidateApplicationPassed(t *testing.T) {
 				Name:      drpcName,
 				Namespace: applicationNamespace,
 				State:     "Primary",
-				Conditions: map[string]report.ConditionStatus{
-					"ClusterDataProtected":  report.ConditionOK,
-					"ClusterDataReady":      report.ConditionOK,
-					"DataProtected":         report.ConditionOK,
-					"DataReady":             report.ConditionOK,
-					"KubeObjectsReady":      report.ConditionOK,
-					"NoClusterDataConflict": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "DataReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "DataProtected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "ClusterDataReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "ClusterDataProtected",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "KubeObjectsReady",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					{
+						Type: "NoClusterDataConflict",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
@@ -255,10 +300,25 @@ func TestValidateApplicationPassed(t *testing.T) {
 						Namespace:   "e2e-appset-deploy-rbd",
 						Replication: report.Volrep,
 						Phase:       "Bound",
-						Conditions: map[string]report.ConditionStatus{
-							"ClusterDataProtected": report.ConditionOK,
-							"DataProtected":        report.ConditionOK,
-							"DataReady":            report.ConditionOK,
+						Conditions: []report.ValidatedCondition{
+							{
+								Type: "DataReady",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
+							{
+								Type: "ClusterDataProtected",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
+							{
+								Type: "DataProtected",
+								Validated: report.Validated{
+									State: report.OK,
+								},
+							},
 						},
 					},
 				},
@@ -270,8 +330,13 @@ func TestValidateApplicationPassed(t *testing.T) {
 				Name:      drpcName,
 				Namespace: applicationNamespace,
 				State:     "Secondary",
-				Conditions: map[string]report.ConditionStatus{
-					"NoClusterDataConflict": report.ConditionOK,
+				Conditions: []report.ValidatedCondition{
+					{
+						Type: "NoClusterDataConflict",
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 				},
 			},
 		},
