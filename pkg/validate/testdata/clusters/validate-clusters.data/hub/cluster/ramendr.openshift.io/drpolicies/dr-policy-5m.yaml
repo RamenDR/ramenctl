@@ -1,0 +1,87 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: DRPolicy
+metadata:
+  creationTimestamp: "2025-08-11T09:53:20Z"
+  finalizers:
+  - drpolicies.ramendr.openshift.io/ramen
+  generation: 2
+  labels:
+    cluster.open-cluster-management.io/backup: ramen
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:spec:
+        .: {}
+        f:drClusters: {}
+        f:replicationClassSelector: {}
+        f:schedulingInterval: {}
+        f:volumeSnapshotClassSelector: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2025-08-11T09:53:20Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .: {}
+          v:"drpolicies.ramendr.openshift.io/ramen": {}
+        f:labels:
+          .: {}
+          f:cluster.open-cluster-management.io/backup: {}
+      f:spec:
+        f:volumeGroupSnapshotClassSelector: {}
+    manager: manager
+    operation: Update
+    time: "2025-08-11T09:53:20Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:async:
+          .: {}
+          f:peerClasses: {}
+        f:conditions: {}
+        f:sync: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-08-11T09:53:20Z"
+  name: dr-policy-5m
+  resourceVersion: "5136"
+  uid: 925a02d0-19ad-479c-a1c5-5b0fbf10441f
+spec:
+  drClusters:
+  - dr1
+  - dr2
+  replicationClassSelector: {}
+  schedulingInterval: 5m
+  volumeGroupSnapshotClassSelector: {}
+  volumeSnapshotClassSelector: {}
+status:
+  async:
+    peerClasses:
+    - clusterIDs:
+      - b9382f56-e681-400f-89fa-50b85fd15279
+      - 628066a2-b863-4aed-9d06-84f35ecef1af
+      storageClassName: rook-ceph-block
+      storageID:
+      - rook-ceph-block-dr1-1
+      - rook-ceph-block-dr2-1
+    - clusterIDs:
+      - b9382f56-e681-400f-89fa-50b85fd15279
+      - 628066a2-b863-4aed-9d06-84f35ecef1af
+      storageClassName: rook-cephfs-fs1
+      storageID:
+      - rook-cephfs-fs1-dr1-1
+      - rook-cephfs-fs1-dr2-1
+  conditions:
+  - lastTransitionTime: "2025-08-11T09:53:20Z"
+    message: drpolicy validated
+    observedGeneration: 2
+    reason: Succeeded
+    status: "True"
+    type: Validated
+  sync: {}

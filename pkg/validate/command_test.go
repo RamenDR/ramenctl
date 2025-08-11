@@ -118,6 +118,7 @@ var (
 
 func TestValidateClustersPassed(t *testing.T) {
 	validate := testCommand(t, validateClusters, &validation.Mock{})
+	addGatheredData(t, validate, "clusters")
 	if err := validate.Clusters(); err != nil {
 		t.Fatal(err)
 	}
