@@ -337,11 +337,3 @@ func checkApplicationsNotEqual(t *testing.T, a, b *report.ApplicationStatus) {
 		t.Fatalf("applications are equal\n%s\n%s", marshal(t, a), marshal(t, b))
 	}
 }
-
-func marshal(t *testing.T, a any) string {
-	data, err := yaml.Marshal(a)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(data)
-}
