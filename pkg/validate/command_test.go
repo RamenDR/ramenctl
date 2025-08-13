@@ -120,8 +120,9 @@ var (
 // Command tests
 
 func TestValidatedDeleted(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
 	t.Run("nil", func(t *testing.T) {
-		cmd := testCommand(t, validateApplication, &validation.Mock{})
 		validated := cmd.validatedDeleted(nil)
 		expected := report.ValidatedBool{
 			Value: true,
@@ -135,7 +136,6 @@ func TestValidatedDeleted(t *testing.T) {
 		}
 	})
 	t.Run("object deleted", func(t *testing.T) {
-		cmd := testCommand(t, validateApplication, &validation.Mock{})
 		deletedPVC := &corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
 				DeletionTimestamp: &metav1.Time{Time: time.Now()},
@@ -154,7 +154,6 @@ func TestValidatedDeleted(t *testing.T) {
 		}
 	})
 	t.Run("object not deleted", func(t *testing.T) {
-		cmd := testCommand(t, validateApplication, &validation.Mock{})
 		pvc := &corev1.PersistentVolumeClaim{}
 		validated := cmd.validatedDeleted(pvc)
 		expected := report.ValidatedBool{
@@ -164,6 +163,13 @@ func TestValidatedDeleted(t *testing.T) {
 		}
 		if validated != expected {
 			t.Fatalf("expected %v, got %v", expected, validated)
+		}
+	})
+
+	t.Run("update summary", func(t *testing.T) {
+		expected := Summary{OK: 1, Error: 2}
+		if cmd.report.Summary != expected {
+			t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
 		}
 	})
 }
