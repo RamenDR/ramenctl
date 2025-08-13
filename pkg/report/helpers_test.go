@@ -9,6 +9,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+const (
+	modified = "modified"
+)
+
 func marshal(t *testing.T, a any) string {
 	data, err := yaml.Marshal(a)
 	if err != nil {

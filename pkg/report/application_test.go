@@ -12,10 +12,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
-const (
-	modified = "modified"
-)
-
 func TestReportApplicationStatusEqual(t *testing.T) {
 	a1 := testApplicationStatus()
 	t.Run("equal to self", func(t *testing.T) {
