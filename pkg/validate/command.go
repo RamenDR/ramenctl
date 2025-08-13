@@ -13,6 +13,7 @@ import (
 	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -97,6 +98,28 @@ func (c *Command) validateConfig() bool {
 	c.passStep()
 	console.Pass("Config validated")
 	return true
+}
+
+func (c *Command) validatedDeleted(obj client.Object) report.ValidatedBool {
+	validated := report.ValidatedBool{}
+	if obj == nil {
+		// Resource is missing.
+		validated.Value = true
+		validated.State = report.Error
+		validated.Description = "Resource does not exist"
+	} else {
+		if isDeleted(obj) {
+			// Resource was deleted.
+			validated.Value = true
+			validated.State = report.Error
+			validated.Description = "Resource was deleted"
+		} else {
+			// Resource not deleted.
+			validated.State = report.OK
+		}
+	}
+	c.report.Summary.Add(&validated)
+	return validated
 }
 
 // Gathering data.

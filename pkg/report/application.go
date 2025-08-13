@@ -20,7 +20,7 @@ type ProtectedPVCSummary struct {
 	Name        string               `json:"name"`
 	Namespace   string               `json:"namespace"`
 	Replication ReplicationType      `json:"replication,omitempty"`
-	Deleted     bool                 `json:"deleted,omitempty"`
+	Deleted     ValidatedBool        `json:"deleted"`
 	Phase       string               `json:"phase,omitempty"`
 	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
@@ -29,7 +29,7 @@ type ProtectedPVCSummary struct {
 type DRPCSummary struct {
 	Name        string               `json:"name"`
 	Namespace   string               `json:"namespace"`
-	Deleted     bool                 `json:"deleted,omitempty"`
+	Deleted     ValidatedBool        `json:"deleted"`
 	DRPolicy    string               `json:"drPolicy"`
 	Action      string               `json:"action,omitempty"`
 	Phase       string               `json:"phase"`
@@ -41,8 +41,8 @@ type DRPCSummary struct {
 type VRGSummary struct {
 	Name          string                `json:"name"`
 	Namespace     string                `json:"namespace"`
-	Deleted       bool                  `json:"deleted,omitempty"`
-	State         string                `json:"state"`
+	Deleted       ValidatedBool         `json:"deleted"`
+	State         string                `json:"state,omitempty"`
 	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
 	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
 }

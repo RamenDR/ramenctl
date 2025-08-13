@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"slices"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
@@ -189,7 +190,7 @@ func (c *Command) validateDRPC(
 ) {
 	s.Name = drpc.Name
 	s.Namespace = drpc.Namespace
-	s.Deleted = isDeleted(drpc)
+	s.Deleted = c.validatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.Action = string(drpc.Spec.Action)
 	s.Phase = string(drpc.Status.Phase)
@@ -203,19 +204,27 @@ func (c *Command) validateVRG(
 	drpc *ramenapi.DRPlacementControl,
 ) error {
 	log := c.Logger()
-
 	reader := c.outputReader(cluster.Name)
-	vrg, err := ramen.ReadVRG(reader, drpc.Name, ramen.VRGNamespace(drpc))
+	vrgName := drpc.Name
+	vrgNamespace := ramen.VRGNamespace(drpc)
+
+	vrg, err := ramen.ReadVRG(reader, vrgName, vrgNamespace)
 	if err != nil {
-		// TODO: present missing vrg in the report instead of failing. Can happen in early
-		// deployment if ramen deployment is down.
-		return fmt.Errorf("failed to read vrg from cluster %q: %w", cluster.Name, err)
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("failed to read vrg from cluster %q: %w", cluster.Name, err)
+		}
+
+		log.Debugf("vrg \"%s/%s\" missing in cluster %q", vrgNamespace, vrgName, cluster.Name)
+		s.Name = vrgName
+		s.Namespace = vrgNamespace
+		s.Deleted = c.validatedDeleted(nil)
+		return nil
 	}
 
-	log.Debugf("Read vrg \"%s/%s\" from cluster %q", vrg.Namespace, vrg.Name, cluster.Name)
-
-	s.Name = vrg.Name
-	s.Namespace = vrg.Namespace
+	log.Debugf("Read vrg \"%s/%s\" from cluster %q", vrgNamespace, vrgName, cluster.Name)
+	s.Name = vrgName
+	s.Namespace = vrgNamespace
+	s.Deleted = c.validatedDeleted(vrg)
 	s.Conditions = c.validatedVRGConditions(drpc, vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, drpc, vrg)
 
@@ -246,10 +255,11 @@ func (c *Command) validatedProtectedPVCs(
 		if pvc, err := readPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
 			log.Warnf("failed to read pvc \"%s/%s\" from cluster %q: %s",
 				ppvc.Namespace, ppvc.Name, cluster.Name, err)
+			ps.Deleted = c.validatedDeleted(nil)
 		} else {
 			log.Debugf("Read pvc \"%s/%s\" from cluster %q", pvc.Namespace, pvc.Name, cluster.Name)
+			ps.Deleted = c.validatedDeleted(pvc)
 			ps.Phase = string(pvc.Status.Phase)
-			ps.Deleted = isDeleted(pvc)
 		}
 
 		protectedPVCs = append(protectedPVCs, ps)

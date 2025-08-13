@@ -42,7 +42,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Deleted = true
+		a2.Hub.DRPC.Deleted = report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "DRPC does not exist",
+			},
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc action", func(t *testing.T) {
@@ -92,7 +98,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.Deleted = true
+		a2.PrimaryCluster.VRG.Deleted = report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "VRG does not exist",
+			},
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg state", func(t *testing.T) {
@@ -130,6 +142,17 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Replication = report.Volsync
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("primary cluster vrg protectedpvcs deleted", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Deleted = report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "PVC does not exist",
+			},
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("primary cluster vrg protectedpvcs phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Phase = modified
@@ -162,7 +185,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.VRG.Deleted = true
+		a2.SecondaryCluster.VRG.Deleted = report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "VRG does not exist",
+			},
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster vrg state", func(t *testing.T) {
@@ -201,8 +230,13 @@ func testApplicationStatus() *report.ApplicationStatus {
 	a := &report.ApplicationStatus{
 		Hub: report.HubApplicationStatus{
 			DRPC: report.DRPCSummary{
-				Name:        "drpc-name",
-				Namespace:   "drpc-namespace",
+				Name:      "drpc-name",
+				Namespace: "drpc-namespace",
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
 				DRPolicy:    "dr-policy-1m",
 				Phase:       "Deployed",
 				Progression: "completed",
@@ -233,7 +267,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 			VRG: report.VRGSummary{
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
-				State:     "Primary",
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
+				State: "Primary",
 				Conditions: []report.ValidatedCondition{
 					{
 						Type: "DataReady",
@@ -277,7 +316,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						Name:        "pvc-name",
 						Namespace:   "app-namespace",
 						Replication: report.Volrep,
-						Phase:       "Bound",
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						Phase: "Bound",
 						Conditions: []report.ValidatedCondition{
 							{
 								Type: "DataReady",
@@ -307,7 +351,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 			VRG: report.VRGSummary{
 				Name:      "vrg-name",
 				Namespace: "vrg-namespace",
-				State:     "Secondary",
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
+				State: "Secondary",
 				Conditions: []report.ValidatedCondition{
 					{
 						Type: "NoClusterDataConflict",

@@ -14,6 +14,8 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/command"
@@ -21,6 +23,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
+	"github.com/ramendr/ramenctl/pkg/time"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
@@ -113,6 +116,57 @@ var (
 		},
 	}
 )
+
+// Command tests
+
+func TestValidatedDeleted(t *testing.T) {
+	t.Run("nil", func(t *testing.T) {
+		cmd := testCommand(t, validateApplication, &validation.Mock{})
+		validated := cmd.validatedDeleted(nil)
+		expected := report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Resource does not exist",
+			},
+		}
+		if validated != expected {
+			t.Fatalf("expected %v, got %v", expected, validated)
+		}
+	})
+	t.Run("object deleted", func(t *testing.T) {
+		cmd := testCommand(t, validateApplication, &validation.Mock{})
+		deletedPVC := &corev1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				DeletionTimestamp: &metav1.Time{Time: time.Now()},
+			},
+		}
+		validated := cmd.validatedDeleted(deletedPVC)
+		expected := report.ValidatedBool{
+			Value: true,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Resource was deleted",
+			},
+		}
+		if validated != expected {
+			t.Fatalf("expected %v, got %v", expected, validated)
+		}
+	})
+	t.Run("object not deleted", func(t *testing.T) {
+		cmd := testCommand(t, validateApplication, &validation.Mock{})
+		pvc := &corev1.PersistentVolumeClaim{}
+		validated := cmd.validatedDeleted(pvc)
+		expected := report.ValidatedBool{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+		}
+		if validated != expected {
+			t.Fatalf("expected %v, got %v", expected, validated)
+		}
+	})
+}
 
 // Validate clusters tests.
 
@@ -228,8 +282,13 @@ func TestValidateApplicationPassed(t *testing.T) {
 	expectedStatus := &report.ApplicationStatus{
 		Hub: report.HubApplicationStatus{
 			DRPC: report.DRPCSummary{
-				Name:        drpcName,
-				Namespace:   drpcNamespace,
+				Name:      drpcName,
+				Namespace: drpcNamespace,
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
 				DRPolicy:    "dr-policy",
 				Phase:       "Deployed",
 				Progression: "Completed",
@@ -260,7 +319,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 			VRG: report.VRGSummary{
 				Name:      drpcName,
 				Namespace: applicationNamespace,
-				State:     "Primary",
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
+				State: "Primary",
 				Conditions: []report.ValidatedCondition{
 					{
 						Type: "DataReady",
@@ -301,8 +365,13 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
 					{
-						Name:        "busybox-pvc",
-						Namespace:   "e2e-appset-deploy-rbd",
+						Name:      "busybox-pvc",
+						Namespace: "e2e-appset-deploy-rbd",
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
 						Replication: report.Volrep,
 						Phase:       "Bound",
 						Conditions: []report.ValidatedCondition{
@@ -334,7 +403,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 			VRG: report.VRGSummary{
 				Name:      drpcName,
 				Namespace: applicationNamespace,
-				State:     "Secondary",
+				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
+				State: "Secondary",
 				Conditions: []report.ValidatedCondition{
 					{
 						Type: "NoClusterDataConflict",
@@ -348,7 +422,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 13})
+	checkSummary(t, validate.report, Summary{OK: 17})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {

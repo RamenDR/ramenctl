@@ -36,7 +36,7 @@ type ValidatedString struct {
 // ValidatedBool is a validated object bool property.
 type ValidatedBool struct {
 	Validated
-	Value bool `json:"value"`
+	Value bool `json:"value,omitempty"`
 }
 
 // ValidatedCondition is a validated condition.
