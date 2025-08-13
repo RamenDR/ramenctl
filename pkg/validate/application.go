@@ -193,7 +193,7 @@ func (c *Command) validateDRPC(
 	s.Deleted = c.validatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.Action = c.validatedAction(string(drpc.Spec.Action))
-	s.Phase = string(drpc.Status.Phase)
+	s.Phase = c.validatedDRPCPhase(drpc)
 	s.Progression = string(drpc.Status.Progression)
 	s.Conditions = c.validatedDRPCConditions(drpc)
 }
@@ -232,6 +232,30 @@ func (c *Command) validateVRG(
 	s.State = string(vrg.Status.State)
 
 	return nil
+}
+
+func (c *Command) validatedDRPCPhase(drpc *ramenapi.DRPlacementControl) report.ValidatedString {
+	validated := report.ValidatedString{Value: string(drpc.Status.Phase)}
+
+	// We expect stable phase as ok, and anything else as an error. An application is not expected
+	// to be in unstable phase (e.g. FailingOver) for a long time. The stable phase depends on the
+	// action.
+
+	stablePhase, err := ramen.StablePhase(drpc.Spec.Action)
+	if err != nil {
+		validated.State = report.Error
+		validated.Description = err.Error()
+	} else {
+		if drpc.Status.Phase != stablePhase {
+			validated.State = report.Error
+			validated.Description = fmt.Sprintf("Waiting for stable phase %q", stablePhase)
+		} else {
+			validated.State = report.OK
+		}
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
 }
 
 func (c *Command) validatedAction(action string) report.ValidatedString {

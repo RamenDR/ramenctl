@@ -94,6 +94,19 @@ func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
 	return drpc.Spec.PreferredCluster
 }
 
+func StablePhase(action ramenapi.DRAction) (ramenapi.DRState, error) {
+	switch action {
+	case "":
+		return ramenapi.Deployed, nil
+	case ramenapi.ActionFailover:
+		return ramenapi.FailedOver, nil
+	case ramenapi.ActionRelocate:
+		return ramenapi.Relocated, nil
+	default:
+		return "", fmt.Errorf("unknown action %q", action)
+	}
+}
+
 func GetDRPC(ctx Context, drpcName, drpcNamespace string) (*ramenapi.DRPlacementControl, error) {
 	drpc := &ramenapi.DRPlacementControl{}
 	key := types.NamespacedName{Namespace: drpcNamespace, Name: drpcName}

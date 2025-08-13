@@ -227,6 +227,132 @@ func TestValidatedAction(t *testing.T) {
 	})
 }
 
+func TestValidatedDRPCPhaseError(t *testing.T) {
+	type testcase struct {
+		name   string
+		action ramenapi.DRAction
+		phase  ramenapi.DRState
+	}
+
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	unstable := []struct {
+		stable ramenapi.DRState
+		cases  []testcase
+	}{
+		// No action error phases.
+		{
+			stable: ramenapi.Deployed,
+			cases: []testcase{
+				{"empty initiating", "", ramenapi.Initiating},
+				{"empty deleting", "", ramenapi.Deploying},
+				{"empty deleting", "", ramenapi.Deleting},
+				{"empty failed over", "", ramenapi.FailedOver},
+				{"empty relocated", "", ramenapi.Relocated},
+			},
+		},
+		// Error failover phases.
+		{
+			stable: ramenapi.FailedOver,
+			cases: []testcase{
+				{"failover failing over", ramenapi.ActionFailover, ramenapi.FailingOver},
+				{"failover wait for user", ramenapi.ActionFailover, ramenapi.WaitForUser},
+				{"failover deleting", ramenapi.ActionFailover, ramenapi.Deleting},
+				{"failover deployed", ramenapi.ActionFailover, ramenapi.Deployed},
+				{"failover relocated", ramenapi.ActionFailover, ramenapi.Relocated},
+			},
+		},
+		// Error relocate phases.
+		{
+			stable: ramenapi.Relocated,
+			cases: []testcase{
+				{"relocate relocating", ramenapi.ActionRelocate, ramenapi.Relocating},
+				{"relocate wait for user", ramenapi.ActionRelocate, ramenapi.WaitForUser},
+				{"relocate deleting", ramenapi.ActionRelocate, ramenapi.Deleting},
+				{"relocate deployed", ramenapi.ActionRelocate, ramenapi.Deployed},
+				{"relocate failed over", ramenapi.ActionRelocate, ramenapi.FailedOver},
+			},
+		},
+	}
+
+	for _, group := range unstable {
+		for _, tc := range group.cases {
+			t.Run(tc.name, func(t *testing.T) {
+				drpc := &ramenapi.DRPlacementControl{
+					Spec: ramenapi.DRPlacementControlSpec{
+						Action: tc.action,
+					},
+					Status: ramenapi.DRPlacementControlStatus{
+						Phase: tc.phase,
+					},
+				}
+				expected := report.ValidatedString{
+					Value: string(tc.phase),
+					Validated: report.Validated{
+						State:       report.Error,
+						Description: fmt.Sprintf("Waiting for stable phase %q", group.stable),
+					},
+				}
+				validated := cmd.validatedDRPCPhase(drpc)
+				if validated != expected {
+					t.Errorf("expected phase %+v, got %+v", expected, validated)
+				}
+			})
+		}
+	}
+
+	var errors uint
+	for _, group := range unstable {
+		errors += uint(len(group.cases))
+	}
+	expected := Summary{Error: errors}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
+func TestValidatedDRPCPhaseOK(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	cases := []struct {
+		name   string
+		action ramenapi.DRAction
+		phase  ramenapi.DRState
+	}{
+		{"empty deployed", "", ramenapi.Deployed},
+		{"failover failed over", ramenapi.ActionFailover, ramenapi.FailedOver},
+		{"relocate relocated", ramenapi.ActionRelocate, ramenapi.Relocated},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			drpc := &ramenapi.DRPlacementControl{
+				Spec: ramenapi.DRPlacementControlSpec{
+					Action: tc.action,
+				},
+				Status: ramenapi.DRPlacementControlStatus{
+					Phase: tc.phase,
+				},
+			}
+			expected := report.ValidatedString{
+				Value: string(tc.phase),
+				Validated: report.Validated{
+					State: report.OK,
+				},
+			}
+			validated := cmd.validatedDRPCPhase(drpc)
+			if validated != expected {
+				t.Errorf("expected phase %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	expected := Summary{OK: uint(len(cases))}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
 // Validate clusters tests.
 
 func TestValidateClustersPassed(t *testing.T) {
@@ -353,8 +479,13 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 				},
-				DRPolicy:    "dr-policy",
-				Phase:       "Deployed",
+				DRPolicy: "dr-policy",
+				Phase: report.ValidatedString{
+					Value: string(ramenapi.Deployed),
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
 				Progression: "Completed",
 				Conditions: []report.ValidatedCondition{
 					{
@@ -486,7 +617,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 18})
+	checkSummary(t, validate.report, Summary{OK: 19})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
