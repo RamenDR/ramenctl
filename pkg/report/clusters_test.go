@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -96,6 +97,11 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 
 	// Hub ramen configmap tests
 
+	t.Run("hub ramen configmap s3storeprofiles value nil", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value = nil
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("hub ramen configmap name", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.Ramen.ConfigMap.Name = modified
@@ -104,6 +110,26 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	t.Run("hub ramen configmap namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.Ramen.ConfigMap.Namespace = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub ramen configmap s3storeprofiles state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub ramen configmap s3storeprofiles name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub ramen configmap s3storeprofiles secretref state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub ramen configmap s3storeprofiles secretref value name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 
@@ -137,6 +163,11 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Clusters = nil
 		checkClustersNotEqual(t, c1, c2)
 	})
+	t.Run("cluster ramen configmap s3storeprofiles value nil", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value = nil
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("cluster ramen deployment conditions nil", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Clusters[0].Ramen.Deployment.Conditions = nil
@@ -155,6 +186,26 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	t.Run("cluster ramen configmap namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Clusters[0].Ramen.ConfigMap.Namespace = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap s3storeprofiles state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap s3storeprofiles profile name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap s3storeprofiles secretref state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap s3storeprofiles secretref value name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen deployment name", func(t *testing.T) {
@@ -274,6 +325,37 @@ func testClusterStatus() *report.ClustersStatus {
 				ConfigMap: report.ConfigMapSummary{
 					Name:      "ramen-hub-operator-config",
 					Namespace: "ramen-system",
+					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: []report.S3StoreProfilesSummary{
+							{
+								S3ProfileName: "s3-profile-dr1",
+								S3SecretRef: report.ValidatedS3SecretRef{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: corev1.SecretReference{
+										Name:      "ramen-s3-secret-dr1",
+										Namespace: "ramen-system",
+									},
+								},
+							},
+							{
+								S3ProfileName: "s3-profile-dr2",
+								S3SecretRef: report.ValidatedS3SecretRef{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: corev1.SecretReference{
+										Name:      "ramen-s3-secret-dr2",
+										Namespace: "ramen-system",
+									},
+								},
+							},
+						},
+					},
 				},
 				Deployment: report.DeploymentSummary{
 					Name:      "ramen-hub-operator",
@@ -302,6 +384,37 @@ func testClusterStatus() *report.ClustersStatus {
 					ConfigMap: report.ConfigMapSummary{
 						Name:      "ramen-dr-cluster-operator-config",
 						Namespace: "ramen-system",
+						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.S3StoreProfilesSummary{
+								{
+									S3ProfileName: "s3-profile-dr1",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name:      "ramen-s3-secret-dr1",
+											Namespace: "ramen-system",
+										},
+									},
+								},
+								{
+									S3ProfileName: "s3-profile-dr2",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name:      "ramen-s3-secret-dr2",
+											Namespace: "ramen-system",
+										},
+									},
+								},
+							},
+						},
 					},
 					Deployment: report.DeploymentSummary{
 						Name:      "ramen-dr-cluster-operator",
@@ -329,6 +442,37 @@ func testClusterStatus() *report.ClustersStatus {
 					ConfigMap: report.ConfigMapSummary{
 						Name:      "ramen-dr-cluster-operator-config",
 						Namespace: "ramen-system",
+						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.S3StoreProfilesSummary{
+								{
+									S3ProfileName: "s3-profile-dr1",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name:      "ramen-s3-secret-dr1",
+											Namespace: "ramen-system",
+										},
+									},
+								},
+								{
+									S3ProfileName: "s3-profile-dr2",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name:      "ramen-s3-secret-dr2",
+											Namespace: "ramen-system",
+										},
+									},
+								},
+							},
+						},
 					},
 					Deployment: report.DeploymentSummary{
 						Name:      "ramen-dr-cluster-operator",

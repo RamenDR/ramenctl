@@ -3,6 +3,12 @@
 
 package report
 
+import (
+	"slices"
+
+	corev1 "k8s.io/api/core/v1"
+)
+
 type ValidationState string
 
 const (
@@ -45,6 +51,43 @@ type ValidatedCondition struct {
 	Type string `json:"type"`
 }
 
+// ValidatedS3SecretRef is a validated S3 secret reference.
+type ValidatedS3SecretRef struct {
+	Validated
+	Value corev1.SecretReference `json:"value"`
+}
+
+// ValidatedS3StoreProfilesList is a validated list of S3 store profiles.
+type ValidatedS3StoreProfilesList struct {
+	Validated
+	Value []S3StoreProfilesSummary `json:"value"`
+}
+
 func (v *Validated) GetState() ValidationState {
 	return v.State
+}
+
+func (v *ValidatedS3StoreProfilesList) Equal(o *ValidatedS3StoreProfilesList) bool {
+	if v == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if v.State != o.State {
+		return false
+	}
+	if v.Description != o.Description {
+		return false
+	}
+	if !slices.EqualFunc(
+		v.Value,
+		o.Value,
+		func(a S3StoreProfilesSummary, b S3StoreProfilesSummary) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
+	return true
 }

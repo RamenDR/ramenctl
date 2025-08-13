@@ -22,11 +22,17 @@ type DRPolicySummary struct {
 	Conditions         []ValidatedCondition `json:"conditions,omitempty"`
 }
 
+// S3StoreProfilesSummary is the summary of S3 store profiles in the ConfigMap
+type S3StoreProfilesSummary struct {
+	S3ProfileName string               `json:"s3ProfileName"`
+	S3SecretRef   ValidatedS3SecretRef `json:"s3SecretRef"`
+}
+
 // ConfigMapSummary is the summary of a Ramen ConfigMap.
 type ConfigMapSummary struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	// TODO: Add RamenConfig field to report config
+	Name            string                       `json:"name"`
+	Namespace       string                       `json:"namespace"`
+	S3StoreProfiles ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
 }
 
 // DeploymentSummary is the summary of a Deployment
@@ -198,6 +204,25 @@ func (c *ConfigMapSummary) Equal(o *ConfigMapSummary) bool {
 		return false
 	}
 	if c.Namespace != o.Namespace {
+		return false
+	}
+	if !c.S3StoreProfiles.Equal(&o.S3StoreProfiles) {
+		return false
+	}
+	return true
+}
+
+func (s *S3StoreProfilesSummary) Equal(o *S3StoreProfilesSummary) bool {
+	if s == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if s.S3ProfileName != o.S3ProfileName {
+		return false
+	}
+	if s.S3SecretRef != o.S3SecretRef {
 		return false
 	}
 	return true
