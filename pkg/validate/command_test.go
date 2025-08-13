@@ -33,6 +33,10 @@ const (
 	drpcName             = "appset-deploy-rbd"
 	drpcNamespace        = "argocd"
 	applicationNamespace = "e2e-appset-deploy-rbd"
+
+	// validateDeleted descriptions.
+	resourceDoesNotExist = "Resource does not exist"
+	resourceWasDeleted   = "Resource was deleted"
 )
 
 var (
@@ -128,7 +132,7 @@ func TestValidatedDeleted(t *testing.T) {
 			Value: true,
 			Validated: report.Validated{
 				State:       report.Error,
-				Description: "Resource does not exist",
+				Description: resourceDoesNotExist,
 			},
 		}
 		if validated != expected {
@@ -146,7 +150,7 @@ func TestValidatedDeleted(t *testing.T) {
 			Value: true,
 			Validated: report.Validated{
 				State:       report.Error,
-				Description: "Resource was deleted",
+				Description: resourceWasDeleted,
 			},
 		}
 		if validated != expected {
