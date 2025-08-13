@@ -192,7 +192,7 @@ func (c *Command) validateDRPC(
 	s.Namespace = drpc.Namespace
 	s.Deleted = c.validatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
-	s.Action = string(drpc.Spec.Action)
+	s.Action = c.validatedAction(string(drpc.Spec.Action))
 	s.Phase = string(drpc.Status.Phase)
 	s.Progression = string(drpc.Status.Progression)
 	s.Conditions = c.validatedDRPCConditions(drpc)
@@ -232,6 +232,18 @@ func (c *Command) validateVRG(
 	s.State = string(vrg.Status.State)
 
 	return nil
+}
+
+func (c *Command) validatedAction(action string) report.ValidatedString {
+	validated := report.ValidatedString{Value: action}
+	if slices.Contains(ramen.Actions, action) {
+		validated.State = report.OK
+	} else {
+		validated.State = report.Error
+		validated.Description = fmt.Sprintf("Unknown action %q", action)
+	}
+	c.report.Summary.Add(&validated)
+	return validated
 }
 
 func (c *Command) validatedProtectedPVCs(

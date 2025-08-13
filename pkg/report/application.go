@@ -31,7 +31,7 @@ type DRPCSummary struct {
 	Namespace   string               `json:"namespace"`
 	Deleted     ValidatedBool        `json:"deleted"`
 	DRPolicy    string               `json:"drPolicy"`
-	Action      string               `json:"action,omitempty"`
+	Action      ValidatedString      `json:"action"`
 	Phase       string               `json:"phase"`
 	Progression string               `json:"progression"`
 	Conditions  []ValidatedCondition `json:"conditions,omitempty"`

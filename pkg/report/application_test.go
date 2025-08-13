@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -53,7 +54,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc action", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Action = modified
+		a2.Hub.DRPC.Action = report.ValidatedString{
+			Value: string(ramenapi.ActionFailover),
+			Validated: report.Validated{
+				State: report.OK,
+			},
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc drPolicy", func(t *testing.T) {
@@ -237,7 +243,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						State: report.OK,
 					},
 				},
-				DRPolicy:    "dr-policy-1m",
+				DRPolicy: "dr-policy-1m",
+				Action: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
 				Phase:       "Deployed",
 				Progression: "completed",
 				Conditions: []report.ValidatedCondition{

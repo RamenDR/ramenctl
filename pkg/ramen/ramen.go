@@ -36,6 +36,10 @@ const (
 	vrgPlural  = "volumereplicationgroups"
 )
 
+// Actions are the valid DRPC and VRG actions.
+// NOTE: ramen uses different type for vrg actions with the same values.
+var Actions = []string{"", string(ramenapi.ActionFailover), string(ramenapi.ActionRelocate)}
+
 type Context interface {
 	Env() *e2etypes.Env
 	Context() context.Context

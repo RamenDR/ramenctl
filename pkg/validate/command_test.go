@@ -12,6 +12,7 @@ import (
 	"slices"
 	"testing"
 
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 	corev1 "k8s.io/api/core/v1"
@@ -178,6 +179,54 @@ func TestValidatedDeleted(t *testing.T) {
 	})
 }
 
+func TestValidatedAction(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	known := []struct {
+		name   string
+		action string
+	}{
+		{"empty action", ""},
+		{"failover action", string(ramenapi.ActionFailover)},
+		{"relocate action", string(ramenapi.ActionRelocate)},
+	}
+	for _, tc := range known {
+		t.Run(tc.name, func(t *testing.T) {
+			expected := report.ValidatedString{
+				Value: tc.action,
+				Validated: report.Validated{
+					State: report.OK,
+				},
+			}
+			validated := cmd.validatedAction(tc.action)
+			if validated != expected {
+				t.Errorf("expected action %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	t.Run("unknown action", func(t *testing.T) {
+		action := "Failback"
+		expected := report.ValidatedString{
+			Value: action,
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Unknown action \"Failback\"",
+			},
+		}
+		validated := cmd.validatedAction(action)
+		if validated != expected {
+			t.Fatalf("expected action %+v, got %+v", expected, validated)
+		}
+	})
+
+	t.Run("update summary", func(t *testing.T) {
+		expected := Summary{OK: 3, Error: 1}
+		if cmd.report.Summary != expected {
+			t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+		}
+	})
+}
+
 // Validate clusters tests.
 
 func TestValidateClustersPassed(t *testing.T) {
@@ -295,6 +344,11 @@ func TestValidateApplicationPassed(t *testing.T) {
 				Name:      drpcName,
 				Namespace: drpcNamespace,
 				Deleted: report.ValidatedBool{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
+				Action: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
 					},
@@ -432,7 +486,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 17})
+	checkSummary(t, validate.report, Summary{OK: 18})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
