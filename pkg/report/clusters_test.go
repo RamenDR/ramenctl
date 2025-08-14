@@ -198,22 +198,22 @@ func testClusterStatus() *report.ClustersStatus {
 					Phase: "Available",
 					Conditions: []report.ValidatedCondition{
 						{
+							Validated: report.Validated{
+								State: report.OK,
+							},
 							Type: "Fenced",
+						},
+						{
 							Validated: report.Validated{
 								State: report.OK,
 							},
-						},
-						{
 							Type: "Clean",
-							Validated: report.Validated{
-								State: report.OK,
-							},
 						},
 						{
-							Type: "Validated",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Validated",
 						},
 					},
 				},
@@ -222,22 +222,22 @@ func testClusterStatus() *report.ClustersStatus {
 					Phase: "Available",
 					Conditions: []report.ValidatedCondition{
 						{
+							Validated: report.Validated{
+								State: report.OK,
+							},
 							Type: "Fenced",
+						},
+						{
 							Validated: report.Validated{
 								State: report.OK,
 							},
-						},
-						{
 							Type: "Clean",
-							Validated: report.Validated{
-								State: report.OK,
-							},
 						},
 						{
-							Type: "Validated",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Validated",
 						},
 					},
 				},
@@ -249,10 +249,10 @@ func testClusterStatus() *report.ClustersStatus {
 					SchedulingInterval: "1m",
 					Conditions: []report.ValidatedCondition{
 						{
-							Type: "Validated",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Validated",
 						},
 					},
 				},
@@ -262,10 +262,10 @@ func testClusterStatus() *report.ClustersStatus {
 					SchedulingInterval: "5m",
 					Conditions: []report.ValidatedCondition{
 						{
-							Type: "Validated",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Validated",
 						},
 					},
 				},
@@ -280,16 +280,16 @@ func testClusterStatus() *report.ClustersStatus {
 					Namespace: "ramen-system",
 					Conditions: []report.ValidatedCondition{
 						{
-							Type: "Available",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Available",
 						},
 						{
-							Type: "Progressing",
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							Type: "Progressing",
 						},
 					},
 				},
@@ -308,16 +308,16 @@ func testClusterStatus() *report.ClustersStatus {
 						Namespace: "ramen-system",
 						Conditions: []report.ValidatedCondition{
 							{
-								Type: "Available",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "Available",
 							},
 							{
-								Type: "Progressing",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "Progressing",
 							},
 						},
 					},
@@ -335,16 +335,16 @@ func testClusterStatus() *report.ClustersStatus {
 						Namespace: "ramen-system",
 						Conditions: []report.ValidatedCondition{
 							{
-								Type: "Available",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "Available",
 							},
 							{
-								Type: "Progressing",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "Progressing",
 							},
 						},
 					},

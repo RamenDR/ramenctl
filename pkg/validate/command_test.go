@@ -287,11 +287,11 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 					},
 				}
 				expected := report.ValidatedString{
-					Value: string(tc.phase),
 					Validated: report.Validated{
 						State:       report.Error,
 						Description: fmt.Sprintf("Waiting for stable phase %q", group.stable),
 					},
+					Value: string(tc.phase),
 				}
 				validated := cmd.validatedDRPCPhase(drpc)
 				if validated != expected {
@@ -335,10 +335,10 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 				},
 			}
 			expected := report.ValidatedString{
-				Value: string(tc.phase),
 				Validated: report.Validated{
 					State: report.OK,
 				},
+				Value: string(tc.phase),
 			}
 			validated := cmd.validatedDRPCPhase(drpc)
 			if validated != expected {
@@ -481,30 +481,30 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 				DRPolicy: "dr-policy",
 				Phase: report.ValidatedString{
-					Value: string(ramenapi.Deployed),
 					Validated: report.Validated{
 						State: report.OK,
 					},
+					Value: string(ramenapi.Deployed),
 				},
 				Progression: "Completed",
 				Conditions: []report.ValidatedCondition{
 					{
+						Validated: report.Validated{
+							State: report.OK,
+						},
 						Type: "Available",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "PeerReady",
-						Validated: report.Validated{
-							State: report.OK,
-						},
 					},
 					{
-						Type: "Protected",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "Protected",
 					},
 				},
 			},
@@ -522,40 +522,40 @@ func TestValidateApplicationPassed(t *testing.T) {
 				State: "Primary",
 				Conditions: []report.ValidatedCondition{
 					{
+						Validated: report.Validated{
+							State: report.OK,
+						},
 						Type: "DataReady",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "DataProtected",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "ClusterDataReady",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "ClusterDataProtected",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "KubeObjectsReady",
-						Validated: report.Validated{
-							State: report.OK,
-						},
 					},
 					{
-						Type: "NoClusterDataConflict",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "NoClusterDataConflict",
 					},
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
@@ -571,22 +571,22 @@ func TestValidateApplicationPassed(t *testing.T) {
 						Phase:       "Bound",
 						Conditions: []report.ValidatedCondition{
 							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
 								Type: "DataReady",
+							},
+							{
 								Validated: report.Validated{
 									State: report.OK,
 								},
-							},
-							{
 								Type: "ClusterDataProtected",
-								Validated: report.Validated{
-									State: report.OK,
-								},
 							},
 							{
-								Type: "DataProtected",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "DataProtected",
 							},
 						},
 					},
@@ -606,10 +606,10 @@ func TestValidateApplicationPassed(t *testing.T) {
 				State: "Secondary",
 				Conditions: []report.ValidatedCondition{
 					{
-						Type: "NoClusterDataConflict",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "NoClusterDataConflict",
 					},
 				},
 			},

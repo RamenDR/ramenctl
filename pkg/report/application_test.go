@@ -55,10 +55,10 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("hub drpc action", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.Hub.DRPC.Action = report.ValidatedString{
-			Value: string(ramenapi.ActionFailover),
 			Validated: report.Validated{
 				State: report.OK,
 			},
+			Value: string(ramenapi.ActionFailover),
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -70,10 +70,10 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("hub drpc phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.Hub.DRPC.Phase = report.ValidatedString{
-			Value: string(ramenapi.FailedOver),
 			Validated: report.Validated{
 				State: report.OK,
 			},
+			Value: string(ramenapi.FailedOver),
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -110,11 +110,11 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("primary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.PrimaryCluster.VRG.Deleted = report.ValidatedBool{
-			Value: true,
 			Validated: report.Validated{
 				State:       report.Error,
 				Description: "VRG does not exist",
 			},
+			Value: true,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -156,11 +156,11 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("primary cluster vrg protectedpvcs deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Deleted = report.ValidatedBool{
-			Value: true,
 			Validated: report.Validated{
 				State:       report.Error,
 				Description: "PVC does not exist",
 			},
+			Value: true,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -197,11 +197,11 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.SecondaryCluster.VRG.Deleted = report.ValidatedBool{
-			Value: true,
 			Validated: report.Validated{
 				State:       report.Error,
 				Description: "VRG does not exist",
 			},
+			Value: true,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -255,30 +255,30 @@ func testApplicationStatus() *report.ApplicationStatus {
 					},
 				},
 				Phase: report.ValidatedString{
-					Value: "Deployed",
 					Validated: report.Validated{
 						State: report.OK,
 					},
+					Value: "Deployed",
 				},
 				Progression: "completed",
 				Conditions: []report.ValidatedCondition{
 					{
+						Validated: report.Validated{
+							State: report.OK,
+						},
 						Type: "Available",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "PeerReady",
-						Validated: report.Validated{
-							State: report.OK,
-						},
 					},
 					{
-						Type: "Protected",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "Protected",
 					},
 				},
 			},
@@ -296,40 +296,40 @@ func testApplicationStatus() *report.ApplicationStatus {
 				State: "Primary",
 				Conditions: []report.ValidatedCondition{
 					{
+						Validated: report.Validated{
+							State: report.OK,
+						},
 						Type: "DataReady",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "DataProtected",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "ClusterDataReady",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "ClusterDataProtected",
+					},
+					{
 						Validated: report.Validated{
 							State: report.OK,
 						},
-					},
-					{
 						Type: "KubeObjectsReady",
-						Validated: report.Validated{
-							State: report.OK,
-						},
 					},
 					{
-						Type: "NoClusterDataConflict",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "NoClusterDataConflict",
 					},
 				},
 				ProtectedPVCs: []report.ProtectedPVCSummary{
@@ -345,22 +345,22 @@ func testApplicationStatus() *report.ApplicationStatus {
 						Phase: "Bound",
 						Conditions: []report.ValidatedCondition{
 							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
 								Type: "DataReady",
+							},
+							{
 								Validated: report.Validated{
 									State: report.OK,
 								},
-							},
-							{
 								Type: "ClusterDataProtected",
-								Validated: report.Validated{
-									State: report.OK,
-								},
 							},
 							{
-								Type: "DataProtected",
 								Validated: report.Validated{
 									State: report.OK,
 								},
+								Type: "DataProtected",
 							},
 						},
 					},
@@ -380,10 +380,10 @@ func testApplicationStatus() *report.ApplicationStatus {
 				State: "Secondary",
 				Conditions: []report.ValidatedCondition{
 					{
-						Type: "NoClusterDataConflict",
 						Validated: report.Validated{
 							State: report.OK,
 						},
+						Type: "NoClusterDataConflict",
 					},
 				},
 			},
