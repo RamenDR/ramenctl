@@ -60,7 +60,7 @@ type ValidatedS3SecretRef struct {
 // ValidatedS3StoreProfilesList is a validated list of S3 store profiles.
 type ValidatedS3StoreProfilesList struct {
 	Validated
-	Value []S3StoreProfilesSummary `json:"value"`
+	Value []S3StoreProfilesSummary `json:"value,omitempty"`
 }
 
 // ValidatedDRClustersList is a validated list of DR clusters.
