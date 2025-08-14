@@ -697,7 +697,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	checkItems(t, validate.report.Steps[1], items)
 
 	expectedStatus := &report.ApplicationStatus{
-		Hub: report.HubApplicationStatus{
+		Hub: report.ApplicationStatusHub{
 			DRPC: report.DRPCSummary{
 				Name:      drpcName,
 				Namespace: drpcNamespace,
@@ -746,7 +746,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 			},
 		},
-		PrimaryCluster: report.ClusterApplicationStatus{
+		PrimaryCluster: report.ApplicationStatusCluster{
 			Name: "dr1",
 			VRG: report.VRGSummary{
 				Name:      drpcName,
@@ -828,7 +828,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 			},
 		},
-		SecondaryCluster: report.ClusterApplicationStatus{
+		SecondaryCluster: report.ApplicationStatusCluster{
 			Name: "dr2",
 			VRG: report.VRGSummary{
 				Name:      drpcName,

@@ -48,21 +48,21 @@ type VRGSummary struct {
 }
 
 // ApplicationHubStaus is the application status on the hub.
-type HubApplicationStatus struct {
+type ApplicationStatusHub struct {
 	DRPC DRPCSummary `json:"drpc"`
 }
 
 // ApplicationHubStaus is the application status on a managed cluster.
-type ClusterApplicationStatus struct {
+type ApplicationStatusCluster struct {
 	Name string     `json:"name"`
 	VRG  VRGSummary `json:"vrg"`
 }
 
 // ApplicationStatus is protected application status in multi-cluster environment.
 type ApplicationStatus struct {
-	Hub              HubApplicationStatus     `json:"hub"`
-	PrimaryCluster   ClusterApplicationStatus `json:"primaryCluster"`
-	SecondaryCluster ClusterApplicationStatus `json:"secondaryCluster"`
+	Hub              ApplicationStatusHub     `json:"hub"`
+	PrimaryCluster   ApplicationStatusCluster `json:"primaryCluster"`
+	SecondaryCluster ApplicationStatusCluster `json:"secondaryCluster"`
 }
 
 func (a *ApplicationStatus) Equal(o *ApplicationStatus) bool {
@@ -84,7 +84,7 @@ func (a *ApplicationStatus) Equal(o *ApplicationStatus) bool {
 	return true
 }
 
-func (h *HubApplicationStatus) Equal(o *HubApplicationStatus) bool {
+func (h *ApplicationStatusHub) Equal(o *ApplicationStatusHub) bool {
 	if h == o {
 		return true
 	}
@@ -97,7 +97,7 @@ func (h *HubApplicationStatus) Equal(o *HubApplicationStatus) bool {
 	return true
 }
 
-func (c *ClusterApplicationStatus) Equal(o *ClusterApplicationStatus) bool {
+func (c *ApplicationStatusCluster) Equal(o *ApplicationStatusCluster) bool {
 	if c == o {
 		return true
 	}

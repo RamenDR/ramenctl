@@ -264,7 +264,7 @@ func TestReportApplicationStatusMarshaling(t *testing.T) {
 
 func testApplicationStatus() *report.ApplicationStatus {
 	a := &report.ApplicationStatus{
-		Hub: report.HubApplicationStatus{
+		Hub: report.ApplicationStatusHub{
 			DRPC: report.DRPCSummary{
 				Name:      "drpc-name",
 				Namespace: "drpc-namespace",
@@ -313,7 +313,7 @@ func testApplicationStatus() *report.ApplicationStatus {
 				},
 			},
 		},
-		PrimaryCluster: report.ClusterApplicationStatus{
+		PrimaryCluster: report.ApplicationStatusCluster{
 			Name: "dr1",
 			VRG: report.VRGSummary{
 				Name:      "vrg-name",
@@ -407,7 +407,7 @@ func testApplicationStatus() *report.ApplicationStatus {
 				},
 			},
 		},
-		SecondaryCluster: report.ClusterApplicationStatus{
+		SecondaryCluster: report.ApplicationStatusCluster{
 			Name: "dr2",
 			VRG: report.VRGSummary{
 				Name:      "vrg-name",

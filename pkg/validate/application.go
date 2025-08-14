@@ -147,7 +147,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 }
 
 func (c *Command) validateHub(
-	s *report.HubApplicationStatus,
+	s *report.ApplicationStatusHub,
 	drpcName, drpcNamespace string,
 ) (*ramenapi.DRPlacementControl, error) {
 	log := c.Logger()
@@ -162,7 +162,7 @@ func (c *Command) validateHub(
 }
 
 func (c *Command) validatePrimaryCluster(
-	s *report.ClusterApplicationStatus,
+	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
 	cluster, err := ramen.PrimaryCluster(c, drpc)
@@ -174,7 +174,7 @@ func (c *Command) validatePrimaryCluster(
 }
 
 func (c *Command) validateSecondaryCluster(
-	s *report.ClusterApplicationStatus,
+	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
 	cluster, err := ramen.SecondaryCluster(c, drpc)
