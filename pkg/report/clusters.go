@@ -30,9 +30,10 @@ type S3StoreProfilesSummary struct {
 
 // ConfigMapSummary is the summary of a Ramen ConfigMap.
 type ConfigMapSummary struct {
-	Name            string                       `json:"name"`
-	Namespace       string                       `json:"namespace"`
-	S3StoreProfiles ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
+	Name                string                       `json:"name"`
+	Namespace           string                       `json:"namespace"`
+	RamenControllerType ValidatedString              `json:"ramenControllerType"`
+	S3StoreProfiles     ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
 }
 
 // DeploymentSummary is the summary of a Deployment
@@ -204,6 +205,9 @@ func (c *ConfigMapSummary) Equal(o *ConfigMapSummary) bool {
 		return false
 	}
 	if c.Namespace != o.Namespace {
+		return false
+	}
+	if c.RamenControllerType != o.RamenControllerType {
 		return false
 	}
 	if !c.S3StoreProfiles.Equal(&o.S3StoreProfiles) {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
@@ -112,6 +113,16 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Hub.Ramen.ConfigMap.Namespace = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
+	t.Run("hub ramen configmap ramen controller type state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.RamenControllerType.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub ramen configmap ramen controller type", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.RamenControllerType.Value = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("hub ramen configmap s3storeprofiles state", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.State = report.Error
@@ -186,6 +197,16 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	t.Run("cluster ramen configmap namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Clusters[0].Ramen.ConfigMap.Namespace = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap ramen controller type state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.State = report.Error
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("cluster ramen configmap ramen controller type", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.Value = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap s3storeprofiles state", func(t *testing.T) {
@@ -325,6 +346,12 @@ func testClusterStatus() *report.ClustersStatus {
 				ConfigMap: report.ConfigMapSummary{
 					Name:      "ramen-hub-operator-config",
 					Namespace: "ramen-system",
+					RamenControllerType: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: string(ramenapi.DRHubType),
+					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -384,6 +411,12 @@ func testClusterStatus() *report.ClustersStatus {
 					ConfigMap: report.ConfigMapSummary{
 						Name:      "ramen-dr-cluster-operator-config",
 						Namespace: "ramen-system",
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
+						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -442,6 +475,12 @@ func testClusterStatus() *report.ClustersStatus {
 					ConfigMap: report.ConfigMapSummary{
 						Name:      "ramen-dr-cluster-operator-config",
 						Namespace: "ramen-system",
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
+						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
