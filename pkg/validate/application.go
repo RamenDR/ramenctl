@@ -332,9 +332,20 @@ func (c *Command) validatedProtectedPVCs(
 	vrg *ramenapi.VolumeReplicationGroup,
 ) []report.ProtectedPVCSummary {
 	log := c.Logger()
-	reader := c.outputReader(cluster.Name)
 
+	// Protected PVCs becomes stale on a secondary cluster:
+	// https://github.com/RamenDR/ramenctl/issues/286.
+	if vrg.Status.State == ramenapi.SecondaryState {
+		log.Debugf(
+			"Skipping protected pvcs on cluster %q for vrg state %q",
+			cluster.Name, vrg.Status.State,
+		)
+		return nil
+	}
+
+	reader := c.outputReader(cluster.Name)
 	var protectedPVCs []report.ProtectedPVCSummary
+
 	for i := range vrg.Status.ProtectedPVCs {
 		ppvc := &vrg.Status.ProtectedPVCs[i]
 		ps := report.ProtectedPVCSummary{
