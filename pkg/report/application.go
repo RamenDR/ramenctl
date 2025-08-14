@@ -21,7 +21,7 @@ type ProtectedPVCSummary struct {
 	Namespace   string               `json:"namespace"`
 	Replication ReplicationType      `json:"replication,omitempty"`
 	Deleted     ValidatedBool        `json:"deleted"`
-	Phase       string               `json:"phase,omitempty"`
+	Phase       ValidatedString      `json:"phase"`
 	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
 

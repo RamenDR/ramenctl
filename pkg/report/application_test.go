@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -178,7 +179,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg protectedpvcs phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Phase = modified
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Phase = report.ValidatedString{
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "PVC is not \"Bound\"",
+			},
+			Value: "Terminating",
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg protectedpvcs conditions nil", func(t *testing.T) {
@@ -370,7 +377,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 								State: report.OK,
 							},
 						},
-						Phase: "Bound",
+						Phase: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(corev1.ClaimBound),
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{

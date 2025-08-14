@@ -12,6 +12,7 @@ import (
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ramendr/ramenctl/pkg/console"
@@ -297,6 +298,23 @@ func (c *Command) validatedVRGState(
 	return validated
 }
 
+func (c *Command) validatedProtectedPVCPhase(
+	pvc *corev1.PersistentVolumeClaim,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: string(pvc.Status.Phase)}
+
+	// Protected PVC must be bound; anything else seen for long time requires investigation.
+	if pvc.Status.Phase != corev1.ClaimBound {
+		validated.State = report.Error
+		validated.Description = fmt.Sprintf("PVC is not %q", corev1.ClaimBound)
+	} else {
+		validated.State = report.OK
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
+}
+
 func (c *Command) validatedAction(action string) report.ValidatedString {
 	validated := report.ValidatedString{Value: action}
 	if slices.Contains(ramen.Actions, action) {
@@ -333,7 +351,7 @@ func (c *Command) validatedProtectedPVCs(
 		} else {
 			log.Debugf("Read pvc \"%s/%s\" from cluster %q", pvc.Namespace, pvc.Name, cluster.Name)
 			ps.Deleted = c.validatedDeleted(pvc)
-			ps.Phase = string(pvc.Status.Phase)
+			ps.Phase = c.validatedProtectedPVCPhase(pvc)
 		}
 
 		protectedPVCs = append(protectedPVCs, ps)

@@ -518,6 +518,73 @@ func TestValidatedVRGSTateError(t *testing.T) {
 	}
 }
 
+func TestValidatedProtectedPVCOK(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	t.Run("bound", func(t *testing.T) {
+		pvc := &corev1.PersistentVolumeClaim{
+			Status: corev1.PersistentVolumeClaimStatus{
+				Phase: corev1.ClaimBound,
+			},
+		}
+		expected := report.ValidatedString{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: string(pvc.Status.Phase),
+		}
+		validated := cmd.validatedProtectedPVCPhase(pvc)
+		if validated != expected {
+			t.Errorf("expected phase %+v, got %+v", expected, validated)
+		}
+	})
+
+	expected := Summary{OK: 1}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
+func TestValidatedProtectedPVCError(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	cases := []struct {
+		name  string
+		phase corev1.PersistentVolumeClaimPhase
+	}{
+		{"empty", ""},
+		{"pending", corev1.ClaimPending},
+		{"lost", corev1.ClaimLost},
+		{"terminating", "Terminating"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			pvc := &corev1.PersistentVolumeClaim{
+				Status: corev1.PersistentVolumeClaimStatus{
+					Phase: tc.phase,
+				},
+			}
+			expected := report.ValidatedString{
+				Validated: report.Validated{
+					State:       report.Error,
+					Description: fmt.Sprintf("PVC is not %q", corev1.ClaimBound),
+				},
+				Value: string(pvc.Status.Phase),
+			}
+			validated := cmd.validatedProtectedPVCPhase(pvc)
+			if validated != expected {
+				t.Errorf("expected phase %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	expected := Summary{Error: uint(len(cases))}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
 // Validate clusters tests.
 
 func TestValidateClustersPassed(t *testing.T) {
@@ -737,7 +804,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 							},
 						},
 						Replication: report.Volrep,
-						Phase:       "Bound",
+						Phase: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(corev1.ClaimBound),
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
@@ -785,7 +857,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 20})
+	checkSummary(t, validate.report, Summary{OK: 21})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
