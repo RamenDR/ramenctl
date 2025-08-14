@@ -194,7 +194,7 @@ func (c *Command) validateDRPC(
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.Action = c.validatedAction(string(drpc.Spec.Action))
 	s.Phase = c.validatedDRPCPhase(drpc)
-	s.Progression = string(drpc.Status.Progression)
+	s.Progression = c.validatedDRPCProgression(drpc)
 	s.Conditions = c.validatedDRPCConditions(drpc)
 }
 
@@ -252,6 +252,27 @@ func (c *Command) validatedDRPCPhase(drpc *ramenapi.DRPlacementControl) report.V
 		} else {
 			validated.State = report.OK
 		}
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
+}
+
+func (c *Command) validatedDRPCProgression(
+	drpc *ramenapi.DRPlacementControl,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: string(drpc.Status.Progression)}
+
+	// We expect a stable progression (Completed). An application should not be in unstable state
+	// for long time, so it we see unstable progression it requires investigation.
+	if drpc.Status.Progression != ramenapi.ProgressionCompleted {
+		validated.State = report.Error
+		validated.Description = fmt.Sprintf(
+			"Waiting for progression %q",
+			ramenapi.ProgressionCompleted,
+		)
+	} else {
+		validated.State = report.OK
 	}
 
 	c.report.Summary.Add(&validated)

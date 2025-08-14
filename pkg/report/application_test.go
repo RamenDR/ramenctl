@@ -79,7 +79,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc progression", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Progression = modified
+		a2.Hub.DRPC.Progression = report.ValidatedString{
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Waiting for stable progression",
+			},
+			Value: string(ramenapi.ProgressionFailingOverToCluster),
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc conditions nil", func(t *testing.T) {
@@ -260,7 +266,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 					},
 					Value: "Deployed",
 				},
-				Progression: "completed",
+				Progression: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.ProgressionCompleted),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{

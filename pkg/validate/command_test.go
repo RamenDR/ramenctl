@@ -353,6 +353,91 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 	}
 }
 
+func TestValidatedDRPCProgressionOK(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	progression := ramenapi.ProgressionCompleted
+
+	t.Run(string(progression), func(t *testing.T) {
+		drpc := &ramenapi.DRPlacementControl{
+			Status: ramenapi.DRPlacementControlStatus{
+				Progression: progression,
+			},
+		}
+		expected := report.ValidatedString{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: string(progression),
+		}
+		validated := cmd.validatedDRPCProgression(drpc)
+		if validated != expected {
+			t.Errorf("expected phase %+v, got %+v", expected, validated)
+		}
+	})
+
+	expected := Summary{OK: 1}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
+func TestValidatedDRPCProgressionError(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	progressions := []ramenapi.ProgressionStatus{
+		ramenapi.ProgressionCreatingMW,
+		ramenapi.ProgressionUpdatingPlRule,
+		ramenapi.ProgressionWaitForReadiness,
+		ramenapi.ProgressionCleaningUp,
+		ramenapi.ProgressionWaitOnUserToCleanUp,
+		ramenapi.ProgressionCheckingFailoverPrerequisites,
+		ramenapi.ProgressionFailingOverToCluster,
+		ramenapi.ProgressionWaitForFencing,
+		ramenapi.ProgressionWaitForStorageMaintenanceActivation,
+		ramenapi.ProgressionPreparingFinalSync,
+		ramenapi.ProgressionClearingPlacement,
+		ramenapi.ProgressionRunningFinalSync,
+		ramenapi.ProgressionFinalSyncComplete,
+		ramenapi.ProgressionEnsuringVolumesAreSecondary,
+		ramenapi.ProgressionWaitingForResourceRestore,
+		ramenapi.ProgressionUpdatedPlacement,
+		ramenapi.ProgressionEnsuringVolSyncSetup,
+		ramenapi.ProgressionSettingupVolsyncDest,
+		ramenapi.ProgressionDeleting,
+		ramenapi.ProgressionDeleted,
+		ramenapi.ProgressionActionPaused,
+	}
+
+	for _, progression := range progressions {
+		t.Run(string(progression), func(t *testing.T) {
+			drpc := &ramenapi.DRPlacementControl{
+				Status: ramenapi.DRPlacementControlStatus{
+					Progression: progression,
+				},
+			}
+			expected := report.ValidatedString{
+				Validated: report.Validated{
+					State: report.Error,
+					Description: fmt.Sprintf(
+						"Waiting for progression %q",
+						ramenapi.ProgressionCompleted,
+					),
+				},
+				Value: string(drpc.Status.Progression),
+			}
+			validated := cmd.validatedDRPCProgression(drpc)
+			if validated != expected {
+				t.Errorf("expected phase %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	expected := Summary{Error: uint(len(progressions))}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
 // Validate clusters tests.
 
 func TestValidateClustersPassed(t *testing.T) {
@@ -486,7 +571,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 					},
 					Value: string(ramenapi.Deployed),
 				},
-				Progression: "Completed",
+				Progression: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.ProgressionCompleted),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{
@@ -605,7 +695,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 17})
+	checkSummary(t, validate.report, Summary{OK: 18})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {

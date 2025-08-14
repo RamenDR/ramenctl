@@ -33,7 +33,7 @@ type DRPCSummary struct {
 	DRPolicy    string               `json:"drPolicy"`
 	Action      ValidatedString      `json:"action"`
 	Phase       ValidatedString      `json:"phase"`
-	Progression string               `json:"progression"`
+	Progression ValidatedString      `json:"progression"`
 	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
 
