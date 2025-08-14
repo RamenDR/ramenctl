@@ -63,8 +63,70 @@ type ValidatedS3StoreProfilesList struct {
 	Value []S3StoreProfilesSummary `json:"value"`
 }
 
+// ValidatedDRClustersList is a validated list of DR clusters.
+type ValidatedDRClustersList struct {
+	Validated
+	Value []DRClusterSummary `json:"value,omitempty"`
+}
+
+// ValidatedDRPoliciesList is a validated list of DR policies.
+type ValidatedDRPoliciesList struct {
+	Validated
+	Value []DRPolicySummary `json:"value,omitempty"`
+}
+
 func (v *Validated) GetState() ValidationState {
 	return v.State
+}
+
+func (v *ValidatedDRClustersList) Equal(o *ValidatedDRClustersList) bool {
+	if v == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if v.State != o.State {
+		return false
+	}
+	if v.Description != o.Description {
+		return false
+	}
+	if !slices.EqualFunc(
+		v.Value,
+		o.Value,
+		func(a DRClusterSummary, b DRClusterSummary) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
+	return true
+}
+
+func (v *ValidatedDRPoliciesList) Equal(o *ValidatedDRPoliciesList) bool {
+	if v == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if v.State != o.State {
+		return false
+	}
+	if v.Description != o.Description {
+		return false
+	}
+	if !slices.EqualFunc(
+		v.Value,
+		o.Value,
+		func(a DRPolicySummary, b DRPolicySummary) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
+	return true
 }
 
 func (v *ValidatedS3StoreProfilesList) Equal(o *ValidatedS3StoreProfilesList) bool {

@@ -39,27 +39,32 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 
 	t.Run("hub drclusters nil", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters = nil
+		c2.Hub.DRClusters.Value = nil
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster conditions nil", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters[0].Conditions = nil
+		c2.Hub.DRClusters.Value[0].Conditions = nil
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub drclusters state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.DRClusters.State = report.Error
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters[0].Name = modified
+		c2.Hub.DRClusters.Value[0].Name = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster phase", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters[0].Phase = modified
+		c2.Hub.DRClusters.Value[0].Phase = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster conditions", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters[0].Conditions[0].State = report.Error
+		c2.Hub.DRClusters.Value[0].Conditions[0].State = report.Error
 		checkClustersNotEqual(t, c1, c2)
 	})
 
@@ -67,32 +72,37 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 
 	t.Run("hub drpolicies nil", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies = nil
+		c2.Hub.DRPolicies.Value = nil
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy conditions nil", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies[0].Conditions = nil
+		c2.Hub.DRPolicies.Value[0].Conditions = nil
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub drpolicies state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.DRPolicies.State = report.Error
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies[0].Name = modified
+		c2.Hub.DRPolicies.Value[0].Name = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy drclusters", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies[0].DRClusters[0] = modified
+		c2.Hub.DRPolicies.Value[0].DRClusters[0] = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy scheduling interval", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies[0].SchedulingInterval = modified
+		c2.Hub.DRPolicies.Value[0].SchedulingInterval = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy conditions", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies[0].Conditions[0].State = report.Error
+		c2.Hub.DRPolicies.Value[0].Conditions[0].State = report.Error
 		checkClustersNotEqual(t, c1, c2)
 	})
 
@@ -264,80 +274,90 @@ func TestReportClusterStatusMarshaling(t *testing.T) {
 func testClusterStatus() *report.ClustersStatus {
 	c := &report.ClustersStatus{
 		Hub: report.ClustersStatusHub{
-			DRClusters: []report.DRClusterSummary{
-				{
-					Name:  "dr1",
-					Phase: "Available",
-					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{
-								State: report.OK,
+			DRClusters: report.ValidatedDRClustersList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.DRClusterSummary{
+					{
+						Name:  "dr1",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
 							},
-							Type: "Fenced",
-						},
-						{
-							Validated: report.Validated{
-								State: report.OK,
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
 							},
-							Type: "Clean",
-						},
-						{
-							Validated: report.Validated{
-								State: report.OK,
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
 							},
-							Type: "Validated",
 						},
 					},
-				},
-				{
-					Name:  "dr2",
-					Phase: "Available",
-					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{
-								State: report.OK,
+					{
+						Name:  "dr2",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
 							},
-							Type: "Fenced",
-						},
-						{
-							Validated: report.Validated{
-								State: report.OK,
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
 							},
-							Type: "Clean",
-						},
-						{
-							Validated: report.Validated{
-								State: report.OK,
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
 							},
-							Type: "Validated",
 						},
 					},
 				},
 			},
-			DRPolicies: []report.DRPolicySummary{
-				{
-					Name:               "dr-policy-1m",
-					DRClusters:         []string{"dr1", "dr2"},
-					SchedulingInterval: "1m",
-					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{
-								State: report.OK,
+			DRPolicies: report.ValidatedDRPoliciesList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.DRPolicySummary{
+					{
+						Name:               "dr-policy-1m",
+						DRClusters:         []string{"dr1", "dr2"},
+						SchedulingInterval: "1m",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
 							},
-							Type: "Validated",
 						},
 					},
-				},
-				{
-					Name:               "dr-policy-5m",
-					DRClusters:         []string{"dr1", "dr2"},
-					SchedulingInterval: "5m",
-					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{
-								State: report.OK,
+					{
+						Name:               "dr-policy-5m",
+						DRClusters:         []string{"dr1", "dr2"},
+						SchedulingInterval: "5m",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
 							},
-							Type: "Validated",
 						},
 					},
 				},

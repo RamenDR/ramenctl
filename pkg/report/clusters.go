@@ -51,9 +51,9 @@ type RamenSummary struct {
 
 // ClustersStatusHub is the cluster status on the hub cluster.
 type ClustersStatusHub struct {
-	DRClusters []DRClusterSummary `json:"drClusters"`
-	DRPolicies []DRPolicySummary  `json:"drPolicies"`
-	Ramen      RamenSummary       `json:"ramen"`
+	DRClusters ValidatedDRClustersList `json:"drClusters"`
+	DRPolicies ValidatedDRPoliciesList `json:"drPolicies"`
+	Ramen      RamenSummary            `json:"ramen"`
 }
 
 // ClustersStatusCluster is the cluster status on a managed cluster.
@@ -97,22 +97,10 @@ func (h *ClustersStatusHub) Equal(o *ClustersStatusHub) bool {
 	if o == nil {
 		return false
 	}
-	if !slices.EqualFunc(
-		h.DRClusters,
-		o.DRClusters,
-		func(a DRClusterSummary, b DRClusterSummary) bool {
-			return a.Equal(&b)
-		},
-	) {
+	if !h.DRClusters.Equal(&o.DRClusters) {
 		return false
 	}
-	if !slices.EqualFunc(
-		h.DRPolicies,
-		o.DRPolicies,
-		func(a DRPolicySummary, b DRPolicySummary) bool {
-			return a.Equal(&b)
-		},
-	) {
+	if !h.DRPolicies.Equal(&o.DRPolicies) {
 		return false
 	}
 	if !h.Ramen.Equal(&o.Ramen) {
