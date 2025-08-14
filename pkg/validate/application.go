@@ -225,8 +225,8 @@ func (c *Command) validateVRG(
 	s.Name = vrgName
 	s.Namespace = vrgNamespace
 	s.Deleted = c.validatedDeleted(vrg)
-	s.Conditions = c.validatedVRGConditions(drpc, vrg)
-	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, drpc, vrg)
+	s.Conditions = c.validatedVRGConditions(vrg)
+	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
 
 	// TODO: Mark as an error if unknown or not primary on the primary cluster.
 	s.State = string(vrg.Status.State)
@@ -272,7 +272,6 @@ func (c *Command) validatedAction(action string) report.ValidatedString {
 
 func (c *Command) validatedProtectedPVCs(
 	cluster *e2etypes.Cluster,
-	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
 ) []report.ProtectedPVCSummary {
 	log := c.Logger()
@@ -285,7 +284,7 @@ func (c *Command) validatedProtectedPVCs(
 			Name:        ppvc.Name,
 			Namespace:   ppvc.Namespace,
 			Replication: c.protectedPVCReplication(ppvc),
-			Conditions:  c.validatedProtectedPVCConditions(drpc, vrg, ppvc),
+			Conditions:  c.validatedProtectedPVCConditions(vrg, ppvc),
 		}
 
 		if pvc, err := readPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
@@ -318,7 +317,6 @@ func (c *Command) validatedDRPCConditions(
 }
 
 func (c *Command) validatedVRGConditions(
-	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
 ) []report.ValidatedCondition {
 	var conditions []report.ValidatedCondition
@@ -328,12 +326,13 @@ func (c *Command) validatedVRGConditions(
 		if condition.Reason == ramen.VRGConditionReasonUnused {
 			continue
 		}
-		var validated report.ValidatedCondition
+		// DataProtected behaves differently for volrep and volsync. Since a workload can have both
+		// volsync protected pvcs and volrep protected pvcs we seem to have now way to validate this
+		// condition.
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
-			validated = validatedDataProtectedCondition(drpc, vrg, condition)
-		} else {
-			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
+			continue
 		}
+		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
 		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)
 	}
@@ -349,38 +348,20 @@ func (c *Command) protectedPVCReplication(ppvc *ramenapi.ProtectedPVC) report.Re
 }
 
 func (c *Command) validatedProtectedPVCConditions(
-	drpc *ramenapi.DRPlacementControl,
 	vrg *ramenapi.VolumeReplicationGroup,
 	ppvc *ramenapi.ProtectedPVC,
 ) []report.ValidatedCondition {
 	var conditions []report.ValidatedCondition
 	for i := range ppvc.Conditions {
 		condition := &ppvc.Conditions[i]
-		var validated report.ValidatedCondition
+		// DataProtected exists only with volrep and has confusing and unhelpful semantics. Status
+		// is False in the stable state and True during some part of Relocate phase.
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
-			validated = validatedDataProtectedCondition(drpc, vrg, condition)
-		} else {
-			validated = validatedCondition(vrg, condition, metav1.ConditionTrue)
+			continue
 		}
+		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
 		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
-}
-
-// validatedDataProtectedCondition returns the status for the special DataProtected contion. The
-// status depends on the action. Most of the time the expected status is False, but it should be
-// True before the application is placed on the secondary cluster, and it becomes False when we
-// start to replicate again from the secondary cluster to the primary.
-func validatedDataProtectedCondition(
-	drpc *ramenapi.DRPlacementControl,
-	vrg *ramenapi.VolumeReplicationGroup,
-	condition *metav1.Condition,
-) report.ValidatedCondition {
-	// TODO: Needs testing and probably limit to some progression values, but progression values are
-	// undocumnted.
-	if drpc.Spec.Action == ramenapi.ActionRelocate && drpc.Status.Phase == ramenapi.Relocating {
-		return validatedCondition(vrg, condition, metav1.ConditionTrue)
-	}
-	return validatedCondition(vrg, condition, metav1.ConditionFalse)
 }

@@ -531,12 +531,6 @@ func TestValidateApplicationPassed(t *testing.T) {
 						Validated: report.Validated{
 							State: report.OK,
 						},
-						Type: "DataProtected",
-					},
-					{
-						Validated: report.Validated{
-							State: report.OK,
-						},
 						Type: "ClusterDataReady",
 					},
 					{
@@ -582,12 +576,6 @@ func TestValidateApplicationPassed(t *testing.T) {
 								},
 								Type: "ClusterDataProtected",
 							},
-							{
-								Validated: report.Validated{
-									State: report.OK,
-								},
-								Type: "DataProtected",
-							},
 						},
 					},
 				},
@@ -617,7 +605,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 19})
+	checkSummary(t, validate.report, Summary{OK: 17})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
