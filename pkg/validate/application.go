@@ -169,7 +169,7 @@ func (c *Command) validatePrimaryCluster(
 		return fmt.Errorf("failed to find primary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateVRG(&s.VRG, cluster, drpc)
+	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.PrimaryState)
 }
 
 func (c *Command) validateSecondaryCluster(
@@ -181,7 +181,7 @@ func (c *Command) validateSecondaryCluster(
 		return fmt.Errorf("failed to find secondary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateVRG(&s.VRG, cluster, drpc)
+	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
 func (c *Command) validateDRPC(
@@ -202,6 +202,7 @@ func (c *Command) validateVRG(
 	s *report.VRGSummary,
 	cluster *e2etypes.Cluster,
 	drpc *ramenapi.DRPlacementControl,
+	stableState ramenapi.State,
 ) error {
 	log := c.Logger()
 	reader := c.outputReader(cluster.Name)
@@ -227,9 +228,7 @@ func (c *Command) validateVRG(
 	s.Deleted = c.validatedDeleted(vrg)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
-
-	// TODO: Mark as an error if unknown or not primary on the primary cluster.
-	s.State = string(vrg.Status.State)
+	s.State = c.validatedVRGState(vrg, stableState)
 
 	return nil
 }
@@ -271,6 +270,25 @@ func (c *Command) validatedDRPCProgression(
 			"Waiting for progression %q",
 			ramenapi.ProgressionCompleted,
 		)
+	} else {
+		validated.State = report.OK
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
+}
+
+func (c *Command) validatedVRGState(
+	vrg *ramenapi.VolumeReplicationGroup,
+	stableState ramenapi.State,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: string(vrg.Status.State)}
+
+	// We expect the stable state. An application should not be in unstable state for long time, so
+	// it we see unstable state it requires investigation.
+	if vrg.Status.State != stableState {
+		validated.State = report.Error
+		validated.Description = fmt.Sprintf("Waiting to become %q", stableState)
 	} else {
 		validated.State = report.OK
 	}

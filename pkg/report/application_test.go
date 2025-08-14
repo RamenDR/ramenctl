@@ -126,7 +126,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg state", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.State = modified
+		a2.PrimaryCluster.VRG.State = report.ValidatedString{
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Waiting to become \"Primary\"",
+			},
+			Value: string(ramenapi.SecondaryState),
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg conditions nil", func(t *testing.T) {
@@ -213,7 +219,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("secondary cluster vrg state", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.VRG.State = modified
+		a2.SecondaryCluster.VRG.State = report.ValidatedString{
+			Validated: report.Validated{
+				State:       report.Error,
+				Description: "Waiting to become \"Secondary\"",
+			},
+			Value: string(ramenapi.PrimaryState),
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster vrg conditions nil", func(t *testing.T) {
@@ -304,7 +316,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						State: report.OK,
 					},
 				},
-				State: "Primary",
+				State: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.PrimaryState),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{
@@ -388,7 +405,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						State: report.OK,
 					},
 				},
-				State: "Secondary",
+				State: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.SecondaryState),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{

@@ -438,6 +438,86 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 	}
 }
 
+func TestValidatedVRGSTateOK(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	cases := []struct {
+		name        string
+		stableState ramenapi.State
+	}{
+		{"primary", ramenapi.PrimaryState},
+		{"secondary", ramenapi.SecondaryState},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			vrg := &ramenapi.VolumeReplicationGroup{
+				Status: ramenapi.VolumeReplicationGroupStatus{
+					State: tc.stableState,
+				},
+			}
+			expected := report.ValidatedString{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: string(vrg.Status.State),
+			}
+			validated := cmd.validatedVRGState(vrg, tc.stableState)
+			if validated != expected {
+				t.Errorf("expected state %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	expected := Summary{OK: uint(len(cases))}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
+func TestValidatedVRGSTateError(t *testing.T) {
+	cmd := testCommand(t, validateApplication, &validation.Mock{})
+
+	cases := []struct {
+		name        string
+		state       ramenapi.State
+		stableState ramenapi.State
+	}{
+		{"primary empty", "", ramenapi.PrimaryState},
+		{"primary unknown", ramenapi.UnknownState, ramenapi.PrimaryState},
+		{"primary secondary", ramenapi.SecondaryState, ramenapi.PrimaryState},
+		{"secondary empty", "", ramenapi.SecondaryState},
+		{"secondary unknown", ramenapi.UnknownState, ramenapi.SecondaryState},
+		{"secondary primary", ramenapi.PrimaryState, ramenapi.SecondaryState},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			vrg := &ramenapi.VolumeReplicationGroup{
+				Status: ramenapi.VolumeReplicationGroupStatus{
+					State: tc.state,
+				},
+			}
+			expected := report.ValidatedString{
+				Validated: report.Validated{
+					State:       report.Error,
+					Description: fmt.Sprintf("Waiting to become %q", tc.stableState),
+				},
+				Value: string(vrg.Status.State),
+			}
+			validated := cmd.validatedVRGState(vrg, tc.stableState)
+			if validated != expected {
+				t.Errorf("expected state %+v, got %+v", expected, validated)
+			}
+		})
+	}
+
+	expected := Summary{Error: uint(len(cases))}
+	if cmd.report.Summary != expected {
+		t.Fatalf("expected summary %q, got %q", expected, cmd.report.Summary)
+	}
+}
+
 // Validate clusters tests.
 
 func TestValidateClustersPassed(t *testing.T) {
@@ -609,7 +689,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 				},
-				State: "Primary",
+				State: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.PrimaryState),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{
@@ -681,7 +766,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 				},
-				State: "Secondary",
+				State: report.ValidatedString{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: string(ramenapi.SecondaryState),
+				},
 				Conditions: []report.ValidatedCondition{
 					{
 						Validated: report.Validated{
@@ -695,7 +785,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 18})
+	checkSummary(t, validate.report, Summary{OK: 20})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {

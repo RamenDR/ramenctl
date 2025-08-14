@@ -42,7 +42,7 @@ type VRGSummary struct {
 	Name          string                `json:"name"`
 	Namespace     string                `json:"namespace"`
 	Deleted       ValidatedBool         `json:"deleted"`
-	State         string                `json:"state,omitempty"`
+	State         ValidatedString       `json:"state"`
 	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
 	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
 }
