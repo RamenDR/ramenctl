@@ -11,12 +11,12 @@ import (
 
 var ValidateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate disaster recovery configuration",
+	Short: "Detect disaster recovery problems",
 }
 
 var ValidateClustersCmd = &cobra.Command{
 	Use:   "clusters",
-	Short: "Validate clusters configuration",
+	Short: "Detect problems in disaster recovery clusters",
 	Run: func(c *cobra.Command, args []string) {
 		if err := validate.Clusters(configFile, outputDir); err != nil {
 			console.Fatal(err)
@@ -26,7 +26,7 @@ var ValidateClustersCmd = &cobra.Command{
 
 var ValidateApplicationCmd = &cobra.Command{
 	Use:   "application",
-	Short: "Validate protected application",
+	Short: "Detect problems in disaster recovery protected application",
 	Run: func(c *cobra.Command, args []string) {
 		if err := validate.Application(configFile, outputDir, drpcName, drpcNamespace); err != nil {
 			console.Fatal(err)
