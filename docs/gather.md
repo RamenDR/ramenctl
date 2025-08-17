@@ -1,9 +1,7 @@
 # ramenctl gather
 
-The gather command collects diagnostic data from clusters involved in a
-disaster recovery (DR) scenario. It gathers logs, resources, and configuration
-from specified namespaces across the hub and managed clusters, helping with
-troubleshooting and support.
+The gather command helps to troubleshoot disaster recovery issues by gathering
+data about protected applications.
 
 ```console
 $ ramenctl gather -h
@@ -13,7 +11,7 @@ Usage:
   ramenctl gather [command]
 
 Available Commands:
-  application Collect data based on application
+  application Collect data for a protected application
 
 Flags:
   -h, --help            help for gather
@@ -23,152 +21,129 @@ Global Flags:
   -c, --config string   configuration file (default "config.yaml")
 
 Use "ramenctl gather [command] --help" for more information about a command.
-
 ```
-
-## gather application
-
-The gather application command gathers data for a specific DR-protected
-application by inspecting its DR placement (DRPC) and collecting the namespaces
-on the hub and managed clusters.
 
 > [!IMPORTANT]
 > The gather command requires a configuration file. See [init](docs/init.md) to
 > learn how to create one.
 
-### Looking up application DRPC
+## gather application
 
-In order to execute the gather command, we need to know the DRPC name and
-namespaces and these can be achieved with simple command below:
+The gather application command gathers data for a specific disaster recover
+protected application. It gathers entire namespaces related to the protected
+application across the hub and the managed clusters.
+
+### Looking up applications
+
+To run the gather application command, we need to find the protected
+application name and namespace. Run the following command:
 
 ```console
-$ oc get drpc -A
-NAMESPACE          NAME                        AGE   PREFERREDCLUSTER   FAILOVERCLUSTER   DESIREDSTATE   CURRENTSTATE
-openshift-dr-ops   disapp-deploy-rbd-busybox   13d   prsurve-c1-7j                                       Deployed
-openshift-dr-ops   test-ns                     14d   prsurve-c1-7j                                       Deployed
-openshift-gitops   appset-deploy-rbd-busybox   14d   prsurve-c1-7j                                       Deployed
+$ kubectl get drpc -A --context hub
+NAMESPACE   NAME                AGE     PREFERREDCLUSTER   FAILOVERCLUSTER   DESIREDSTATE   CURRENTSTATE
+argocd      appset-deploy-rbd   6m16s   dr1                                                 Deployed
 ```
 
 ### Gathering application data
 
-Now that we have the DRPC name and namespaces we can run the gather command to
-collect required namespaces.
+To gather data for the application `appset-deploy-rbd` in namespace `argocd`
+run the following command:
 
 ```console
-$ ramenctl gather application -o gather -c ocp.yaml --name disapp-deploy-rbd-busybox --namespace openshift-dr-ops
-⭐ Using config "ocp.yaml"
-⭐ Using report "gather"
+$ ramenctl gather application --name appset-deploy-rbd --namespace argocd -o out
+⭐ Using config "config.yaml"
+⭐ Using report "out"
 
 🔎 Validate config ...
    ✅ Config validated
 
-🔎 Gather Application data ...
+🔎 Gather application data ...
    ✅ Inspected application
-   ✅ Gathered data from cluster "prsurve-c2-7j"
    ✅ Gathered data from cluster "hub"
-   ✅ Gathered data from cluster "prsurve-c1-7j"
+   ✅ Gathered data from cluster "dr1"
+   ✅ Gathered data from cluster "dr2"
 
 ✅ Gather completed
 ```
 
-This command:
-
-- Validates the configuration and cluster connectivity
-- Identifies the application namespaces using the DRPC
-- Includes ramen namespaces on the hub and managed cluster to
-  collect ramen deployment status and ramen pods logs.
-- Gathers Kubernetes resources and logs from all identified namespaces
-- Outputs a structured report and collected data.
-
-The command stores `gather-application.yaml` and `gather-application.log` in
-the specified output directory:
+The command gathered related namespaced from all clusters and stored output
+files in the specified output directory:
 
 ```console
-$ tree -L4 gather/
-gather/
+$ tree -L1 out
+out
 ├── gather-application.data
-│   ├── hub
-│   │   ├── cluster
-│   │   │   └── namespaces
-│   │   └── namespaces
-│   │       ├── openshift-dr-ops
-│   │       └── openshift-operators
-│   ├── prsurve-c1-7j
-│   │   ├── cluster
-│   │   │   └── namespaces
-│   │   └── namespaces
-│   │       ├── openshift-dr-ops
-│   │       ├── openshift-dr-system
-│   │       ├── openshift-operators
-│   │       └── test-ns-2
-│   └── prsurve-c2-7j
-│       ├── cluster
-│       │   └── namespaces
-│       └── namespaces
-│           ├── openshift-dr-ops
-│           ├── openshift-dr-system
-│           └── openshift-operators
 ├── gather-application.log
 └── gather-application.yaml
 ```
 
-## Example Report
+### The gather-appplication.data directory
+
+This directory contains the namespaces and cluster scope resources related to
+the protected application. The data depend on the application deployment type.
 
 ```console
-application:
-  name: test-ns
-  namespace: openshift-dr-ops
-build:
-  commit: 1770637cbe1e129786a0ec404a69e7f3b6a42a66
-  version: v0.8.0-31-g1770637
-config:
-  clusterSet: clusterset-submariner-52bbff94cfe4421185
-  clusters:
-    c1:
-      kubeconfig: ocp/c1
-    c2:
-      kubeconfig: ocp/c2
-    hub:
-      kubeconfig: ocp/hub
-    passive-hub:
-      kubeconfig: ""
-  distro: ocp
-  namespaces:
-    argocdNamespace: openshift-gitops
-    ramenDRClusterNamespace: openshift-dr-system
-    ramenHubNamespace: openshift-operators
-    ramenOpsNamespace: openshift-dr-ops
-created: "2025-07-22T16:14:43.903524674+05:30"
-duration: 141.621068139
-host:
-  arch: amd64
-  cpus: 16
-  os: linux
-name: gather-application
-namespaces:
-- openshift-dr-ops
-- openshift-dr-system
-- openshift-operators
-- test-ns-2
-status: passed
-steps:
-- duration: 4.131192067
-  name: validate config
-  status: passed
-- duration: 137.489876072
-  items:
-  - duration: 0.616132191
-    name: inspect application
-    status: passed
-  - duration: 109.387906106
-    name: gather "prsurve-c2-7j"
-    status: passed
-  - duration: 127.375111889
-    name: gather "prsurve-c1-7j"
-    status: passed
-  - duration: 136.873366241
-    name: gather "hub"
-    status: passed
-  name: gather data
-  status: passed
+$ tree -L3 out/gather-application.data
+out/gather-application.data
+├── dr1
+│   ├── cluster
+│   │   ├── namespaces
+│   │   ├── persistentvolumes
+│   │   └── storage.k8s.io
+│   └── namespaces
+│       ├── e2e-appset-deploy-rbd
+│       └── ramen-system
+├── dr2
+│   ├── cluster
+│   │   └── namespaces
+│   └── namespaces
+│       ├── e2e-appset-deploy-rbd
+│       └── ramen-system
+└── hub
+    ├── cluster
+    │   └── namespaces
+    └── namespaces
+        ├── argocd
+        └── ramen-system
 ```
+
+You can use standard tools to inspect the resources:
+
+```console
+$ yq '.status.protectedPVCs[0].conditions' < out/gather-application.data/dr1/namespaces/e2e-appset-deploy-rbd/ramendr.openshift.io/volumereplicationgroups/appset-deploy-rbd.yaml
+- lastTransitionTime: "2025-08-17T17:45:41Z"
+  message: PVC in the VolumeReplicationGroup is ready for use
+  observedGeneration: 1
+  reason: Ready
+  status: "True"
+  type: DataReady
+- lastTransitionTime: "2025-08-17T17:45:40Z"
+  message: PV cluster data already protected for PVC busybox-pvc
+  observedGeneration: 1
+  reason: Uploaded
+  status: "True"
+  type: ClusterDataProtected
+- lastTransitionTime: "2025-08-17T17:45:41Z"
+  message: PVC in the VolumeReplicationGroup is ready for use
+  observedGeneration: 1
+  reason: Replicating
+  status: "False"
+  type: DataProtected
+```
+
+You can also inspect ramen logs in all clusters:
+
+```console
+$ grep -E 'ERROR.+appset-deploy-rbd' out/gather-application.data/dr1/namespaces/ramen-system/pods/ramen-dr-cluster-operator-67dff877f5-k4gjm/manager/current.log
+2025-08-17T17:45:40.644Z	ERROR	vrg	controller/vrg_volrep.go:122	Requeuing due to failure to upload PV object to S3 store(s)	{"vrg": {"name":"appset-deploy-rbd","namespace":"e2e-appset-deploy-rbd"}, "rid": "1c5b6d55", "State": "primary", "pvc": "e2e-appset-deploy-rbd/busybox-pvc", "error": "failed to add archived annotation for PVC (e2e-appset-deploy-rbd/busybox-pvc): failed to update PersistentVolumeClaim (e2e-appset-deploy-rbd/busybox-pvc) annotation (volumereplicationgroups.ramendr.openshift.io/vr-archived) belonging to VolumeReplicationGroup (e2e-appset-deploy-rbd/appset-deploy-rbd), Operation cannot be fulfilled on persistentvolumeclaims \"busybox-pvc\": the object has been modified; please apply your changes to the latest version and try again"}
+```
+
+### The gather-application.yaml
+
+The `gather-application.yaml` report is a machine and human readable description
+of the command. It can be useful to troubleshoot the gather application command.
+
+### The gather-application.log
+
+This log includes detailed information that may help to troubleshoot the gather
+application command. If the command failed, check the error details in the log.
