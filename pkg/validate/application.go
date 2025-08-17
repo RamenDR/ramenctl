@@ -419,14 +419,31 @@ func (c *Command) validatedProtectedPVCConditions(
 	vrg *ramenapi.VolumeReplicationGroup,
 	ppvc *ramenapi.ProtectedPVC,
 ) []report.ValidatedCondition {
+	log := c.Logger()
+
 	var conditions []report.ValidatedCondition
 	for i := range ppvc.Conditions {
 		condition := &ppvc.Conditions[i]
+
 		// DataProtected exists only with volrep and has confusing and unhelpful semantics. Status
 		// is False in the stable state and True during some part of Relocate phase.
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
 			continue
 		}
+
+		// Volsync PVsRestored condition is always stale on the primary after failover or
+		// relocate, but the application is fine.
+		if condition.Type == ramen.VRGConditionTypeVolSyncPVsRestored &&
+			condition.ObservedGeneration != vrg.Generation {
+			log.Debugf(
+				"Skipping stale protected PVC condition: observed generation %d does not match vrg generation: %+v",
+				condition.ObservedGeneration,
+				vrg.Generation,
+				condition,
+			)
+			continue
+		}
+
 		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
 		c.report.Summary.Add(&validated)
 		conditions = append(conditions, validated)

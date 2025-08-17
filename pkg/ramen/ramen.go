@@ -22,6 +22,11 @@ const (
 	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L25
 	VRGConditionTypeDataProtected = "DataProtected"
 
+	// VolSync related conditions. These conditions are only applicable
+	// at individual PVCs and not generic VRG conditions.
+	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L50
+	VRGConditionTypeVolSyncPVsRestored = "PVsRestored"
+
 	// ConditionUnused is used on the secondary cluster VRG.
 	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L55
 	VRGConditionReasonUnused = "Unused"
