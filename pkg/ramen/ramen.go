@@ -56,10 +56,12 @@ func ApplicationNamespaces(drpc *ramenapi.DRPlacementControl) []string {
 	}
 	if drpc.Spec.ProtectedNamespaces != nil {
 		for _, ns := range *drpc.Spec.ProtectedNamespaces {
-			seen[ns] = struct{}{}
+			if ns != "" {
+				seen[ns] = struct{}{}
+			}
 		}
 	}
-	if appNamespace, ok := drpc.Annotations[drpcAppNamespaceAnnotation]; ok {
+	if appNamespace := drpc.Annotations[drpcAppNamespaceAnnotation]; appNamespace != "" {
 		seen[appNamespace] = struct{}{}
 	}
 	return slices.Collect(maps.Keys(seen))
