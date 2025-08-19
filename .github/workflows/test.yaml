@@ -98,4 +98,5 @@ jobs:
       - name: Download modules
         run: go mod download
       - name: Run tests
-        run: make test
+        # https://github.com/golang/go/issues/75031
+        run: make test GOTOOLCHAIN=$(go mod edit -json | jq -r .Toolchain)
