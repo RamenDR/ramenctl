@@ -203,7 +203,7 @@ func (c *Command) gatherData() {
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 	options := gathering.Options{
 		Namespaces: c.namespacesToGather(),
-		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".gather"),
+		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
 	}
 	start := time.Now()
 

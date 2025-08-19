@@ -416,12 +416,12 @@ $ ramenctl test run -o example-failure
 ❌ failed (0 passed, 1 failed, 0 skipped)
 ```
 
-The command stores gathered data in the `test-run.gather` directory:
+The command stores gathered data in the `test-run.data` directory:
 
 ```console
 $ tree -L2 example-failure
 example-failure
-├── test-run.gather
+├── test-run.data
 │   ├── hub
 │   ├── primary-cluster
 │   └── secondary-cluster
@@ -439,8 +439,8 @@ The command gathers all the namespaces related to the failed test, and related
 cluster scope resources such as storage classes and persistent volumes.
 
 ```console
-$ tree -L3 example-failure/test-run.gather
-example-failure/test-run.gather
+$ tree -L3 example-failure/test-run.data
+example-failure/test-run.data
 ├── hub
 │   ├── cluster
 │   │   └── namespaces
@@ -472,7 +472,7 @@ example-failure/test-run.gather
 Change directory into the gather directory to simplify the next steps:
 
 ```console
-$ example-failure/test-run.gather
+$ example-failure/test-run.data
 ```
 
 We can start by looking at the *DRPC*:
