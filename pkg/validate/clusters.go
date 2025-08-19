@@ -8,6 +8,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 func (c *Command) Clusters() error {
@@ -53,9 +54,17 @@ func (c *Command) clustersNamespacesToGather() []string {
 }
 
 func (c *Command) validateGatheredClusterData() bool {
-	// TODO: Validate gathered cluster data.
-	step := &report.Step{Name: "validate cluster data", Status: report.Passed}
-	c.current.AddStep(step)
+	start := time.Now()
+	step := &report.Step{Name: "validate cluster data"}
+	defer func() {
+		step.Duration = time.Since(start).Seconds()
+		c.current.AddStep(step)
+	}()
+
+	s := &report.ClustersStatus{}
+	c.report.ClustersStatus = s
+
+	step.Status = report.Passed
 	console.Pass("Clusters validated")
 	return true
 }

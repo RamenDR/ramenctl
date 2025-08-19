@@ -610,6 +610,10 @@ func TestValidateClustersPassed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+
+	expected := &report.ClustersStatus{}
+	checkClusterStatus(t, validate.report, expected)
+
 	checkSummary(t, validate.report, Summary{})
 }
 
@@ -626,6 +630,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
 	checkApplicationStatus(t, validate.report, nil)
+	checkClusterStatus(t, validate.report, nil)
 	checkSummary(t, validate.report, Summary{})
 }
 
@@ -642,6 +647,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 	}
 	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
 	checkApplicationStatus(t, validate.report, nil)
+	checkClusterStatus(t, validate.report, nil)
 	checkSummary(t, validate.report, Summary{})
 }
 
@@ -667,6 +673,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkClusterStatus(t, validate.report, nil)
 	checkSummary(t, validate.report, Summary{})
 }
 
@@ -1056,6 +1063,25 @@ func checkApplicationStatus(
 	} else if report.ApplicationStatus != nil {
 		t.Fatalf("expected application status to be nil, got:\n%s",
 			marshal(t, report.ApplicationStatus))
+	}
+}
+
+func checkClusterStatus(
+	t *testing.T,
+	report *Report,
+	expected *report.ClustersStatus,
+) {
+	// For manual inspection
+	fmt.Print("\n", marshal(t, expected))
+
+	if expected != nil {
+		if !expected.Equal(report.ClustersStatus) {
+			t.Fatalf("expected clusters status:\n%s\ngot:\n%s",
+				marshal(t, expected), marshal(t, report.ClustersStatus))
+		}
+	} else if report.ClustersStatus != nil {
+		t.Fatalf("expected clusters status to be nil, got:\n%s",
+			marshal(t, report.ClustersStatus))
 	}
 }
 
