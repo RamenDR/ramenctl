@@ -606,7 +606,7 @@ func TestValidateClustersPassed(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
-		{Name: "validate cluster data", Status: report.Passed},
+		{Name: "validate clusters data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)

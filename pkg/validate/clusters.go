@@ -38,7 +38,7 @@ func (c *Command) validateClusters() bool {
 		return c.finishStep()
 	}
 
-	if !c.validateGatheredClusterData() {
+	if !c.validateGatheredClustersData() {
 		return c.finishStep()
 	}
 
@@ -53,9 +53,9 @@ func (c *Command) clustersNamespacesToGather() []string {
 	})
 }
 
-func (c *Command) validateGatheredClusterData() bool {
+func (c *Command) validateGatheredClustersData() bool {
 	start := time.Now()
-	step := &report.Step{Name: "validate cluster data"}
+	step := &report.Step{Name: "validate clusters data"}
 	defer func() {
 		step.Duration = time.Since(start).Seconds()
 		c.current.AddStep(step)
