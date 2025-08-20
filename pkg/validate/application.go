@@ -111,7 +111,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 	s := &report.ApplicationStatus{}
 	c.report.ApplicationStatus = s
 
-	drpc, err := c.validateHub(&s.Hub, drpcName, drpcNamespace)
+	drpc, err := c.validateApplicationHub(&s.Hub, drpcName, drpcNamespace)
 	if err != nil {
 		step.Status = report.Failed
 		console.Error("Failed to validate hub")
@@ -119,14 +119,14 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	if err := c.validatePrimaryCluster(&s.PrimaryCluster, drpc); err != nil {
+	if err := c.validateApplicationPrimaryCluster(&s.PrimaryCluster, drpc); err != nil {
 		step.Status = report.Failed
 		console.Error("Failed to validate primary cluster")
 		log.Error(err)
 		return false
 	}
 
-	if err := c.validateSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
+	if err := c.validateApplicationSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
 		step.Status = report.Failed
 		console.Error("Failed to validate primary cluster")
 		log.Error(err)
@@ -146,7 +146,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 	return true
 }
 
-func (c *Command) validateHub(
+func (c *Command) validateApplicationHub(
 	s *report.ApplicationStatusHub,
 	drpcName, drpcNamespace string,
 ) (*ramenapi.DRPlacementControl, error) {
@@ -157,11 +157,11 @@ func (c *Command) validateHub(
 		return nil, fmt.Errorf("failed to read drpc: %w", err)
 	}
 	log.Debugf("Read drpc \"%s/%s\"", drpc.Namespace, drpc.Name)
-	c.validateDRPC(&s.DRPC, drpc)
+	c.validateApplicationDRPC(&s.DRPC, drpc)
 	return drpc, nil
 }
 
-func (c *Command) validatePrimaryCluster(
+func (c *Command) validateApplicationPrimaryCluster(
 	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
@@ -170,10 +170,10 @@ func (c *Command) validatePrimaryCluster(
 		return fmt.Errorf("failed to find primary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.PrimaryState)
+	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.PrimaryState)
 }
 
-func (c *Command) validateSecondaryCluster(
+func (c *Command) validateApplicationSecondaryCluster(
 	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
@@ -182,10 +182,10 @@ func (c *Command) validateSecondaryCluster(
 		return fmt.Errorf("failed to find secondary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
+	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
-func (c *Command) validateDRPC(
+func (c *Command) validateApplicationDRPC(
 	s *report.DRPCSummary,
 	drpc *ramenapi.DRPlacementControl,
 ) {
@@ -199,7 +199,7 @@ func (c *Command) validateDRPC(
 	s.Conditions = c.validatedDRPCConditions(drpc)
 }
 
-func (c *Command) validateVRG(
+func (c *Command) validateApplicationVRG(
 	s *report.VRGSummary,
 	cluster *e2etypes.Cluster,
 	drpc *ramenapi.DRPlacementControl,
