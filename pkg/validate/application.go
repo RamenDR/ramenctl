@@ -196,7 +196,7 @@ func (c *Command) validateApplicationDRPC(
 	s.Action = c.validatedAction(string(drpc.Spec.Action))
 	s.Phase = c.validatedDRPCPhase(drpc)
 	s.Progression = c.validatedDRPCProgression(drpc)
-	s.Conditions = c.validatedDRPCConditions(drpc)
+	s.Conditions = c.validatedConditions(drpc, drpc.Status.Conditions)
 }
 
 func (c *Command) validateApplicationVRG(
@@ -369,19 +369,6 @@ func (c *Command) validatedProtectedPVCs(
 	}
 
 	return protectedPVCs
-}
-
-func (c *Command) validatedDRPCConditions(
-	drpc *ramenapi.DRPlacementControl,
-) []report.ValidatedCondition {
-	var conditions []report.ValidatedCondition
-	for i := range drpc.Status.Conditions {
-		condition := &drpc.Status.Conditions[i]
-		validated := validatedCondition(drpc, condition, metav1.ConditionTrue)
-		c.report.Summary.Add(&validated)
-		conditions = append(conditions, validated)
-	}
-	return conditions
 }
 
 func (c *Command) validatedVRGConditions(

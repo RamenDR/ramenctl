@@ -13,6 +13,7 @@ import (
 	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/ramendr/ramenctl/pkg/command"
@@ -120,6 +121,20 @@ func (c *Command) validatedDeleted(obj client.Object) report.ValidatedBool {
 	}
 	c.report.Summary.Add(&validated)
 	return validated
+}
+
+func (c *Command) validatedConditions(
+	obj client.Object,
+	conditions []metav1.Condition,
+) []report.ValidatedCondition {
+	var validatedConditions []report.ValidatedCondition
+	for i := range conditions {
+		condition := &conditions[i]
+		validated := validatedCondition(obj, condition, metav1.ConditionTrue)
+		c.report.Summary.Add(&validated)
+		validatedConditions = append(validatedConditions, validated)
+	}
+	return validatedConditions
 }
 
 // Gathering data.
