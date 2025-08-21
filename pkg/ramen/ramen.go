@@ -37,8 +37,9 @@ const (
 
 	// TODO: find a way to get this from ramen api. Available in the CRD under spec/names/plural.
 	// Should we gather the CRDs from the cluster?
-	drpcPlural = "drplacementcontrols"
-	vrgPlural  = "volumereplicationgroups"
+	drpcPlural     = "drplacementcontrols"
+	vrgPlural      = "volumereplicationgroups"
+	drPolicyPlural = "drpolicies"
 )
 
 // Actions are the valid DRPC and VRG actions.
@@ -156,4 +157,24 @@ func ReadVRG(
 		return nil, err
 	}
 	return vrg, nil
+}
+
+// ReadDRPolicy reads a ramen DRPolicy from the output directory.
+func ReadDRPolicy(reader gathering.OutputReader, name string) (*ramenapi.DRPolicy, error) {
+	resource := ramenapi.GroupVersion.Group + "/" + drPolicyPlural
+	data, err := reader.ReadResource("", resource, name)
+	if err != nil {
+		return nil, err
+	}
+	drPolicy := &ramenapi.DRPolicy{}
+	if err := yaml.Unmarshal(data, drPolicy); err != nil {
+		return nil, err
+	}
+	return drPolicy, nil
+}
+
+// ListDRPolicies lists ramen DRPolicies from the output directory.
+func ListDRPolicies(reader gathering.OutputReader) ([]string, error) {
+	resource := ramenapi.GroupVersion.Group + "/" + drPolicyPlural
+	return reader.ListResources("", resource)
 }
