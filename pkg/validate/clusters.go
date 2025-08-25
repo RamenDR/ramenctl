@@ -6,6 +6,9 @@ package validate
 import (
 	"fmt"
 
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
@@ -87,6 +90,10 @@ func (c *Command) validateClustersHub(s *report.ClustersStatusHub) error {
 		return fmt.Errorf("failed to validate DRPolicies: %w", err)
 	}
 
+	if err := c.validateClustersDRClusters(&s.DRClusters); err != nil {
+		return fmt.Errorf("failed to validate DRClusters: %w", err)
+	}
+
 	return nil
 }
 
@@ -127,4 +134,65 @@ func (c *Command) validateClustersDRPolicies(
 	c.report.Summary.Add(drPoliciesList)
 
 	return nil
+}
+
+func (c *Command) validateClustersDRClusters(
+	drClustersList *report.ValidatedDRClustersList,
+) error {
+	log := c.Logger()
+	reader := c.outputReader(c.Env().Hub.Name)
+
+	drClusterNames, err := ramen.ListDRClusters(reader)
+	if err != nil {
+		return err
+	}
+
+	for _, drClusterName := range drClusterNames {
+		drCluster, err := ramen.ReadDRCluster(reader, drClusterName)
+		if err != nil {
+			return err
+		}
+		log.Debugf("Read DRCluster %q", drCluster.Name)
+
+		dcs := report.DRClusterSummary{
+			Name:       drCluster.Name,
+			Phase:      string(drCluster.Status.Phase),
+			Conditions: c.validatedDRClusterConditions(drCluster),
+		}
+		drClustersList.Value = append(drClustersList.Value, dcs)
+	}
+
+	if len(drClustersList.Value) < 2 {
+		drClustersList.State = report.Problem
+		drClustersList.Description = fmt.Sprintf("2 DRClusters required %d found",
+			len(drClustersList.Value))
+	} else {
+		drClustersList.State = report.OK
+	}
+
+	c.report.Summary.Add(drClustersList)
+
+	return nil
+}
+
+func (c *Command) validatedDRClusterConditions(
+	drCluster *ramenapi.DRCluster,
+) []report.ValidatedCondition {
+	var conditions []report.ValidatedCondition
+	for i := range drCluster.Status.Conditions {
+		condition := &drCluster.Status.Conditions[i]
+
+		var validated report.ValidatedCondition
+		if condition.Type == ramenapi.DRClusterConditionTypeFenced {
+			// For Fenced condition, "False" is the expected status.
+			validated = validatedCondition(drCluster, condition, metav1.ConditionFalse)
+		} else {
+			// For Clean & Validated conditions, "True" is the expected status.
+			validated = validatedCondition(drCluster, condition, metav1.ConditionTrue)
+		}
+
+		c.report.Summary.Add(&validated)
+		conditions = append(conditions, validated)
+	}
+	return conditions
 }
