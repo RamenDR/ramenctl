@@ -128,7 +128,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 
 	if err := c.validateApplicationSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
 		step.Status = report.Failed
-		console.Error("Failed to validate primary cluster")
+		console.Error("Failed to validate secondary cluster")
 		log.Error(err)
 		return false
 	}
