@@ -37,9 +37,10 @@ const (
 
 	// TODO: find a way to get this from ramen api. Available in the CRD under spec/names/plural.
 	// Should we gather the CRDs from the cluster?
-	drpcPlural     = "drplacementcontrols"
-	vrgPlural      = "volumereplicationgroups"
-	drPolicyPlural = "drpolicies"
+	drpcPlural      = "drplacementcontrols"
+	vrgPlural       = "volumereplicationgroups"
+	drPolicyPlural  = "drpolicies"
+	drClusterPlural = "drclusters"
 )
 
 // Actions are the valid DRPC and VRG actions.
@@ -173,8 +174,28 @@ func ReadDRPolicy(reader gathering.OutputReader, name string) (*ramenapi.DRPolic
 	return drPolicy, nil
 }
 
+// ReadDRCluster reads a ramen DRCluster from the output directory.
+func ReadDRCluster(reader gathering.OutputReader, name string) (*ramenapi.DRCluster, error) {
+	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural
+	data, err := reader.ReadResource("", resource, name)
+	if err != nil {
+		return nil, err
+	}
+	drCluster := &ramenapi.DRCluster{}
+	if err := yaml.Unmarshal(data, drCluster); err != nil {
+		return nil, err
+	}
+	return drCluster, nil
+}
+
 // ListDRPolicies lists ramen DRPolicies from the output directory.
 func ListDRPolicies(reader gathering.OutputReader) ([]string, error) {
 	resource := ramenapi.GroupVersion.Group + "/" + drPolicyPlural
+	return reader.ListResources("", resource)
+}
+
+// ListDRClusters lists ramen DRClusters from the output directory.
+func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
+	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural
 	return reader.ListResources("", resource)
 }

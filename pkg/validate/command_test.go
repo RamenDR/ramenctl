@@ -615,6 +615,61 @@ func TestValidateClustersPassed(t *testing.T) {
 
 	expected := &report.ClustersStatus{
 		Hub: report.ClustersStatusHub{
+			DRClusters: report.ValidatedDRClustersList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.DRClusterSummary{
+					{
+						Name:  "dr1",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
+							},
+						},
+					},
+					{
+						Name:  "dr2",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
+							},
+						},
+					},
+				},
+			},
 			DRPolicies: report.ValidatedDRPoliciesList{
 				Validated: report.Validated{
 					State: report.OK,
@@ -652,7 +707,7 @@ func TestValidateClustersPassed(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 3})
+	checkSummary(t, validate.report, Summary{OK: 10})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
