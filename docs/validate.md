@@ -13,6 +13,7 @@ Usage:
 
 Available Commands:
   application Detect problems in disaster recovery protected application
+  clusters    Detect problems in disaster recovery clusters
 
 Flags:
   -h, --help            help for validate
@@ -27,6 +28,7 @@ Use "ramenctl validate [command] --help" for more information about a command.
 The command supports the following sub-commands:
 
 * [application](#validate-application)
+* [clusters](#validate-clusters)
 
 > [!IMPORTANT]
 > The validate command requires a configuration file. See [init](docs/init.md) to
@@ -201,4 +203,283 @@ out/validate-application.data
 
 This log includes detailed information that may help to troubleshoot the
 validate application command. If the command failed, check the error details in
+the log.
+
+## validate clusters
+
+The validate clusters command validates the disaster recovery clusters by
+gathering cluster scoped and related ramen resources from all clusters.
+
+### Validating clusters
+
+To validate the disaster recovery clusters, run the following command:
+
+```console
+$ ramenctl validate clusters -o out
+⭐ Using config "config.yaml"
+⭐ Using report "out"
+
+🔎 Validate config ...
+   ✅ Config validated
+
+🔎 Validate clusters ...
+   ✅ Gathered data from cluster "hub"
+   ✅ Gathered data from cluster "dr1"
+   ✅ Gathered data from cluster "dr2"
+   ✅ Clusters validated
+
+✅ Validation completed (36 ok, 0 stale, 0 problem)
+```
+
+The command gathered cluster scoped and ramen resources from all clusters,
+inspected the resources, and stored output files in the specified output
+directory:
+
+```console
+$ tree -L1 out
+out
+├── validate-clusters.data
+├── validate-clusters.log
+└── validate-clusters.yaml
+```
+
+> [!IMPORTANT]
+> When reporting DR related issues, please create an archive with the output
+> directory and upload it to the issue tracker.
+
+### The validate-clusters.yaml
+
+The `validate-clusters.yaml` report is a machine and human readable description
+of the command and the clusters status.
+
+The most important part of the report is the clustersStatus:
+
+```yaml
+clustersStatus:
+  clusters:
+  - name: dr1
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - s3ProfileName: minio-on-dr1
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr1
+                namespace: ramen-system
+          - s3ProfileName: minio-on-dr2
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr2
+                namespace: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  - name: dr2
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - s3ProfileName: minio-on-dr1
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr1
+                namespace: ramen-system
+          - s3ProfileName: minio-on-dr2
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr2
+                namespace: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Progressing
+        - state: ok ✅
+          type: Available
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  hub:
+    drClusters:
+      state: ok ✅
+      value:
+      - conditions:
+        - state: ok ✅
+          type: Fenced
+        - state: ok ✅
+          type: Clean
+        - state: ok ✅
+          type: Validated
+        name: dr1
+        phase: Available
+      - conditions:
+        - state: ok ✅
+          type: Fenced
+        - state: ok ✅
+          type: Clean
+        - state: ok ✅
+          type: Validated
+        name: dr2
+        phase: Available
+    drPolicies:
+      state: ok ✅
+      value:
+      - conditions:
+        - state: ok ✅
+          type: Validated
+        drClusters:
+        - dr1
+        - dr2
+        name: dr-policy
+        schedulingInterval: 1m
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-hub
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - s3ProfileName: minio-on-dr1
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr1
+                namespace: ramen-system
+          - s3ProfileName: minio-on-dr2
+            s3SecretRef:
+              state: ok ✅
+              value:
+                name: ramen-s3-secret-dr2
+                namespace: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+```
+
+### The validate-clusters.data directory
+
+This directory contains all data gathered during validation. Use the gathered
+data to investigate the problems reported in the `validate-clusters.yaml` report.
+
+```console
+$ tree -L3 out/validate-clusters.data
+out/validate-clusters.data
+├── dr1
+│   ├── cluster
+│   │   ├── apiextensions.k8s.io
+│   │   ├── apiregistration.k8s.io
+│   │   ├── cluster.open-cluster-management.io
+│   │   ├── flowcontrol.apiserver.k8s.io
+│   │   ├── namespaces
+│   │   ├── networking.k8s.io
+│   │   ├── nodes
+│   │   ├── operator.open-cluster-management.io
+│   │   ├── operators.coreos.com
+│   │   ├── persistentvolumes
+│   │   ├── ramendr.openshift.io
+│   │   ├── rbac.authorization.k8s.io
+│   │   ├── replication.storage.openshift.io
+│   │   ├── scheduling.k8s.io
+│   │   ├── snapshot.storage.k8s.io
+│   │   ├── storage.k8s.io
+│   │   ├── submariner.io
+│   │   └── work.open-cluster-management.io
+│   └── namespaces
+│       └── ramen-system
+├── dr2
+│   ├── cluster
+│   │   ├── apiextensions.k8s.io
+│   │   ├── apiregistration.k8s.io
+│   │   ├── cluster.open-cluster-management.io
+│   │   ├── flowcontrol.apiserver.k8s.io
+│   │   ├── namespaces
+│   │   ├── networking.k8s.io
+│   │   ├── nodes
+│   │   ├── operator.open-cluster-management.io
+│   │   ├── operators.coreos.com
+│   │   ├── persistentvolumes
+│   │   ├── ramendr.openshift.io
+│   │   ├── rbac.authorization.k8s.io
+│   │   ├── replication.storage.openshift.io
+│   │   ├── scheduling.k8s.io
+│   │   ├── snapshot.storage.k8s.io
+│   │   ├── storage.k8s.io
+│   │   ├── submariner.io
+│   │   └── work.open-cluster-management.io
+│   └── namespaces
+│       └── ramen-system
+└── hub
+    ├── cluster
+    │   ├── addon.open-cluster-management.io
+    │   ├── admissionregistration.k8s.io
+    │   ├── apiextensions.k8s.io
+    │   ├── apiregistration.k8s.io
+    │   ├── cluster.open-cluster-management.io
+    │   ├── flowcontrol.apiserver.k8s.io
+    │   ├── namespaces
+    │   ├── networking.k8s.io
+    │   ├── nodes
+    │   ├── operator.open-cluster-management.io
+    │   ├── operators.coreos.com
+    │   ├── ramendr.openshift.io
+    │   ├── rbac.authorization.k8s.io
+    │   ├── scheduling.k8s.io
+    │   └── storage.k8s.io
+    └── namespaces
+        └── ramen-system
+```
+
+### The validate-clusters.log
+
+This log includes detailed information that may help to troubleshoot the
+validate clusters command. If the command failed, check the error details in
 the log.
