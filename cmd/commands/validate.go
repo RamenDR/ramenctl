@@ -22,7 +22,6 @@ var ValidateClustersCmd = &cobra.Command{
 			console.Fatal(err)
 		}
 	},
-	Hidden: true, // Keep hidden until completed.
 }
 
 var ValidateApplicationCmd = &cobra.Command{
