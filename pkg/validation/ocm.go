@@ -10,8 +10,6 @@ import (
 	ocmv1 "open-cluster-management.io/api/cluster/v1"
 	ocmv1b2 "open-cluster-management.io/api/cluster/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/ramendr/ramen/e2e/types"
 )
 
 func validateClusterset(ctx Context) error {
@@ -25,7 +23,7 @@ func validateClusterset(ctx Context) error {
 	if err != nil {
 		return err
 	}
-	clusters := []*types.Cluster{env.C1, env.C2}
+	clusters := env.ManagedClusters()
 	for _, cluster := range clusters {
 		if !slices.Contains(clusterNames, cluster.Name) {
 			return fmt.Errorf(
