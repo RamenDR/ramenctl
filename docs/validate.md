@@ -94,7 +94,7 @@ out
 The `validate-application.yaml` report is a machine and human readable
 description of the command and the application status.
 
-The most important part of the report is the applicationStatus:
+The most important part of the report is the `applicationStatus`:
 
 ```yaml
 applicationStatus:
@@ -252,7 +252,7 @@ out
 The `validate-clusters.yaml` report is a machine and human readable description
 of the command and the clusters status.
 
-The most important part of the report is the clustersStatus:
+The most important part of the report is the `clustersStatus`:
 
 ```yaml
 clustersStatus:
