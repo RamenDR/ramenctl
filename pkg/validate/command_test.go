@@ -43,9 +43,10 @@ const (
 
 // testSystem is a test system such as drenv or ocp clusters.
 type testSystem struct {
-	name   string
-	config *config.Config
-	env    *types.Env
+	name                       string
+	config                     *config.Config
+	env                        *types.Env
+	validateClustersNamespaces []string
 }
 
 var (
@@ -59,6 +60,26 @@ var (
 			C1:  &types.Cluster{Name: "dr1"},
 			C2:  &types.Cluster{Name: "dr2"},
 		},
+		validateClustersNamespaces: sets.Sorted([]string{
+			e2econfig.K8sNamespaces.RamenHubNamespace,
+			e2econfig.K8sNamespaces.RamenDRClusterNamespace,
+		}),
+	}
+
+	testOcp = testSystem{
+		name: "ocp",
+		config: &config.Config{
+			Namespaces: e2econfig.OcpNamespaces,
+		},
+		env: &types.Env{
+			Hub: &types.Cluster{Name: "hub"},
+			C1:  &types.Cluster{Name: "prsurve-s2-c1"},
+			C2:  &types.Cluster{Name: "prsurve-s2-c2"},
+		},
+		validateClustersNamespaces: sets.Sorted([]string{
+			e2econfig.OcpNamespaces.RamenHubNamespace,
+			e2econfig.OcpNamespaces.RamenDRClusterNamespace,
+		}),
 	}
 
 	testApplication = &report.Application{
@@ -74,11 +95,6 @@ var (
 	validateApplicationNamespaces = sets.Sorted([]string{
 		drpcNamespace,
 		applicationNamespace,
-	})
-
-	validateClustersNamespaces = sets.Sorted([]string{
-		testK8s.config.Namespaces.RamenHubNamespace,
-		testK8s.config.Namespaces.RamenDRClusterNamespace,
 	})
 
 	applicationMock = &validation.Mock{
@@ -608,7 +624,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, validateClustersNamespaces)
+	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
@@ -960,6 +976,348 @@ func TestValidateClustersK8s(t *testing.T) {
 	checkSummary(t, validate.report, Summary{OK: 37})
 }
 
+func TestValidateClustersOcp(t *testing.T) {
+	validate := testCommand(t, validateClusters, &validation.Mock{}, testOcp)
+	addGatheredData(t, validate, "clusters/"+testOcp.name)
+	if err := validate.Clusters(); err != nil {
+		dumpCommandLog(t, validate)
+		t.Fatal(err)
+	}
+	checkReport(t, validate, report.Passed)
+	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, testOcp.validateClustersNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Passed)
+
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"prsurve-s2-c1\"", Status: report.Passed},
+		{Name: "gather \"prsurve-s2-c2\"", Status: report.Passed},
+		{Name: "validate clusters data", Status: report.Passed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
+
+	expected := &report.ClustersStatus{
+		Hub: report.ClustersStatusHub{
+			DRClusters: report.ValidatedDRClustersList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.DRClusterSummary{
+					{
+						Name:  "prsurve-s2-c1",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
+							},
+						},
+					},
+					{
+						Name:  "prsurve-s2-c2",
+						Phase: "Available",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Fenced",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Clean",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
+							},
+						},
+					},
+				},
+			},
+			DRPolicies: report.ValidatedDRPoliciesList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.DRPolicySummary{
+					{
+						Name:               "odr-policy-5m",
+						DRClusters:         []string{"prsurve-s2-c1", "prsurve-s2-c2"},
+						SchedulingInterval: "5m",
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Validated",
+							},
+						},
+					},
+				},
+			},
+			Ramen: report.RamenSummary{
+				ConfigMap: report.ConfigMapSummary{
+					Name:      ramen.HubOperatorName + "-config",
+					Namespace: testOcp.config.Namespaces.RamenHubNamespace,
+					Deleted: report.ValidatedBool{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					RamenControllerType: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: string(ramenapi.DRHubType),
+					},
+					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: []report.S3StoreProfilesSummary{
+							{
+								S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+								S3SecretRef: report.ValidatedS3SecretRef{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: corev1.SecretReference{
+										Name: "5e88331f09006ac31169b027235b50fd94458b6",
+									},
+								},
+							},
+							{
+								S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+								S3SecretRef: report.ValidatedS3SecretRef{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: corev1.SecretReference{
+										Name: "020a140310eb1fce63e2087087d9a0bdf972b93",
+									},
+								},
+							},
+						},
+					},
+				},
+				Deployment: report.DeploymentSummary{
+					Name:      "ramen-hub-operator",
+					Namespace: testOcp.config.Namespaces.RamenHubNamespace,
+					Deleted: report.ValidatedBool{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+					Replicas: report.ValidatedInteger{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: 1,
+					},
+					Conditions: []report.ValidatedCondition{
+						{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Type: "Progressing",
+						},
+						{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Type: "Available",
+						},
+					},
+				},
+			},
+		},
+		Clusters: []report.ClustersStatusCluster{
+			{
+				Name: "prsurve-s2-c1",
+				Ramen: report.RamenSummary{
+					ConfigMap: report.ConfigMapSummary{
+						Name:      ramen.DRClusterOperatorName + "-config",
+						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
+						},
+						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.S3StoreProfilesSummary{
+								{
+									S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name: "5e88331f09006ac31169b027235b50fd94458b6",
+										},
+									},
+								},
+								{
+									S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name: "020a140310eb1fce63e2087087d9a0bdf972b93",
+										},
+									},
+								},
+							},
+						},
+					},
+					Deployment: report.DeploymentSummary{
+						Name:      "ramen-dr-cluster-operator",
+						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						Replicas: report.ValidatedInteger{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: 1,
+						},
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Available",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Progressing",
+							},
+						},
+					},
+				},
+			},
+			{
+				Name: "prsurve-s2-c2",
+				Ramen: report.RamenSummary{
+					ConfigMap: report.ConfigMapSummary{
+						Name:      ramen.DRClusterOperatorName + "-config",
+						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
+						},
+						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.S3StoreProfilesSummary{
+								{
+									S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name: "5e88331f09006ac31169b027235b50fd94458b6",
+										},
+									},
+								},
+								{
+									S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+									S3SecretRef: report.ValidatedS3SecretRef{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: corev1.SecretReference{
+											Name: "020a140310eb1fce63e2087087d9a0bdf972b93",
+										},
+									},
+								},
+							},
+						},
+					},
+					Deployment: report.DeploymentSummary{
+						Name:      "ramen-dr-cluster-operator",
+						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
+						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						Replicas: report.ValidatedInteger{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: 1,
+						},
+						Conditions: []report.ValidatedCondition{
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Available",
+							},
+							{
+								Validated: report.Validated{
+									State: report.OK,
+								},
+								Type: "Progressing",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	checkClusterStatus(t, validate.report, expected)
+
+	checkSummary(t, validate.report, Summary{OK: 36})
+}
+
 func TestValidateClustersValidateFailed(t *testing.T) {
 	validate := testCommand(t, validateClusters, validateConfigFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
@@ -1004,7 +1362,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, validateClustersNamespaces)
+	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.report.Steps)
 	}
