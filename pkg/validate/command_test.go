@@ -597,7 +597,7 @@ func TestValidateClustersK8s(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
-	checkReport(t, validate.report, report.Passed)
+	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.report, nil)
 	checkNamespaces(t, validate.report, validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
@@ -957,7 +957,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Failed)
+	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, nil)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
@@ -975,7 +975,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Canceled)
+	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.report, nil)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
@@ -993,7 +993,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Failed)
+	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, nil)
 	checkNamespaces(t, validate.report, validateClustersNamespaces)
 	if len(validate.report.Steps) != 2 {
@@ -1023,7 +1023,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
-	checkReport(t, validate.report, report.Passed)
+	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, validateApplicationNamespaces)
 	if len(validate.report.Steps) != 2 {
@@ -1211,7 +1211,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Failed)
+	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
@@ -1228,7 +1228,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Canceled)
+	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 1 {
@@ -1245,7 +1245,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Failed)
+	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 2 {
@@ -1269,7 +1269,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Canceled)
+	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, nil)
 	if len(validate.report.Steps) != 2 {
@@ -1293,7 +1293,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
-	checkReport(t, validate.report, report.Failed)
+	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.report, testApplication)
 	checkNamespaces(t, validate.report, validateApplicationNamespaces)
 	if len(validate.report.Steps) != 2 {
@@ -1342,16 +1342,16 @@ func addGatheredData(t *testing.T, cmd *Command, name string) {
 	}
 }
 
-func checkReport(t *testing.T, report *Report, status report.Status) {
-	if report.Status != status {
-		t.Fatalf("expected status %q, got %q", status, report.Status)
+func checkReport(t *testing.T, cmd *Command, status report.Status) {
+	if cmd.report.Status != status {
+		t.Fatalf("expected status %q, got %q", status, cmd.report.Status)
 	}
-	if !report.Config.Equal(testConfig) {
-		t.Fatalf("expected config %q, got %q", testConfig, report.Config)
+	if !cmd.report.Config.Equal(cmd.Config()) {
+		t.Fatalf("expected config %q, got %q", cmd.Config(), cmd.report.Config)
 	}
-	duration := totalDuration(report.Steps)
-	if report.Duration != duration {
-		t.Fatalf("expected duration %v, got %v", duration, report.Duration)
+	duration := totalDuration(cmd.report.Steps)
+	if cmd.report.Duration != duration {
+		t.Fatalf("expected duration %v, got %v", duration, cmd.report.Duration)
 	}
 }
 
