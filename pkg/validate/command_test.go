@@ -590,9 +590,9 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 
 // Validate clusters tests.
 
-func TestValidateClustersPassed(t *testing.T) {
+func TestValidateClustersK8s(t *testing.T) {
 	validate := testCommand(t, validateClusters, &validation.Mock{})
-	addGatheredData(t, validate, "clusters")
+	addGatheredData(t, validate, "clusters/k8s")
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
