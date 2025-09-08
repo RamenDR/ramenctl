@@ -1,0 +1,120 @@
+apiVersion: v1
+data:
+  ramen_manager_config.yaml: |
+    apiVersion: ramendr.openshift.io/v1alpha1
+    drClusterOperator:
+      catalogSourceName: redhat-operators
+      catalogSourceNamespaceName: openshift-marketplace
+      channelName: stable-4.20
+      clusterServiceVersionName: odr-cluster-operator.v4.20.0-78.stable
+      deploymentAutomationEnabled: true
+      namespaceName: openshift-dr-system
+      packageName: odr-cluster-operator
+      s3SecretDistributionEnabled: true
+    health:
+      healthProbeBindAddress: :8081
+    kind: RamenConfig
+    kubeObjectProtection:
+      veleroNamespaceName: openshift-adp
+    leaderElection:
+      leaderElect: true
+      leaseDuration: 0s
+      renewDeadline: 0s
+      resourceLock: ''
+      resourceName: hub.ramendr.openshift.io
+      resourceNamespace: ''
+      retryPeriod: 0s
+    maxConcurrentReconciles: 50
+    metrics:
+      bindAddress: 127.0.0.1:9289
+    multiNamespace:
+      FeatureEnabled: true
+      volsyncSupported: true
+    ramenControllerType: dr-hub
+    ramenOpsNamespace: openshift-dr-ops
+    s3StoreProfiles:
+    - caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=
+      s3Bucket: odrbucket-244c8f95bf0d
+      s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c1.ibmcloud2.qe.rh-ocs.com
+      s3ProfileName: s3profile-prsurve-s2-c1-ocs-storagecluster
+      s3Region: noobaa
+      s3SecretRef:
+        name: 5e88331f09006ac31169b027235b50fd94458b6
+    - caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=
+      s3Bucket: odrbucket-244c8f95bf0d
+      s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c2.ibmcloud2.qe.rh-ocs.com
+      s3ProfileName: s3profile-prsurve-s2-c2-ocs-storagecluster
+      s3Region: noobaa
+      s3SecretRef:
+        name: 020a140310eb1fce63e2087087d9a0bdf972b93
+    volSync:
+      destinationCopyMethod: Direct
+    volumeUnprotectionEnabled: true
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"ramen_manager_config.yaml":"apiVersion: ramendr.openshift.io/v1alpha1\ndrClusterOperator:\n  catalogSourceName: redhat-operators\n  catalogSourceNamespaceName: openshift-marketplace\n  channelName: stable-4.20\n  clusterServiceVersionName: odr-cluster-operator.v4.20.0-78.stable\n  deploymentAutomationEnabled: true\n  namespaceName: openshift-dr-system\n  packageName: odr-cluster-operator\n  s3SecretDistributionEnabled: true\nhealth:\n  healthProbeBindAddress: :8081\nkind: RamenConfig\nkubeObjectProtection:\n  veleroNamespaceName: openshift-adp\nleaderElection:\n  leaderElect: true\n  leaseDuration: 0s\n  renewDeadline: 0s\n  resourceLock: ''\n  resourceName: hub.ramendr.openshift.io\n  resourceNamespace: ''\n  retryPeriod: 0s\nmaxConcurrentReconciles: 50\nmetrics:\n  bindAddress: 127.0.0.1:9289\nmultiNamespace:\n  FeatureEnabled: true\n  volsyncSupported: true\nramenControllerType: dr-hub\nramenOpsNamespace: openshift-dr-ops\ns3StoreProfiles:\n- caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=\n  s3Bucket: odrbucket-244c8f95bf0d\n  s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c1.ibmcloud2.qe.rh-ocs.com\n  s3ProfileName: s3profile-prsurve-s2-c1-ocs-storagecluster\n  s3Region: noobaa\n  s3SecretRef:\n    name: 5e88331f09006ac31169b027235b50fd94458b6\n- caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=\n  s3Bucket: odrbucket-244c8f95bf0d\n  s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c2.ibmcloud2.qe.rh-ocs.com\n  s3ProfileName: s3profile-prsurve-s2-c2-ocs-storagecluster\n  s3Region: noobaa\n  s3SecretRef:\n    name: 020a140310eb1fce63e2087087d9a0bdf972b93\nvolSync:\n  destinationCopyMethod: Direct\nvolumeUnprotectionEnabled: true\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"ramen-hub","cluster.open-cluster-management.io/backup":"ramen","olm.managed":"true","operators.coreos.com/odr-hub-operator.openshift-operators":""},"name":"ramen-hub-operator-config","namespace":"openshift-operators","ownerReferences":[{"apiVersion":"operators.coreos.com/v1alpha1","blockOwnerDeletion":false,"controller":false,"kind":"ClusterServiceVersion","name":"odr-hub-operator.v4.20.0-78.stable","uid":"d30c1562-95e2-46a9-81dd-c215308ec0c5"}]}}
+  creationTimestamp: "2025-09-02T15:09:40Z"
+  labels:
+    app: ramen-hub
+    cluster.open-cluster-management.io/backup: ramen
+    olm.managed: "true"
+    operators.coreos.com/odr-hub-operator.openshift-operators: ""
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data: {}
+      f:metadata:
+        f:labels:
+          .: {}
+          f:app: {}
+          f:olm.managed: {}
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"d30c1562-95e2-46a9-81dd-c215308ec0c5"}: {}
+    manager: catalog
+    operation: Update
+    time: "2025-09-02T15:10:05Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          f:cluster.open-cluster-management.io/backup: {}
+    manager: manager
+    operation: Update
+    time: "2025-09-02T15:10:05Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          f:operators.coreos.com/odr-hub-operator.openshift-operators: {}
+    manager: olm
+    operation: Update
+    time: "2025-09-02T15:10:06Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        f:ramen_manager_config.yaml: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+    manager: kubectl-client-side-apply
+    operation: Update
+    time: "2025-09-02T15:17:26Z"
+  name: ramen-hub-operator-config
+  namespace: openshift-operators
+  ownerReferences:
+  - apiVersion: operators.coreos.com/v1alpha1
+    blockOwnerDeletion: false
+    controller: false
+    kind: ClusterServiceVersion
+    name: odr-hub-operator.v4.20.0-78.stable
+    uid: d30c1562-95e2-46a9-81dd-c215308ec0c5
+  resourceVersion: "217972"
+  uid: fb7b3104-31e1-4e7c-abcc-783d873a00b0

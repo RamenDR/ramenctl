@@ -1,0 +1,100 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: DRPolicy
+metadata:
+  creationTimestamp: "2025-09-02T15:14:04Z"
+  finalizers:
+  - drpolicies.ramendr.openshift.io/ramen
+  generation: 2
+  labels:
+    cluster.open-cluster-management.io/backup: ramen
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels: {}
+      f:spec:
+        .: {}
+        f:drClusters: {}
+        f:replicationClassSelector: {}
+        f:schedulingInterval: {}
+        f:volumeSnapshotClassSelector: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2025-09-02T15:14:04Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .: {}
+          v:"drpolicies.ramendr.openshift.io/ramen": {}
+        f:labels:
+          f:cluster.open-cluster-management.io/backup: {}
+      f:spec:
+        f:volumeGroupSnapshotClassSelector: {}
+    manager: manager
+    operation: Update
+    time: "2025-09-02T15:14:05Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:async:
+          .: {}
+          f:peerClasses: {}
+        f:conditions: {}
+        f:sync: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-09-02T15:15:21Z"
+  name: odr-policy-5m
+  resourceVersion: "213265"
+  uid: 06ce9006-9ae4-482e-814b-dc204b1d8e28
+spec:
+  drClusters:
+  - prsurve-s2-c1
+  - prsurve-s2-c2
+  replicationClassSelector: {}
+  schedulingInterval: 5m
+  volumeGroupSnapshotClassSelector: {}
+  volumeSnapshotClassSelector: {}
+status:
+  async:
+    peerClasses:
+    - clusterIDs:
+      - 3dd9d0c7-c7c1-4107-a6d2-bc14a42f7e2f
+      - e79d1495-085d-4550-ac39-acdd098c5c8a
+      grouping: true
+      replicationID: 275fb2e9822a88bfbfb96516fd307ff3
+      storageClassName: ocs-storagecluster-ceph-rbd
+      storageID:
+      - 14f1460bb2aca3c89fd15836df9c179c
+      - 89f68235be51045ab86f4bb3d0327608
+    - clusterIDs:
+      - 3dd9d0c7-c7c1-4107-a6d2-bc14a42f7e2f
+      - e79d1495-085d-4550-ac39-acdd098c5c8a
+      grouping: true
+      replicationID: 275fb2e9822a88bfbfb96516fd307ff3
+      storageClassName: ocs-storagecluster-ceph-rbd-virtualization
+      storageID:
+      - 14f1460bb2aca3c89fd15836df9c179c
+      - 89f68235be51045ab86f4bb3d0327608
+    - clusterIDs:
+      - 3dd9d0c7-c7c1-4107-a6d2-bc14a42f7e2f
+      - e79d1495-085d-4550-ac39-acdd098c5c8a
+      grouping: true
+      storageClassName: ocs-storagecluster-cephfs
+      storageID:
+      - 759eed47ff7f7dbad68ad8af33b6d1a4
+      - e194c893f0ab46198ee34d2ed3cfdc63
+  conditions:
+  - lastTransitionTime: "2025-09-02T15:14:05Z"
+    message: drpolicy validated
+    observedGeneration: 2
+    reason: Succeeded
+    status: "True"
+    type: Validated
+  sync: {}

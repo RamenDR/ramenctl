@@ -1,0 +1,108 @@
+apiVersion: v1
+data:
+  ramen_manager_config.yaml: |
+    apiVersion: ramendr.openshift.io/v1alpha1
+    drClusterOperator:
+      catalogSourceName: redhat-operators
+      catalogSourceNamespaceName: openshift-marketplace
+      channelName: stable-4.20
+      clusterServiceVersionName: odr-cluster-operator.v4.20.0-78.stable
+      deploymentAutomationEnabled: true
+      namespaceName: openshift-dr-system
+      packageName: odr-cluster-operator
+      s3SecretDistributionEnabled: true
+    health:
+      healthProbeBindAddress: :8081
+    kind: RamenConfig
+    kubeObjectProtection:
+      veleroNamespaceName: openshift-adp
+    leaderElection:
+      leaderElect: true
+      leaseDuration: 0s
+      renewDeadline: 0s
+      resourceLock: ""
+      resourceName: dr-cluster.ramendr.openshift.io
+      resourceNamespace: ""
+      retryPeriod: 0s
+    maxConcurrentReconciles: 50
+    metrics:
+      bindAddress: 127.0.0.1:9289
+    multiNamespace:
+      FeatureEnabled: true
+      volsyncSupported: true
+    ramenControllerType: dr-cluster
+    ramenOpsNamespace: openshift-dr-ops
+    s3StoreProfiles:
+    - caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=
+      s3Bucket: odrbucket-244c8f95bf0d
+      s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c1.ibmcloud2.qe.rh-ocs.com
+      s3ProfileName: s3profile-prsurve-s2-c1-ocs-storagecluster
+      s3Region: noobaa
+      s3SecretRef:
+        name: 5e88331f09006ac31169b027235b50fd94458b6
+    - caCertificates: dGhpcyBpcyBub3QgYSBjYSBjZXJ0aWZpY2F0ZQo=
+      s3Bucket: odrbucket-244c8f95bf0d
+      s3CompatibleEndpoint: https://s3-openshift-storage.apps.prsurve-s2-c2.ibmcloud2.qe.rh-ocs.com
+      s3ProfileName: s3profile-prsurve-s2-c2-ocs-storagecluster
+      s3Region: noobaa
+      s3SecretRef:
+        name: 020a140310eb1fce63e2087087d9a0bdf972b93
+    volSync:
+      destinationCopyMethod: Direct
+    volumeUnprotectionEnabled: true
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-09-02T15:10:40Z"
+  labels:
+    olm.managed: "true"
+    operators.coreos.com/odr-cluster-operator.openshift-dr-system: ""
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .: {}
+          f:olm.managed: {}
+        f:ownerReferences:
+          k:{"uid":"fdb12d2f-108a-495f-baf1-f36399639ae5"}: {}
+    manager: catalog
+    operation: Update
+    time: "2025-09-02T15:10:56Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          f:operators.coreos.com/odr-cluster-operator.openshift-dr-system: {}
+    manager: olm
+    operation: Update
+    time: "2025-09-02T15:11:12Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:ramen_manager_config.yaml: {}
+      f:metadata:
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"130e3ada-f676-4c74-87d0-0ea2a8c260ba"}: {}
+    manager: work-agent
+    operation: Update
+    time: "2025-09-02T15:17:46Z"
+  name: ramen-dr-cluster-operator-config
+  namespace: openshift-dr-system
+  ownerReferences:
+  - apiVersion: operators.coreos.com/v1alpha1
+    blockOwnerDeletion: false
+    controller: false
+    kind: ClusterServiceVersion
+    name: odr-cluster-operator.v4.20.0-78.stable
+    uid: fdb12d2f-108a-495f-baf1-f36399639ae5
+  - apiVersion: work.open-cluster-management.io/v1
+    kind: AppliedManifestWork
+    name: 24da55313c8c1fb977eed75c36f90514b94890604a9dfea6b3a83cdfa56cc5cf-ramen-dr-cluster
+    uid: 130e3ada-f676-4c74-87d0-0ea2a8c260ba
+  resourceVersion: "284226"
+  uid: f5c0356c-a877-4e6d-bcf3-119f03b9525a

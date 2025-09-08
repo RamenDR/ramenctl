@@ -1,0 +1,80 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: DRCluster
+metadata:
+  creationTimestamp: "2025-09-02T15:10:40Z"
+  finalizers:
+  - drclusters.ramendr.openshift.io/ramen
+  generation: 2
+  labels:
+    cluster.open-cluster-management.io/backup: ramen
+  managedFields:
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"e3986036-28f7-4a1d-a33c-07c7ba4df1f4"}: {}
+      f:spec:
+        .: {}
+        f:s3ProfileName: {}
+    manager: odf-multicluster-orchestrator
+    operation: Update
+    time: "2025-09-02T15:10:40Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .: {}
+          v:"drclusters.ramendr.openshift.io/ramen": {}
+        f:labels:
+          .: {}
+          f:cluster.open-cluster-management.io/backup: {}
+    manager: manager
+    operation: Update
+    time: "2025-09-02T15:10:41Z"
+  - apiVersion: ramendr.openshift.io/v1alpha1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        .: {}
+        f:conditions: {}
+        f:phase: {}
+    manager: manager
+    operation: Update
+    subresource: status
+    time: "2025-09-02T15:11:24Z"
+  name: prsurve-s2-c2
+  ownerReferences:
+  - apiVersion: multicluster.odf.openshift.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: MirrorPeer
+    name: mirrorpeer-sample
+    uid: e3986036-28f7-4a1d-a33c-07c7ba4df1f4
+  resourceVersion: "206530"
+  uid: e42a0c88-1122-4704-b58a-b0a36f3c3f60
+spec:
+  s3ProfileName: s3profile-prsurve-s2-c2-ocs-storagecluster
+status:
+  conditions:
+  - lastTransitionTime: "2025-09-02T15:10:41Z"
+    message: Cluster Clean
+    observedGeneration: 2
+    reason: Clean
+    status: "False"
+    type: Fenced
+  - lastTransitionTime: "2025-09-02T15:10:41Z"
+    message: Cluster Clean
+    observedGeneration: 2
+    reason: Clean
+    status: "True"
+    type: Clean
+  - lastTransitionTime: "2025-09-02T15:11:24Z"
+    message: Validated the cluster
+    observedGeneration: 2
+    reason: Succeeded
+    status: "True"
+    type: Validated
+  phase: Available
