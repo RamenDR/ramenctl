@@ -317,7 +317,7 @@ func (c *Command) validateRamenConfigMap(
 
 	s.RamenControllerType = c.validatedRamenControllerType(config, controllerType)
 
-	if err := c.validatedS3Profiles(&s.S3StoreProfiles, cluster, config); err != nil {
+	if err := c.validatedS3Profiles(&s.S3StoreProfiles, cluster, config, namespace); err != nil {
 		return fmt.Errorf("failed to validate s3 profiles: %w", err)
 	}
 
@@ -348,11 +348,12 @@ func (c *Command) validatedS3Profiles(
 	s *report.ValidatedS3StoreProfilesList,
 	cluster *types.Cluster,
 	config *ramenapi.RamenConfig,
+	configNamespace string,
 ) error {
 	for i := range config.S3StoreProfiles {
 		profile := &config.S3StoreProfiles[i]
 
-		validatedSecret, err := c.validatedSecretRef(profile.S3SecretRef, cluster)
+		validatedSecret, err := c.validatedSecretRef(profile.S3SecretRef, cluster, configNamespace)
 		if err != nil {
 			return fmt.Errorf("failed to validate s3 profile %q secret: %w",
 				profile.S3ProfileName, err)
@@ -379,25 +380,31 @@ func (c *Command) validatedS3Profiles(
 func (c *Command) validatedSecretRef(
 	secretRef corev1.SecretReference,
 	cluster *types.Cluster,
+	configNamespace string,
 ) (report.ValidatedS3SecretRef, error) {
 	log := c.Logger()
 	reader := c.outputReader(cluster.Name)
 	validated := report.ValidatedS3SecretRef{Value: secretRef}
 
-	_, err := readSecret(reader, secretRef.Name, secretRef.Namespace)
+	namespace := secretRef.Namespace
+	if namespace == "" {
+		namespace = configNamespace
+	}
+
+	_, err := readSecret(reader, secretRef.Name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			err := fmt.Errorf("failed to read secret \"%s/%s\" from cluster %q: %w",
-				secretRef.Namespace, secretRef.Name, cluster.Name, err)
+				namespace, secretRef.Name, cluster.Name, err)
 			return validated, err
 		}
 		log.Debugf("Secret \"%s/%s\" does not exist in cluster %q",
-			secretRef.Namespace, secretRef.Name, cluster.Name)
+			namespace, secretRef.Name, cluster.Name)
 		validated.State = report.Problem
 		validated.Description = "Secret does not exist"
 	} else {
 		log.Debugf("Read secret \"%s/%s\" from cluster %q",
-			secretRef.Namespace, secretRef.Name, cluster.Name)
+			namespace, secretRef.Name, cluster.Name)
 		// TODO:
 		// - Validate secret identical to hub secret?
 		// - Validate secret required fields?
