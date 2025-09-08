@@ -41,15 +41,24 @@ const (
 	resourceWasDeleted   = "Resource was deleted"
 )
 
-var (
-	testConfig = &config.Config{
-		Namespaces: e2econfig.K8sNamespaces,
-	}
+// testSystem is a test system such as drenv or ocp clusters.
+type testSystem struct {
+	name   string
+	config *config.Config
+	env    *types.Env
+}
 
-	testEnv = &types.Env{
-		Hub: &types.Cluster{Name: "hub"},
-		C1:  &types.Cluster{Name: "dr1"},
-		C2:  &types.Cluster{Name: "dr2"},
+var (
+	testK8s = testSystem{
+		name: "k8s",
+		config: &config.Config{
+			Namespaces: e2econfig.K8sNamespaces,
+		},
+		env: &types.Env{
+			Hub: &types.Cluster{Name: "hub"},
+			C1:  &types.Cluster{Name: "dr1"},
+			C2:  &types.Cluster{Name: "dr2"},
+		},
 	}
 
 	testApplication = &report.Application{
@@ -68,8 +77,8 @@ var (
 	})
 
 	validateClustersNamespaces = sets.Sorted([]string{
-		testConfig.Namespaces.RamenHubNamespace,
-		testConfig.Namespaces.RamenDRClusterNamespace,
+		testK8s.config.Namespaces.RamenHubNamespace,
+		testK8s.config.Namespaces.RamenDRClusterNamespace,
 	})
 
 	applicationMock = &validation.Mock{
@@ -126,7 +135,7 @@ var (
 // Command common tests
 
 func TestValidatedDeleted(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	t.Run("nil", func(t *testing.T) {
 		validated := cmd.validatedDeleted(nil)
@@ -183,7 +192,7 @@ func TestValidatedDeleted(t *testing.T) {
 // Command application tests
 
 func TestValidatedDRPCAction(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 	known := []struct {
 		name   string
 		action string
@@ -237,7 +246,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 		phase  ramenapi.DRState
 	}
 
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	unstable := []struct {
 		stable ramenapi.DRState
@@ -315,7 +324,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 }
 
 func TestValidatedDRPCPhaseOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	cases := []struct {
 		name   string
@@ -357,7 +366,7 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 	progression := ramenapi.ProgressionCompleted
 
 	t.Run(string(progression), func(t *testing.T) {
@@ -385,7 +394,7 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	progressions := []ramenapi.ProgressionStatus{
 		ramenapi.ProgressionCreatingMW,
@@ -442,7 +451,7 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 }
 
 func TestValidatedVRGSTateOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -479,7 +488,7 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 }
 
 func TestValidatedVRGSTateError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -522,7 +531,7 @@ func TestValidatedVRGSTateError(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	t.Run("bound", func(t *testing.T) {
 		pvc := &corev1.PersistentVolumeClaim{
@@ -549,7 +558,7 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{})
+	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
 
 	cases := []struct {
 		name  string
@@ -591,8 +600,8 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 // Validate clusters tests.
 
 func TestValidateClustersK8s(t *testing.T) {
-	validate := testCommand(t, validateClusters, &validation.Mock{})
-	addGatheredData(t, validate, "clusters/k8s")
+	validate := testCommand(t, validateClusters, &validation.Mock{}, testK8s)
+	addGatheredData(t, validate, "clusters/"+testK8s.name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -708,7 +717,7 @@ func TestValidateClustersK8s(t *testing.T) {
 			Ramen: report.RamenSummary{
 				ConfigMap: report.ConfigMapSummary{
 					Name:      ramen.HubOperatorName + "-config",
-					Namespace: testConfig.Namespaces.RamenHubNamespace,
+					Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
 							State: report.OK,
@@ -733,7 +742,7 @@ func TestValidateClustersK8s(t *testing.T) {
 									},
 									Value: corev1.SecretReference{
 										Name:      "ramen-s3-secret-dr1",
-										Namespace: testConfig.Namespaces.RamenHubNamespace,
+										Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 									},
 								},
 							},
@@ -745,7 +754,7 @@ func TestValidateClustersK8s(t *testing.T) {
 									},
 									Value: corev1.SecretReference{
 										Name:      "ramen-s3-secret-dr2",
-										Namespace: testConfig.Namespaces.RamenHubNamespace,
+										Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 									},
 								},
 							},
@@ -754,7 +763,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				},
 				Deployment: report.DeploymentSummary{
 					Name:      "ramen-hub-operator",
-					Namespace: testConfig.Namespaces.RamenHubNamespace,
+					Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
 							State: report.OK,
@@ -789,7 +798,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
 						Name:      ramen.DRClusterOperatorName + "-config",
-						Namespace: testConfig.Namespaces.RamenDRClusterNamespace,
+						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
 								State: report.OK,
@@ -814,7 +823,7 @@ func TestValidateClustersK8s(t *testing.T) {
 										},
 										Value: corev1.SecretReference{
 											Name:      "ramen-s3-secret-dr1",
-											Namespace: testConfig.Namespaces.RamenHubNamespace,
+											Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 										},
 									},
 								},
@@ -826,7 +835,7 @@ func TestValidateClustersK8s(t *testing.T) {
 										},
 										Value: corev1.SecretReference{
 											Name:      "ramen-s3-secret-dr2",
-											Namespace: testConfig.Namespaces.RamenHubNamespace,
+											Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 										},
 									},
 								},
@@ -835,7 +844,7 @@ func TestValidateClustersK8s(t *testing.T) {
 					},
 					Deployment: report.DeploymentSummary{
 						Name:      "ramen-dr-cluster-operator",
-						Namespace: testConfig.Namespaces.RamenDRClusterNamespace,
+						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
 								State: report.OK,
@@ -869,7 +878,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
 						Name:      ramen.DRClusterOperatorName + "-config",
-						Namespace: testConfig.Namespaces.RamenDRClusterNamespace,
+						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
 								State: report.OK,
@@ -894,7 +903,7 @@ func TestValidateClustersK8s(t *testing.T) {
 										},
 										Value: corev1.SecretReference{
 											Name:      "ramen-s3-secret-dr1",
-											Namespace: testConfig.Namespaces.RamenHubNamespace,
+											Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 										},
 									},
 								},
@@ -906,7 +915,7 @@ func TestValidateClustersK8s(t *testing.T) {
 										},
 										Value: corev1.SecretReference{
 											Name:      "ramen-s3-secret-dr2",
-											Namespace: testConfig.Namespaces.RamenHubNamespace,
+											Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 										},
 									},
 								},
@@ -915,7 +924,7 @@ func TestValidateClustersK8s(t *testing.T) {
 					},
 					Deployment: report.DeploymentSummary{
 						Name:      "ramen-dr-cluster-operator",
-						Namespace: testConfig.Namespaces.RamenDRClusterNamespace,
+						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
 								State: report.OK,
@@ -952,7 +961,7 @@ func TestValidateClustersK8s(t *testing.T) {
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, validateConfigFailed)
+	validate := testCommand(t, validateClusters, validateConfigFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -970,7 +979,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, validateConfigCanceled)
+	validate := testCommand(t, validateClusters, validateConfigCanceled, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -988,7 +997,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, gatherClusterFailed)
+	validate := testCommand(t, validateClusters, gatherClusterFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1017,7 +1026,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 // Validate application tests.
 
 func TestValidateApplicationPassed(t *testing.T) {
-	validate := testCommand(t, validateApplication, applicationMock)
+	validate := testCommand(t, validateApplication, applicationMock, testK8s)
 	addGatheredData(t, validate, "appset-deploy-rbd")
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		dumpCommandLog(t, validate)
@@ -1206,7 +1215,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, validateConfigFailed)
+	validate := testCommand(t, validateApplication, validateConfigFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1223,7 +1232,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 }
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
-	validate := testCommand(t, validateApplication, validateConfigCanceled)
+	validate := testCommand(t, validateApplication, validateConfigCanceled, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1240,7 +1249,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, inspectApplicationFailed)
+	validate := testCommand(t, validateApplication, inspectApplicationFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1264,7 +1273,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 }
 
 func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
-	validate := testCommand(t, validateApplication, inspectApplicationCanceled)
+	validate := testCommand(t, validateApplication, inspectApplicationCanceled, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1288,7 +1297,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, gatherClusterFailed)
+	validate := testCommand(t, validateApplication, gatherClusterFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1319,15 +1328,20 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 
 // Helpers.
 
-func testCommand(t *testing.T, name string, backend validation.Validation) *Command {
-	cmd, err := command.ForTest(name, testEnv, t.TempDir())
+func testCommand(
+	t *testing.T,
+	name string,
+	backend validation.Validation,
+	system testSystem,
+) *Command {
+	cmd, err := command.ForTest(name, system.env, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, testConfig, backend)
+	return newCommand(cmd, system.config, backend)
 }
 
 // addGatheredData adds fake gathered data to the output directory.
