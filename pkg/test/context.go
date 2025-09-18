@@ -58,7 +58,7 @@ func (c *Context) ManagementNamespace() string {
 }
 
 func (c *Context) AppNamespace() string {
-	return namespacePrefix + c.name
+	return c.Config().NamespacePrefix + c.name
 }
 
 func (c *Context) Logger() *zap.SugaredLogger {

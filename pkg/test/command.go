@@ -26,9 +26,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
-// namespacePrefix is used for all namespaces created by tests.
-const namespacePrefix = "test-"
-
 // Command is a ramenctl test command.
 type Command struct {
 	// Command is the generic command used by all ramenctl commands.
@@ -73,9 +70,6 @@ func newCommand(
 	cfg *e2econfig.Config,
 	backend testing.Testing,
 ) *Command {
-	// This is not user configurable. We use the same prefix for all namespaces created by the test.
-	cfg.Channel.Namespace = namespacePrefix + "gitops"
-
 	testCmd := &Command{
 		command:   cmd,
 		config:    cfg,
