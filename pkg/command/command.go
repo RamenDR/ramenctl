@@ -5,6 +5,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -64,9 +65,8 @@ func New(
 	if err != nil {
 		// Stop the signal handler before we fail.
 		stop()
-		err := fmt.Errorf("failed to create env: %w", err)
-		log.Error(err)
-		return nil, err
+		log.Errorf("Failed to create env: %s", err)
+		return nil, errors.New("failed to create env")
 	}
 
 	return &Command{
