@@ -10,7 +10,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.10.1
 	github.com/ramendr/ramen/api v0.0.0-20250710152106-9a4f493138c5
-	github.com/ramendr/ramen/e2e v0.0.0-20250921165937-3b6482c31969
+	github.com/ramendr/ramen/e2e v0.0.0-20250925105626-1e3bf8dbc4d1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
