@@ -3,8 +3,8 @@ module github.com/ramendr/ramenctl
 // Required minimum version, must be available in downstream builders.
 go 1.24.0
 
-// Recommended version: latest go 1.24 release.
-toolchain go1.24.5
+// Recommended version: latest go 1.25 release.
+toolchain go1.25.0
 
 require (
 	github.com/go-logr/zapr v1.3.0
