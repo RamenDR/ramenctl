@@ -81,6 +81,12 @@ type ValidatedDRPoliciesList struct {
 	Value []DRPolicySummary `json:"value,omitempty"`
 }
 
+// ValidatedPeerClassesList is a validated list of peerClasses in a DRPolicy.
+type ValidatedPeerClassesList struct {
+	Validated
+	Value []PeerClassesSummary `json:"value,omitempty"`
+}
+
 func (v *Validated) GetState() ValidationState {
 	return v.State
 }
@@ -127,6 +133,31 @@ func (v *ValidatedDRPoliciesList) Equal(o *ValidatedDRPoliciesList) bool {
 		v.Value,
 		o.Value,
 		func(a DRPolicySummary, b DRPolicySummary) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
+	return true
+}
+
+func (v *ValidatedPeerClassesList) Equal(o *ValidatedPeerClassesList) bool {
+	if v == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if v.State != o.State {
+		return false
+	}
+	if v.Description != o.Description {
+		return false
+	}
+	if !slices.EqualFunc(
+		v.Value,
+		o.Value,
+		func(a PeerClassesSummary, b PeerClassesSummary) bool {
 			return a.Equal(&b)
 		},
 	) {

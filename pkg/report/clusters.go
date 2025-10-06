@@ -16,10 +16,17 @@ type DRClusterSummary struct {
 
 // DRPolicySummary is the summary of a DRPolicy.
 type DRPolicySummary struct {
-	Name               string               `json:"name"`
-	DRClusters         []string             `json:"drClusters"`
-	SchedulingInterval string               `json:"schedulingInterval"`
-	Conditions         []ValidatedCondition `json:"conditions,omitempty"`
+	Name               string                   `json:"name"`
+	DRClusters         []string                 `json:"drClusters"`
+	SchedulingInterval string                   `json:"schedulingInterval"`
+	PeerClasses        ValidatedPeerClassesList `json:"peerClasses"`
+	Conditions         []ValidatedCondition     `json:"conditions,omitempty"`
+}
+
+// PeerClassesSummary is the summary of peerClasses in a DRPolicy.
+type PeerClassesSummary struct {
+	StorageClassName string `json:"storageClassName"`
+	ReplicationID    string `json:"replicationID,omitempty"`
 }
 
 // S3StoreProfilesSummary is the summary of S3 store profiles in the ConfigMap
@@ -163,7 +170,26 @@ func (d *DRPolicySummary) Equal(o *DRPolicySummary) bool {
 	if d.SchedulingInterval != o.SchedulingInterval {
 		return false
 	}
+	if !d.PeerClasses.Equal(&o.PeerClasses) {
+		return false
+	}
 	if !slices.Equal(d.Conditions, o.Conditions) {
+		return false
+	}
+	return true
+}
+
+func (p *PeerClassesSummary) Equal(o *PeerClassesSummary) bool {
+	if p == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if p.StorageClassName != o.StorageClassName {
+		return false
+	}
+	if p.ReplicationID != o.ReplicationID {
 		return false
 	}
 	return true

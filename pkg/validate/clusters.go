@@ -147,6 +147,7 @@ func (c *Command) validateClustersDRPolicies(
 			Name:               drPolicy.Name,
 			SchedulingInterval: drPolicy.Spec.SchedulingInterval,
 			DRClusters:         drPolicy.Spec.DRClusters,
+			PeerClasses:        c.validatedPeerClasses(drPolicy),
 			Conditions:         c.validatedConditions(drPolicy, drPolicy.Status.Conditions),
 		}
 		drPoliciesList.Value = append(drPoliciesList.Value, dps)
@@ -162,6 +163,30 @@ func (c *Command) validateClustersDRPolicies(
 	c.report.Summary.Add(drPoliciesList)
 
 	return nil
+}
+
+func (c *Command) validatedPeerClasses(
+	drPolicy *ramenapi.DRPolicy,
+) report.ValidatedPeerClassesList {
+	peerClassesList := report.ValidatedPeerClassesList{}
+
+	for _, peerClass := range drPolicy.Status.Async.PeerClasses {
+		pcs := report.PeerClassesSummary{
+			StorageClassName: peerClass.StorageClassName,
+			ReplicationID:    peerClass.ReplicationID,
+		}
+		peerClassesList.Value = append(peerClassesList.Value, pcs)
+	}
+
+	if len(peerClassesList.Value) == 0 {
+		peerClassesList.State = report.Problem
+		peerClassesList.Description = "No peer classes found"
+	} else {
+		peerClassesList.State = report.OK
+	}
+	c.report.Summary.Add(&peerClassesList)
+
+	return peerClassesList
 }
 
 func (c *Command) validateClustersDRClusters(

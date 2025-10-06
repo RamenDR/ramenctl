@@ -706,6 +706,20 @@ func TestValidateClustersK8s(t *testing.T) {
 						Name:               "dr-policy",
 						DRClusters:         []string{"dr1", "dr2"},
 						SchedulingInterval: "1m",
+						PeerClasses: report.ValidatedPeerClassesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.PeerClassesSummary{
+								{
+									StorageClassName: "rook-ceph-block",
+									ReplicationID:    "rook-ceph-replication-1",
+								},
+								{
+									StorageClassName: "rook-cephfs-fs1",
+								},
+							},
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
@@ -719,6 +733,19 @@ func TestValidateClustersK8s(t *testing.T) {
 						Name:               "dr-policy-5m",
 						DRClusters:         []string{"dr1", "dr2"},
 						SchedulingInterval: "5m",
+						PeerClasses: report.ValidatedPeerClassesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.PeerClassesSummary{
+								{
+									StorageClassName: "rook-ceph-block",
+								},
+								{
+									StorageClassName: "rook-cephfs-fs1",
+								},
+							},
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
@@ -973,7 +1000,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 37})
+	checkSummary(t, validate.report, Summary{OK: 39})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -1067,6 +1094,24 @@ func TestValidateClustersOcp(t *testing.T) {
 						Name:               "odr-policy-5m",
 						DRClusters:         []string{"prsurve-s2-c1", "prsurve-s2-c2"},
 						SchedulingInterval: "5m",
+						PeerClasses: report.ValidatedPeerClassesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.PeerClassesSummary{
+								{
+									StorageClassName: "ocs-storagecluster-ceph-rbd",
+									ReplicationID:    "275fb2e9822a88bfbfb96516fd307ff3",
+								},
+								{
+									StorageClassName: "ocs-storagecluster-ceph-rbd-virtualization",
+									ReplicationID:    "275fb2e9822a88bfbfb96516fd307ff3",
+								},
+								{
+									StorageClassName: "ocs-storagecluster-cephfs",
+								},
+							},
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
@@ -1315,7 +1360,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 36})
+	checkSummary(t, validate.report, Summary{OK: 37})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {

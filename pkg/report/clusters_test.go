@@ -100,6 +100,16 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Hub.DRPolicies.Value[0].SchedulingInterval = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
+	t.Run("hub drpolicy peer classes state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.DRPolicies.Value[0].PeerClasses.State = report.Problem
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("hub drpolicy peer classes storage class name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.DRPolicies.Value[0].PeerClasses.Value[0].StorageClassName = modified
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("hub drpolicy conditions", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.DRPolicies.Value[0].Conditions[0].State = report.Problem
@@ -382,6 +392,20 @@ func testClusterStatus() *report.ClustersStatus {
 						Name:               "dr-policy-1m",
 						DRClusters:         []string{"dr1", "dr2"},
 						SchedulingInterval: "1m",
+						PeerClasses: report.ValidatedPeerClassesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.PeerClassesSummary{
+								{
+									StorageClassName: "rook-ceph-block",
+									ReplicationID:    "rook-ceph-replication-1",
+								},
+								{
+									StorageClassName: "rook-cephfs-fs1",
+								},
+							},
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
@@ -395,6 +419,20 @@ func testClusterStatus() *report.ClustersStatus {
 						Name:               "dr-policy-5m",
 						DRClusters:         []string{"dr1", "dr2"},
 						SchedulingInterval: "5m",
+						PeerClasses: report.ValidatedPeerClassesList{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: []report.PeerClassesSummary{
+								{
+									StorageClassName: "rook-ceph-block",
+									ReplicationID:    "rook-ceph-replication-1",
+								},
+								{
+									StorageClassName: "rook-cephfs-fs1",
+								},
+							},
+						},
 						Conditions: []report.ValidatedCondition{
 							{
 								Validated: report.Validated{
