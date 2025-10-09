@@ -740,6 +740,7 @@ func TestValidateClustersK8s(t *testing.T) {
 							Value: []report.PeerClassesSummary{
 								{
 									StorageClassName: "rook-ceph-block",
+									ReplicationID:    "rook-ceph-replication-1",
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
