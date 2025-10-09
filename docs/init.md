@@ -105,7 +105,7 @@ repo:
 
 ## DRPolicy for test command.
 # - Modify to match actual DRPolicy in the hub cluster.
-drPolicy: dr-policy
+drPolicy: dr-policy-1m
 
 ## ClusterSet for test command.
 # - Modify to match your Open Cluster Management configuration.

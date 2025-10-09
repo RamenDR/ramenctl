@@ -3,7 +3,7 @@ kind: DRPolicy
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"ramendr.openshift.io/v1alpha1","kind":"DRPolicy","metadata":{"annotations":{},"name":"dr-policy"},"spec":{"drClusters":["dr1","dr2"],"replicationClassSelector":{},"schedulingInterval":"1m","volumeSnapshotClassSelector":{}}}
+      {"apiVersion":"ramendr.openshift.io/v1alpha1","kind":"DRPolicy","metadata":{"annotations":{},"name":"dr-policy-1m"},"spec":{"drClusters":["dr1","dr2"],"replicationClassSelector":{},"schedulingInterval":"1m","volumeSnapshotClassSelector":{}}}
   creationTimestamp: "2025-08-11T09:46:45Z"
   finalizers:
   - drpolicies.ramendr.openshift.io/ramen
@@ -56,7 +56,7 @@ metadata:
     operation: Update
     subresource: status
     time: "2025-08-11T09:46:47Z"
-  name: dr-policy
+  name: dr-policy-1m
   resourceVersion: "3715"
   uid: 5d3eb64d-fbdd-451a-93da-412bd243b51d
 spec:
