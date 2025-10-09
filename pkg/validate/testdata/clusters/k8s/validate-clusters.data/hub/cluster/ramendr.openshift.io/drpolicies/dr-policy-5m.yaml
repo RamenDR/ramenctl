@@ -66,6 +66,7 @@ status:
     - clusterIDs:
       - b9382f56-e681-400f-89fa-50b85fd15279
       - 628066a2-b863-4aed-9d06-84f35ecef1af
+      replicationID: rook-ceph-replication-1
       storageClassName: rook-ceph-block
       storageID:
       - rook-ceph-block-dr1-1

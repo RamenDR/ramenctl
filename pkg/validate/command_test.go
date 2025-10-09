@@ -703,7 +703,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				},
 				Value: []report.DRPolicySummary{
 					{
-						Name:               "dr-policy",
+						Name:               "dr-policy-1m",
 						DRClusters:         []string{"dr1", "dr2"},
 						SchedulingInterval: "1m",
 						PeerClasses: report.ValidatedPeerClassesList{
@@ -740,6 +740,7 @@ func TestValidateClustersK8s(t *testing.T) {
 							Value: []report.PeerClassesSummary{
 								{
 									StorageClassName: "rook-ceph-block",
+									ReplicationID:    "rook-ceph-replication-1",
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
