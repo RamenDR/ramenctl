@@ -400,9 +400,11 @@ func testClusterStatus() *report.ClustersStatus {
 								{
 									StorageClassName: "rook-ceph-block",
 									ReplicationID:    "rook-ceph-replication-1",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
+									Grouping:         true,
 								},
 							},
 						},
@@ -427,9 +429,11 @@ func testClusterStatus() *report.ClustersStatus {
 								{
 									StorageClassName: "rook-ceph-block",
 									ReplicationID:    "rook-ceph-replication-1",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
+									Grouping:         true,
 								},
 							},
 						},
