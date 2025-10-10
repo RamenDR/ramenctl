@@ -174,6 +174,7 @@ func (c *Command) validatedPeerClasses(
 		pcs := report.PeerClassesSummary{
 			StorageClassName: peerClass.StorageClassName,
 			ReplicationID:    peerClass.ReplicationID,
+			Grouping:         peerClass.Grouping,
 		}
 		peerClassesList.Value = append(peerClassesList.Value, pcs)
 	}

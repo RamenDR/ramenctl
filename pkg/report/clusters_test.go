@@ -110,6 +110,11 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Hub.DRPolicies.Value[0].PeerClasses.Value[0].StorageClassName = modified
 		checkClustersNotEqual(t, c1, c2)
 	})
+	t.Run("hub drpolicy peer classes grouping", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.DRPolicies.Value[0].PeerClasses.Value[0].Grouping = false
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("hub drpolicy conditions", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.DRPolicies.Value[0].Conditions[0].State = report.Problem
@@ -400,9 +405,11 @@ func testClusterStatus() *report.ClustersStatus {
 								{
 									StorageClassName: "rook-ceph-block",
 									ReplicationID:    "rook-ceph-replication-1",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
+									Grouping:         true,
 								},
 							},
 						},
@@ -427,9 +434,11 @@ func testClusterStatus() *report.ClustersStatus {
 								{
 									StorageClassName: "rook-ceph-block",
 									ReplicationID:    "rook-ceph-replication-1",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "rook-cephfs-fs1",
+									Grouping:         true,
 								},
 							},
 						},
