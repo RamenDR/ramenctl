@@ -710,6 +710,8 @@ func TestValidateClustersK8s(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							// TODO: Update expected peerclass status to include grouping field
+							// when CG is supported in drenv.
 							Value: []report.PeerClassesSummary{
 								{
 									StorageClassName: "rook-ceph-block",
@@ -737,6 +739,8 @@ func TestValidateClustersK8s(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+							// TODO: Update expected peerclass status to include grouping field
+							// when CG is supported in drenv.
 							Value: []report.PeerClassesSummary{
 								{
 									StorageClassName: "rook-ceph-block",
@@ -1102,13 +1106,16 @@ func TestValidateClustersOcp(t *testing.T) {
 								{
 									StorageClassName: "ocs-storagecluster-ceph-rbd",
 									ReplicationID:    "275fb2e9822a88bfbfb96516fd307ff3",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "ocs-storagecluster-ceph-rbd-virtualization",
 									ReplicationID:    "275fb2e9822a88bfbfb96516fd307ff3",
+									Grouping:         true,
 								},
 								{
 									StorageClassName: "ocs-storagecluster-cephfs",
+									Grouping:         true,
 								},
 							},
 						},

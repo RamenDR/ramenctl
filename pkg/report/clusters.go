@@ -27,6 +27,7 @@ type DRPolicySummary struct {
 type PeerClassesSummary struct {
 	StorageClassName string `json:"storageClassName"`
 	ReplicationID    string `json:"replicationID,omitempty"`
+	Grouping         bool   `json:"grouping,omitempty"`
 }
 
 // S3StoreProfilesSummary is the summary of S3 store profiles in the ConfigMap
@@ -190,6 +191,9 @@ func (p *PeerClassesSummary) Equal(o *PeerClassesSummary) bool {
 		return false
 	}
 	if p.ReplicationID != o.ReplicationID {
+		return false
+	}
+	if p.Grouping != o.Grouping {
 		return false
 	}
 	return true
