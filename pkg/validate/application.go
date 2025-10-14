@@ -232,6 +232,7 @@ func (c *Command) validateApplicationVRG(
 	s.Deleted = c.validatedDeleted(vrg)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
+	s.PVCGroups = c.pvcGroups(vrg)
 	s.State = c.validatedVRGState(vrg, stableState)
 
 	return nil
@@ -439,4 +440,18 @@ func (c *Command) validatedProtectedPVCConditions(
 		conditions = append(conditions, validated)
 	}
 	return conditions
+}
+
+func (c *Command) pvcGroups(vrg *ramenapi.VolumeReplicationGroup) []report.PVCGroupsSummary {
+	if len(vrg.Status.PVCGroups) == 0 {
+		return nil
+	}
+
+	groups := make([]report.PVCGroupsSummary, 0, len(vrg.Status.PVCGroups))
+	for _, group := range vrg.Status.PVCGroups {
+		if len(group.Grouped) > 0 {
+			groups = append(groups, report.PVCGroupsSummary{Grouped: group.Grouped})
+		}
+	}
+	return groups
 }

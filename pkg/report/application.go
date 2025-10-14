@@ -25,6 +25,11 @@ type ProtectedPVCSummary struct {
 	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
 }
 
+// PVCGroupsSummary represents list of CGs that are protected by the VRG.
+type PVCGroupsSummary struct {
+	Grouped []string `json:"grouped,omitempty"`
+}
+
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
 	Name        string               `json:"name"`
@@ -45,6 +50,7 @@ type VRGSummary struct {
 	State         ValidatedString       `json:"state"`
 	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
 	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
+	PVCGroups     []PVCGroupsSummary    `json:"pvcGroups,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.
@@ -178,6 +184,15 @@ func (v *VRGSummary) Equal(o *VRGSummary) bool {
 	) {
 		return false
 	}
+	if !slices.EqualFunc(
+		v.PVCGroups,
+		o.PVCGroups,
+		func(a PVCGroupsSummary, b PVCGroupsSummary) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
 	return true
 }
 
@@ -204,6 +219,19 @@ func (p *ProtectedPVCSummary) Equal(o *ProtectedPVCSummary) bool {
 		return false
 	}
 	if !slices.Equal(p.Conditions, o.Conditions) {
+		return false
+	}
+	return true
+}
+
+func (p *PVCGroupsSummary) Equal(o *PVCGroupsSummary) bool {
+	if p == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if !slices.Equal(p.Grouped, o.Grouped) {
 		return false
 	}
 	return true

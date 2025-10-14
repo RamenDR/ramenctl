@@ -198,6 +198,16 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Conditions[0].State = report.Problem
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("primary cluster vrg pvcgroups nil", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.PrimaryCluster.VRG.PVCGroups = nil
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("primary cluster vrg pvcgroups grouped", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.PrimaryCluster.VRG.PVCGroups[0].Grouped = []string{"different-pvc"}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("secondary cluster name", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.SecondaryCluster.Name = modified
@@ -403,6 +413,11 @@ func testApplicationStatus() *report.ApplicationStatus {
 								Type: "DataProtected",
 							},
 						},
+					},
+				},
+				PVCGroups: []report.PVCGroupsSummary{
+					{
+						Grouped: []string{"pvc-name"},
 					},
 				},
 			},

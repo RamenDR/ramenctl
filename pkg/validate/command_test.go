@@ -1589,6 +1589,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 						},
 					},
 				},
+				// TODO: https://github.com/RamenDR/ramenctl/issues/330
 			},
 		},
 		SecondaryCluster: report.ApplicationStatusCluster{
