@@ -8,10 +8,9 @@ import (
 	"fmt"
 	stdtime "time"
 
-	"go.uber.org/zap"
-
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	"go.uber.org/zap"
 )
 
 // Context implements types.TestContext interface.

@@ -9,6 +9,7 @@ import (
 	"github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/workloads"
+
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 

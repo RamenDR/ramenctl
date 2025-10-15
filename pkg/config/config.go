@@ -9,9 +9,9 @@ import (
 	"maps"
 	"os"
 
+	"github.com/ramendr/ramen/e2e/config"
 	"github.com/spf13/viper"
 
-	"github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 

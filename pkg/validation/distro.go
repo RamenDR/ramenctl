@@ -6,12 +6,11 @@ package validation
 import (
 	"fmt"
 
+	e2econfig "github.com/ramendr/ramen/e2e/config"
+	"github.com/ramendr/ramen/e2e/types"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	e2econfig "github.com/ramendr/ramen/e2e/config"
-	"github.com/ramendr/ramen/e2e/types"
 )
 
 // detectDistro detects the cluster distribution. If distro is set in config, it uses the user

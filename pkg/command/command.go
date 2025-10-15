@@ -11,12 +11,11 @@ import (
 	"os/signal"
 	"path/filepath"
 
-	"go.uber.org/zap"
-	"sigs.k8s.io/yaml"
-
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	e2eenv "github.com/ramendr/ramen/e2e/env"
 	"github.com/ramendr/ramen/e2e/types"
+	"go.uber.org/zap"
+	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/console"
 )

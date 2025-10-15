@@ -5,6 +5,7 @@ package validation
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+
 	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 

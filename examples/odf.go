@@ -7,10 +7,10 @@ package main
 import (
 	"log"
 
+	"github.com/spf13/cobra"
+
 	dr "github.com/ramendr/ramenctl/cmd/commands"
 	drbuild "github.com/ramendr/ramenctl/pkg/build"
-
-	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{

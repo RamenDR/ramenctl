@@ -6,7 +6,6 @@ package config
 import (
 	"fmt"
 	"os"
-
 	"path/filepath"
 
 	"sigs.k8s.io/yaml"

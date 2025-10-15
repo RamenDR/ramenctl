@@ -11,9 +11,10 @@ import (
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
-	"github.com/ramendr/ramenctl/pkg/gathering"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
+
+	"github.com/ramendr/ramenctl/pkg/gathering"
 )
 
 const (

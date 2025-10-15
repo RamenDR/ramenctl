@@ -6,9 +6,8 @@ package test
 import (
 	"testing"
 
-	"sigs.k8s.io/yaml"
-
 	e2econfig "github.com/ramendr/ramen/e2e/config"
+	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"

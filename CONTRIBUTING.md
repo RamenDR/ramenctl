@@ -82,7 +82,7 @@ git commit --amend -s
 ## Coding Style
 
 The *ramenctl* project is written in the Go programming language and follows the
-style guidelines of gofmt, goimports, and golines tools.
+style guidelines of gofmt, gci, and golines tools.
 
 If your editor supports the [EditorConfig](https://editorconfig.org/) file it
 will format the code properaly automatically. For some editors you will need to

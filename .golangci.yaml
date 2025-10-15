@@ -27,7 +27,7 @@ linters:
 formatters:
   enable:
     - gofmt
-    - goimports
+    - gci
     - golines
   exclusions:
     generated: lax
@@ -38,3 +38,8 @@ formatters:
   settings:
     golines:
       shorten-comments: true
+    gci:
+      sections:
+      - standard
+      - default
+      - localmodule

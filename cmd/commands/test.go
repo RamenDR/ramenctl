@@ -4,9 +4,10 @@
 package commands
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/test"
-	"github.com/spf13/cobra"
 )
 
 var TestCmd = &cobra.Command{
