@@ -97,5 +97,8 @@ jobs:
           cache: false
       - name: Download modules
         run: go mod download
+      - name: Setup go env
+        # https://github.com/golang/go/issues/75031
+        run: go env -w GOTOOLCHAIN=go1.25.0+auto
       - name: Run tests
         run: make test
