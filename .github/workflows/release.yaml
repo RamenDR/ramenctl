@@ -39,6 +39,7 @@ jobs:
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         goversion: go.mod
+        asset_name: ramenctl-${{ matrix.goos }}-${{ matrix.goarch }}
         md5sum: FALSE
         compress_assets: OFF
         build_command: make ramenctl
