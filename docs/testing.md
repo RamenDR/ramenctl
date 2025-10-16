@@ -37,15 +37,12 @@ makes this task easy.
 ## Environment
 
 For disaster recovery you must have a hub cluster and 2 managed clusters,
-configured for Regional DR. This document assumes using ODF clusters.
+configured for Regional DR.
 
 > [!NOTE]
 > The `ramenctl` tool is not compatible yet with metro DR.
 
 ## Preparing a configuration file
-
-This section describes how to prepare a configuration file for your ODF clusters
-and run a disaster recovery test.
 
 `ramenctl` uses a configuration file to access the clusters and the related
 resources needed for testing. To create the configuration file run:
