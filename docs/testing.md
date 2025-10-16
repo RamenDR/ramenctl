@@ -2,27 +2,26 @@
 
 ## Table of contents
 
-1. [Issue](#issue)
+1. [Overview](#overview)
 1. [Environment](#environment)
-1. [Resolution](#resolution)
-   1. [Preparing a configuration file](#preparing-a-configuration-file)
-      1. [Configure clusters](#configure-clusters)
-      1. [Configure drPolicy](#configure-drpolicy)
-      1. [Configure clusterSet](#configure-clusterset)
-      1. [Configure pvcSpecs](#configure-pvcspecs)
-      1. [Configure tests](#configure-tests)
-   1. [Running a test](#running-a-test)
-      1. [The test flow](#the-test-flow)
-      1. [The test report](#the-test-report)
-      1. [The test-run.yaml](#the-test-runyaml)
-      1. [The test-run.log](#the-test-runlog)
-   1. [Cleaning up](#cleaning-up)
-      1. [The clean flow](#the-clean-flow)
-   1. [Failed tests](#failed-tests)
-      1. [Inspecting gathered data](#inspecting-gathered-data)
-   1. [Canceling tests](#canceling-tests)
+1. [Preparing a configuration file](#preparing-a-configuration-file)
+   1. [Configure clusters](#configure-clusters)
+   1. [Configure drPolicy](#configure-drpolicy)
+   1. [Configure clusterSet](#configure-clusterset)
+   1. [Configure pvcSpecs](#configure-pvcspecs)
+   1. [Configure tests](#configure-tests)
+1. [Running a test](#running-a-test)
+   1. [The test flow](#the-test-flow)
+   1. [The test report](#the-test-report)
+   1. [The test-run.yaml](#the-test-runyaml)
+   1. [The test-run.log](#the-test-runlog)
+1. [Cleaning up](#cleaning-up)
+   1. [The clean flow](#the-clean-flow)
+1. [Failed tests](#failed-tests)
+   1. [Inspecting gathered data](#inspecting-gathered-data)
+1. [Canceling tests](#canceling-tests)
 
-## Issue
+## Overview
 
 How to test if disaster recovery works in my clusters? Deploying and configuring
 clusters for disaster recovery is complicated. The system has many moving parts
@@ -43,12 +42,10 @@ configured for Regional DR. This document assumes using ODF clusters.
 > [!NOTE]
 > The `ramenctl` tool is not compatible yet with metro DR.
 
-## Resolution
+## Preparing a configuration file
 
 This section describes how to prepare a configuration file for your ODF clusters
 and run a disaster recovery test.
-
-### Preparing a configuration file
 
 `ramenctl` uses a configuration file to access the clusters and the related
 resources needed for testing. To create the configuration file run:
@@ -62,7 +59,7 @@ $ ramenctl init
 The command creates the file `config.yaml` in the current directory. We need to
 edit the file to adapt it to our clusters.
 
-#### Configure clusters
+### Configure clusters
 
 Edit the `clusters` section and update the kubeconfig to point to the kubeconfig
 files for your clusters:
@@ -77,7 +74,7 @@ clusters:
     kubeconfig: mykubeconfigs/secondary-cluster
 ```
 
-#### Configure drPolicy
+### Configure drPolicy
 
 Edit the `drPolicy` section to match your DR configuration
 
@@ -88,7 +85,7 @@ drPolicy: drpolicy-1m
 > [!TIP]
 > For quicker test, use a policy with 1 minute internal.
 
-#### Configure clusterSet
+### Configure clusterSet
 
 Edit `clusterSet` to match your ACM configuration:
 
@@ -96,7 +93,7 @@ Edit `clusterSet` to match your ACM configuration:
 clusterSet: submariner
 ```
 
-#### Configure pvcSpecs
+### Configure pvcSpecs
 
 Edit the `pvcSpecs` section to use the right storage class names for your
 clusters:
@@ -115,7 +112,7 @@ pvcSpecs:
 > You can add more pvcSpecs for testing other storage classes as needed.
 > Modify the test to refer to your own pvcSpec names.
 
-#### Configuring tests
+### Configuring tests
 
 The default tests use a busybox deployment with one *PVC* using *rbd* storage
 class, deployed via *ApplicationSet*. You can modify the test to use your
@@ -136,7 +133,7 @@ The available options are:
   - `rbd`: *Ceph* *RBD* storage
   - `cephfs`: *CephFS* storage
 
-### Running a test
+## Running a test
 
 This section shows how to run a test and inspect the test report.
 
@@ -166,7 +163,7 @@ $ ramenctl test run -o ramenctl-test
 
 To clean up after the test use the [clean](#cleaning-up) command.
 
-#### The test flow
+### The test flow
 
 When running the run command *ramenctl* prepares the clusters for the tests and
 run all tests specified in the configuration file.
@@ -189,7 +186,7 @@ For every test specified in the configuration file perform the following steps:
 1. **undeploy**: Undeploy the application from the managed clusters and wait
    until the application is deleted.
 
-#### The test report
+### The test report
 
 The command stores `test-run.yaml` and `test-run.log` in the specified output
 directory:
@@ -205,7 +202,7 @@ ramenctl-test
 > When reporting DR related issues, please create an archive with the
 > output directory and upload it to the issue tracker.
 
-#### The test-run.yaml
+### The test-run.yaml
 
 The test-run.yaml is a machine and human readable description of the the
 test run:
@@ -302,7 +299,7 @@ $ yq .status < ramenctl-test/test-run.yaml
 passed
 ```
 
-#### The test-run.log
+### The test-run.log
 
 The `test-run.log` contains detailed logs of the test progress.
 
@@ -329,7 +326,7 @@ Example output
 2025-03-30T00:11:18.379+0300	INFO	appset-deploy-rbd	deployers/appset.go:80	Workload undeployed
 ```
 
-### Cleaning up
+## Cleaning up
 
 To clean up after a test, removing resources created by the test, run:
 
@@ -363,7 +360,7 @@ ramenctl-test
 └── test-run.yaml
 ```
 
-#### The clean flow
+### The clean flow
 
 When running the clean command *ramenctl* deletes all the tests applications
 specified in the configuration file and cleans up the clusters.
@@ -377,7 +374,7 @@ For every test specified in the configuration file perform the following steps:
 Cleaning up the clusters includes:
 1. Delete the channel and the namespace "test-gitops" on the hub cluster.
 
-### Failed tests
+## Failed tests
 
 When a test fails, the test command gathers data related to the failed tests in
 the output directory. The gathered data can help you or developers to diagnose the
@@ -433,7 +430,7 @@ example-failure
 > When reporting DR related issues, please create an archive with the output
 > directory and upload it to the issue tracker.
 
-#### Inspecting gathered data
+### Inspecting gathered data
 
 The command gathers all the namespaces related to the failed test, and related
 cluster scope resources such as storage classes and persistent volumes.
@@ -634,7 +631,7 @@ $ ramenctl test clean -o example-failure
 ✅ passed (1 passed, 0 failed, 0 skipped)
 ```
 
-### Canceling tests
+## Canceling tests
 
 The run or clean command may take up to 10 minutes to complete the current test
 step. To get all the information about failed tests you should wait until the
