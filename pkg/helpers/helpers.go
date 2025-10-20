@@ -7,6 +7,7 @@ package helpers
 import (
 	"testing"
 
+	"github.com/aymanbagabas/go-udiff"
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -33,4 +34,17 @@ func FakeTime(t *testing.T) {
 	t.Cleanup(func() {
 		time.Now = savedNow
 	})
+}
+
+func UnifiedDiff(t *testing.T, expected, actual any) string {
+	expectedString := marshal(t, expected)
+	actualString := marshal(t, actual)
+	return udiff.Unified("expected", "actual", expectedString, actualString)
+}
+
+func marshal(t *testing.T, obj any) string {
+	if s, ok := obj.(string); ok {
+		return s
+	}
+	return MarshalYAML(t, obj)
 }

@@ -7,6 +7,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
+	github.com/aymanbagabas/go-udiff v0.3.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.10.1
 	github.com/ramendr/ramen/api v0.0.0-20250710152106-9a4f493138c5
