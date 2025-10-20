@@ -4,7 +4,6 @@
 package report_test
 
 import (
-	"fmt"
 	"testing"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
@@ -322,8 +321,6 @@ func TestReportClusterStatusMarshaling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// For inspecting the generated yaml.
-	fmt.Print(string(data))
 	c2 := &report.ClustersStatus{}
 	if err := yaml.Unmarshal(data, c2); err != nil {
 		t.Fatal(err)
@@ -698,22 +695,15 @@ func testClusterStatus() *report.ClustersStatus {
 	return c
 }
 
-func checkClustersEqual(t *testing.T, c1, c2 *report.ClustersStatus) {
-	if !c1.Equal(c2) {
-		t.Fatalf(
-			"clusters are not equal\n%s\n%s",
-			helpers.MarshalYAML(t, c1),
-			helpers.MarshalYAML(t, c2),
-		)
+func checkClustersEqual(t *testing.T, a, b *report.ClustersStatus) {
+	if !a.Equal(b) {
+		diff := helpers.UnifiedDiff(t, a, b)
+		t.Fatalf("clusters statuses are not equal\n%s", diff)
 	}
 }
 
-func checkClustersNotEqual(t *testing.T, c1, c2 *report.ClustersStatus) {
-	if c1.Equal(c2) {
-		t.Fatalf(
-			"clusters are equal\n%s\n%s",
-			helpers.MarshalYAML(t, c1),
-			helpers.MarshalYAML(t, c2),
-		)
+func checkClustersNotEqual(t *testing.T, a, b *report.ClustersStatus) {
+	if a.Equal(b) {
+		t.Fatalf("clusters statuses are equal\n%s", helpers.MarshalYAML(t, a))
 	}
 }

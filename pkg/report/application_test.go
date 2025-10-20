@@ -4,7 +4,6 @@
 package report_test
 
 import (
-	"fmt"
 	"testing"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
@@ -264,8 +263,6 @@ func TestReportApplicationStatusMarshaling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// For inspecting the generated yaml.
-	fmt.Print(string(data))
 	a2 := &report.ApplicationStatus{}
 	if err := yaml.Unmarshal(data, a2); err != nil {
 		t.Fatal(err)
@@ -455,20 +452,13 @@ func testApplicationStatus() *report.ApplicationStatus {
 
 func checkApplicationsEqual(t *testing.T, a, b *report.ApplicationStatus) {
 	if !a.Equal(b) {
-		t.Fatalf(
-			"applications are not equal\n%s\n%s",
-			helpers.MarshalYAML(t, a),
-			helpers.MarshalYAML(t, b),
-		)
+		diff := helpers.UnifiedDiff(t, a, b)
+		t.Fatalf("application statuses are not equal\n%s", diff)
 	}
 }
 
 func checkApplicationsNotEqual(t *testing.T, a, b *report.ApplicationStatus) {
 	if a.Equal(b) {
-		t.Fatalf(
-			"applications are equal\n%s\n%s",
-			helpers.MarshalYAML(t, a),
-			helpers.MarshalYAML(t, b),
-		)
+		t.Fatalf("application statuses are equal\n%s", helpers.MarshalYAML(t, a))
 	}
 }
