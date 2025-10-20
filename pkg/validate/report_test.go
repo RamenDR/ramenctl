@@ -62,13 +62,15 @@ func TestReportEqual(t *testing.T) {
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
 		if !r1.Equal(r2) {
-			t.Fatal("report should be equal to itself")
+			diff := helpers.UnifiedDiff(t, r1, r2)
+			t.Fatalf("report not equal to itself\n%s", diff)
 		}
 	})
 	t.Run("equal reports", func(t *testing.T) {
 		r2 := &Report{Report: report.NewReport("name", &config.Config{})}
 		if !r1.Equal(r2) {
-			t.Fatalf("expected report %+v, got %+v", r1, r2)
+			diff := helpers.UnifiedDiff(t, r1, r2)
+			t.Fatalf("reports not equal\n%s", diff)
 		}
 	})
 }
@@ -112,6 +114,7 @@ func TestReportRoundtrip(t *testing.T) {
 		t.Fatalf("failed to unmarshal yaml: %s", err)
 	}
 	if !r1.Equal(r2) {
-		t.Fatalf("expected report %+v, got %+v", r1, r2)
+		diff := helpers.UnifiedDiff(t, r1, r2)
+		t.Fatalf("unmarshaled report not equal\n%s", diff)
 	}
 }

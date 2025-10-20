@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -1780,12 +1781,9 @@ func checkReport(t *testing.T, cmd *Command, status report.Status) {
 }
 
 func checkApplication(t *testing.T, report *Report, expected *report.Application) {
-	if report.Application != nil && expected != nil {
-		if *report.Application != *expected {
-			t.Fatalf("expected application %+v, got %+v", expected, report.Application)
-		}
-	} else if report.Application != expected {
-		t.Fatalf("expected application %+v, got %+v", expected, report.Application)
+	if !reflect.DeepEqual(expected, report.Application) {
+		diff := helpers.UnifiedDiff(t, expected, report.Application)
+		t.Fatalf("applications not equal\n%s", diff)
 	}
 }
 
@@ -1819,16 +1817,13 @@ func checkApplicationStatus(
 	report *Report,
 	expected *report.ApplicationStatus,
 ) {
-	// For manual inspection
-	fmt.Print("\n", helpers.MarshalYAML(t, expected))
-
 	if expected != nil {
 		if !expected.Equal(report.ApplicationStatus) {
-			t.Fatalf("expected application status:\n%s\ngot:\n%s",
-				helpers.MarshalYAML(t, expected), helpers.MarshalYAML(t, report.ApplicationStatus))
+			diff := helpers.UnifiedDiff(t, expected, report.ApplicationStatus)
+			t.Fatalf("application statuses not equal\n%s", diff)
 		}
 	} else if report.ApplicationStatus != nil {
-		t.Fatalf("expected application status to be nil, got:\n%s",
+		t.Fatalf("application status not nil\n%s",
 			helpers.MarshalYAML(t, report.ApplicationStatus))
 	}
 }
@@ -1838,16 +1833,13 @@ func checkClusterStatus(
 	report *Report,
 	expected *report.ClustersStatus,
 ) {
-	// For manual inspection
-	fmt.Print("\n", helpers.MarshalYAML(t, expected))
-
 	if expected != nil {
 		if !expected.Equal(report.ClustersStatus) {
-			t.Fatalf("expected clusters status:\n%s\ngot:\n%s",
-				helpers.MarshalYAML(t, expected), helpers.MarshalYAML(t, report.ClustersStatus))
+			diff := helpers.UnifiedDiff(t, expected, report.ClustersStatus)
+			t.Fatalf("clusters statuses not equal\n%s", diff)
 		}
 	} else if report.ClustersStatus != nil {
-		t.Fatalf("expected clusters status to be nil, got:\n%s",
+		t.Fatalf("clusters status not nil\n%s",
 			helpers.MarshalYAML(t, report.ClustersStatus))
 	}
 }
