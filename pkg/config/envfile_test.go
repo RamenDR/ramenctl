@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 )
 
 func TestReadEnvFile(t *testing.T) {
@@ -25,6 +26,7 @@ func TestReadEnvFile(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expected, env) {
-		t.Fatalf("expected %+v, got %+v", expected, env)
+		diff := helpers.UnifiedDiff(t, expected, env)
+		t.Fatalf("envfiles are not equal\n%s", diff)
 	}
 }

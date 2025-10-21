@@ -10,6 +10,7 @@ import (
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 )
 
 func TestSample(t *testing.T) {
@@ -23,7 +24,8 @@ func TestSample(t *testing.T) {
 		CephFSStorageClassName: "rook-cephfs-fs1",
 	}
 	if !reflect.DeepEqual(expected, sample) {
-		t.Fatalf("expected %+v, got %+v", expected, sample)
+		diff := helpers.UnifiedDiff(t, expected, sample)
+		t.Fatalf("samples not equal\n%s", diff)
 	}
 }
 
@@ -38,7 +40,8 @@ func TestSampleForODF(t *testing.T) {
 		CephFSStorageClassName: "ocs-storagecluster-cephfs",
 	}
 	if !reflect.DeepEqual(expected, sample) {
-		t.Fatalf("expected %+v, got %+v", expected, sample)
+		diff := helpers.UnifiedDiff(t, expected, sample)
+		t.Fatalf("samples not equal\n%s", diff)
 	}
 }
 
@@ -60,7 +63,8 @@ func TestSampleFromEnv(t *testing.T) {
 		CephFSStorageClassName: "rook-cephfs-fs1",
 	}
 	if !reflect.DeepEqual(expected, sample) {
-		t.Fatalf("expected %+v, got %+v", expected, sample)
+		diff := helpers.UnifiedDiff(t, expected, sample)
+		t.Fatalf("samples not equal\n%s", diff)
 	}
 }
 
@@ -83,7 +87,8 @@ func TestReadConfigGeneric(t *testing.T) {
 	}
 	expected := testConfig()
 	if !c.Equal(expected) {
-		t.Fatalf("expected %+v, got %+v", expected, c)
+		diff := helpers.UnifiedDiff(t, expected, c)
+		t.Fatalf("configs not equal\n%s", diff)
 	}
 }
 
@@ -98,7 +103,8 @@ func TestReadConfigTest(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !c1.Equal(c2) {
-		t.Fatalf("expected %+v, got %+v", c1, c2)
+		diff := helpers.UnifiedDiff(t, c1, c2)
+		t.Fatalf("configs not equal\n%s", diff)
 	}
 }
 
@@ -117,7 +123,8 @@ func TestReadConfigWithPassiveHub(t *testing.T) {
 		ClusterSet: "default",
 	}
 	if !c.Equal(expected) {
-		t.Fatalf("expected %+v, got %+v", expected, c)
+		diff := helpers.UnifiedDiff(t, expected, c)
+		t.Fatalf("configs not equal\n%s", diff)
 	}
 }
 
@@ -126,13 +133,15 @@ func TestConfigEqual(t *testing.T) {
 	t.Run("equal to itself", func(t *testing.T) {
 		c2 := c1
 		if !c1.Equal(c2) {
-			t.Errorf("config %+v is not equal to itself", c1)
+			diff := helpers.UnifiedDiff(t, c1, c2)
+			t.Errorf("config is not equal to itself\n%s", diff)
 		}
 	})
 	t.Run("equal to other identical config", func(t *testing.T) {
 		c2 := testConfig()
 		if !c1.Equal(c2) {
-			t.Errorf("config %+v is not equal to other identical config %+v", c1, c2)
+			diff := helpers.UnifiedDiff(t, c1, c2)
+			t.Errorf("config is not equal to other identical config\n%s", diff)
 		}
 	})
 }
@@ -143,21 +152,21 @@ func TestConfigNotEqual(t *testing.T) {
 		c2 := testConfig()
 		c2.Distro = "modified"
 		if c1.Equal(c2) {
-			t.Fatalf("config %+v non equal config %+v", c1, c2)
+			t.Fatalf("config with modified distro is equal\n%s", helpers.MarshalYAML(t, c2))
 		}
 	})
 	t.Run("clusterset", func(t *testing.T) {
 		c2 := testConfig()
 		c2.ClusterSet = "modified"
 		if c1.Equal(c2) {
-			t.Fatalf("config %+v non equal config %+v", c1, c2)
+			t.Fatalf("config with modiifed clusterSet is equal\n%s", helpers.MarshalYAML(t, c2))
 		}
 	})
 	t.Run("clusters", func(t *testing.T) {
 		c2 := testConfig()
 		c2.Clusters["c2"] = e2econfig.Cluster{Kubeconfig: "modified"}
 		if c1.Equal(c2) {
-			t.Fatalf("config %+v non equal config %+v", c1, c2)
+			t.Fatalf("config with modified clusters is equal\n%s", helpers.MarshalYAML(t, c2))
 		}
 	})
 }
