@@ -79,7 +79,8 @@ func TestReportEqual(t *testing.T) {
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
 		if !r1.Equal(r2) {
-			t.Error("report should be equal itself")
+			diff := helpers.UnifiedDiff(t, r1, r2)
+			t.Fatalf("report should be equal itself\n%s", diff)
 		}
 	})
 
@@ -92,7 +93,8 @@ func TestReportEqual(t *testing.T) {
 	t.Run("equal reports", func(t *testing.T) {
 		r2 := createReport()
 		if !r1.Equal(r2) {
-			t.Error("reports with identical content should be equal")
+			diff := helpers.UnifiedDiff(t, r1, r2)
+			t.Fatalf("identical reports are not equal\n%s", diff)
 		}
 	})
 
@@ -205,6 +207,7 @@ func checkRoundtrip(t *testing.T, r1 *Report) {
 		t.Fatalf("failed to unmarshal report: %s", err)
 	}
 	if !r1.Equal(r2) {
-		t.Fatalf("expected report %+v, got %+v", r1, r2)
+		diff := helpers.UnifiedDiff(t, r1, r2)
+		t.Fatalf("unmarshaled reports not equal\n%s", diff)
 	}
 }
