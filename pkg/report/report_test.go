@@ -211,7 +211,7 @@ func TestBaseAddPassedStep(t *testing.T) {
 			t.Errorf("expected status %s, got %s", report.Passed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*report.Step{passedStep}) {
-			t.Errorf("expected steps to br equal, got %v", r.Steps)
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
 	})
 
@@ -224,7 +224,7 @@ func TestBaseAddPassedStep(t *testing.T) {
 			t.Errorf("expected status %s, got %s", report.Failed, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*report.Step{passedStep}) {
-			t.Errorf("expected steps to br equal, got %v", r.Steps)
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
 	})
 
@@ -237,7 +237,7 @@ func TestBaseAddPassedStep(t *testing.T) {
 			t.Errorf("expected status %s, got %s", report.Canceled, r.Status)
 		}
 		if !slices.Equal(r.Steps, []*report.Step{passedStep}) {
-			t.Errorf("expected steps to br equal, got %v", r.Steps)
+			t.Errorf("expected steps to be equal, got %v", r.Steps)
 		}
 	})
 }
