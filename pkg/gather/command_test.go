@@ -5,6 +5,7 @@ package gather
 import (
 	"context"
 	"errors"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
@@ -202,11 +204,8 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 	}
 
 	if !slices.Equal(cmd.report.Namespaces, gatherApplicationNamespaces) {
-		t.Fatalf(
-			"expected namespaces %q, got %q",
-			gatherApplicationNamespaces,
-			cmd.report.Namespaces,
-		)
+		diff := helpers.UnifiedDiff(t, gatherApplicationNamespaces, cmd.report.Namespaces)
+		t.Fatalf("namespaces not equal\n%s", diff)
 	}
 }
 
@@ -237,12 +236,9 @@ func checkReport(t *testing.T, report *report.Report, status report.Status) {
 }
 
 func checkApplication(t *testing.T, report *report.Report, expected *report.Application) {
-	if report.Application != nil && expected != nil {
-		if *report.Application != *expected {
-			t.Fatalf("expected application %+v, got %+v", expected, report.Application)
-		}
-	} else if report.Application != expected {
-		t.Fatalf("expected application %+v, got %+v", expected, report.Application)
+	if !reflect.DeepEqual(expected, report.Application) {
+		diff := helpers.UnifiedDiff(t, expected, report.Application)
+		t.Fatalf("applications are not equal\n%s", diff)
 	}
 }
 
