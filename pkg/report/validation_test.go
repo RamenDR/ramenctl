@@ -26,13 +26,13 @@ func TestEmojiRoundtrip(t *testing.T) {
 			v1 := report.Validated{State: tc.state}
 			b, err := yaml.Marshal(&v1)
 			if err != nil {
-				t.Fatalf("failed to marshal: %v", err)
+				t.Fatalf("failed to marshal state: %v", err)
 			}
 			// For inspecting the yaml
 			fmt.Print(string(b))
 			v2 := report.Validated{}
 			if err := yaml.Unmarshal(b, &v2); err != nil {
-				t.Fatalf("failed to unmarshal: %v", err)
+				t.Fatalf("failed to unmarshal state: %v", err)
 			}
 			if v1 != v2 {
 				t.Fatalf("expected %+v, got %+v", v1, v2)

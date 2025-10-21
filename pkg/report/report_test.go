@@ -75,11 +75,11 @@ func TestBaseRoundtrip(t *testing.T) {
 	r1 := report.NewBase("name")
 	b, err := yaml.Marshal(r1)
 	if err != nil {
-		t.Fatalf("failed to marshal yaml: %s", err)
+		t.Fatalf("failed to marshal report: %s", err)
 	}
 	r2 := &report.Base{}
 	if err := yaml.Unmarshal(b, r2); err != nil {
-		t.Fatalf("failed to unmarshal yaml: %s", err)
+		t.Fatalf("failed to unmarshal report: %s", err)
 	}
 	if !r1.Equal(r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
