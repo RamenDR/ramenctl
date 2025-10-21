@@ -9,8 +9,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
-	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 func TestSummaryAdd(t *testing.T) {
@@ -57,7 +57,7 @@ func TestSummaryString(t *testing.T) {
 }
 
 func TestReportEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := &Report{Report: report.NewReport("name", &config.Config{})}
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
@@ -74,7 +74,7 @@ func TestReportEqual(t *testing.T) {
 }
 
 func TestReportNotEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := &Report{Report: report.NewReport("name", &config.Config{})}
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
@@ -114,15 +114,4 @@ func TestReportRoundtrip(t *testing.T) {
 	if !r1.Equal(r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
-}
-
-func fakeTime(t *testing.T) {
-	fakeNow := time.Now()
-	savedNow := time.Now
-	time.Now = func() time.Time {
-		return fakeNow
-	}
-	t.Cleanup(func() {
-		time.Now = savedNow
-	})
 }

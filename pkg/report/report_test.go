@@ -12,6 +12,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/build"
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
@@ -63,7 +64,7 @@ func TestBuildInfo(t *testing.T) {
 }
 
 func TestBaseCreatedTime(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r := report.NewBase("name")
 	if r.Created != time.Now().Local() {
 		t.Fatalf("expected %v, got %v", time.Now().Local(), r.Created)
@@ -86,7 +87,7 @@ func TestBaseRoundtrip(t *testing.T) {
 }
 
 func TestBaseEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := report.NewBase("name")
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
@@ -103,7 +104,7 @@ func TestBaseEqual(t *testing.T) {
 }
 
 func TestBaseNotEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := report.NewBase("name")
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
@@ -119,7 +120,7 @@ func TestBaseNotEqual(t *testing.T) {
 	})
 	t.Run("host", func(t *testing.T) {
 		r2 := report.NewBase("name")
-		r2.Host.OS = "modified"
+		r2.Host.OS = helpers.Modified
 		if r1.Equal(r2) {
 			t.Fatal("reports with different host should not be equal")
 		}
@@ -331,7 +332,7 @@ func TestBaseAddSkippedStep(t *testing.T) {
 }
 
 func TestReportEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := report.NewReport("name", testConfig)
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
@@ -348,7 +349,7 @@ func TestReportEqual(t *testing.T) {
 }
 
 func TestReportNotEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r1 := report.NewReport("name", testConfig)
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
@@ -767,17 +768,5 @@ func TestStepEqual(t *testing.T) {
 		if s1.Equal(&s2) {
 			t.Fatalf("steps with different number of subitems should not be equal")
 		}
-	})
-}
-
-var fakeNow = time.Now()
-
-func fakeTime(t *testing.T) {
-	savedNow := time.Now
-	time.Now = func() time.Time {
-		return fakeNow
-	}
-	t.Cleanup(func() {
-		time.Now = savedNow
 	})
 }

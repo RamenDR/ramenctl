@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -34,12 +35,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Name = modified
+		a2.Hub.DRPC.Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.Namespace = modified
+		a2.Hub.DRPC.Namespace = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc deleted", func(t *testing.T) {
@@ -65,7 +66,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc drPolicy", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.Hub.DRPC.DRPolicy = modified
+		a2.Hub.DRPC.DRPolicy = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc phase", func(t *testing.T) {
@@ -101,17 +102,17 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.Name = modified
+		a2.PrimaryCluster.Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.Name = modified
+		a2.PrimaryCluster.VRG.Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.Namespace = modified
+		a2.PrimaryCluster.VRG.Namespace = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg deleted", func(t *testing.T) {
@@ -153,12 +154,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg protectedpvcs name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Name = modified
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg protectedpvcs namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Namespace = modified
+		a2.PrimaryCluster.VRG.ProtectedPVCs[0].Namespace = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg protectedpvcs replication", func(t *testing.T) {
@@ -210,17 +211,17 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("secondary cluster name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.Name = modified
+		a2.SecondaryCluster.Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster vrg name", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.VRG.Name = modified
+		a2.SecondaryCluster.VRG.Name = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster vrg namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		a2.SecondaryCluster.VRG.Namespace = modified
+		a2.SecondaryCluster.VRG.Namespace = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
@@ -454,12 +455,20 @@ func testApplicationStatus() *report.ApplicationStatus {
 
 func checkApplicationsEqual(t *testing.T, a, b *report.ApplicationStatus) {
 	if !a.Equal(b) {
-		t.Fatalf("applications are not equal\n%s\n%s", marshal(t, a), marshal(t, b))
+		t.Fatalf(
+			"applications are not equal\n%s\n%s",
+			helpers.MarshalYAML(t, a),
+			helpers.MarshalYAML(t, b),
+		)
 	}
 }
 
 func checkApplicationsNotEqual(t *testing.T, a, b *report.ApplicationStatus) {
 	if a.Equal(b) {
-		t.Fatalf("applications are equal\n%s\n%s", marshal(t, a), marshal(t, b))
+		t.Fatalf(
+			"applications are equal\n%s\n%s",
+			helpers.MarshalYAML(t, a),
+			helpers.MarshalYAML(t, b),
+		)
 	}
 }

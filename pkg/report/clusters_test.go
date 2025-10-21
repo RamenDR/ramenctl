@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -54,12 +55,12 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drcluster name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters.Value[0].Name = modified
+		c2.Hub.DRClusters.Value[0].Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster phase", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRClusters.Value[0].Phase = modified
+		c2.Hub.DRClusters.Value[0].Phase = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drcluster conditions", func(t *testing.T) {
@@ -87,17 +88,17 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpolicy name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies.Value[0].Name = modified
+		c2.Hub.DRPolicies.Value[0].Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy drclusters", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies.Value[0].DRClusters[0] = modified
+		c2.Hub.DRPolicies.Value[0].DRClusters[0] = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy scheduling interval", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies.Value[0].SchedulingInterval = modified
+		c2.Hub.DRPolicies.Value[0].SchedulingInterval = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy peer classes state", func(t *testing.T) {
@@ -107,7 +108,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpolicy peer classes storage class name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.DRPolicies.Value[0].PeerClasses.Value[0].StorageClassName = modified
+		c2.Hub.DRPolicies.Value[0].PeerClasses.Value[0].StorageClassName = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub drpolicy peer classes grouping", func(t *testing.T) {
@@ -130,12 +131,12 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub ramen configmap name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.Name = modified
+		c2.Hub.Ramen.ConfigMap.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen configmap namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.Namespace = modified
+		c2.Hub.Ramen.ConfigMap.Namespace = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen configmap deleted", func(t *testing.T) {
@@ -156,7 +157,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub ramen configmap ramen controller type", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.RamenControllerType.Value = modified
+		c2.Hub.Ramen.ConfigMap.RamenControllerType.Value = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen configmap s3storeprofiles state", func(t *testing.T) {
@@ -166,7 +167,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub ramen configmap s3storeprofiles name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = modified
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen configmap s3storeprofiles secretref state", func(t *testing.T) {
@@ -176,7 +177,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub ramen configmap s3storeprofiles secretref value name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = modified
+		c2.Hub.Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 
@@ -189,12 +190,12 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub ramen deployment name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.Deployment.Name = modified
+		c2.Hub.Ramen.Deployment.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen deployment namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.Deployment.Namespace = modified
+		c2.Hub.Ramen.Deployment.Namespace = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen deployment deleted", func(t *testing.T) {
@@ -244,17 +245,17 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("cluster name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Name = modified
+		c2.Clusters[0].Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.Name = modified
+		c2.Clusters[0].Ramen.ConfigMap.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.Namespace = modified
+		c2.Clusters[0].Ramen.ConfigMap.Namespace = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap ramen controller type state", func(t *testing.T) {
@@ -264,7 +265,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("cluster ramen configmap ramen controller type", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.Value = modified
+		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.Value = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap s3storeprofiles state", func(t *testing.T) {
@@ -274,7 +275,7 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("cluster ramen configmap s3storeprofiles profile name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = modified
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3ProfileName = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap s3storeprofiles secretref state", func(t *testing.T) {
@@ -284,17 +285,17 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 	})
 	t.Run("cluster ramen configmap s3storeprofiles secretref value name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = modified
+		c2.Clusters[0].Ramen.ConfigMap.S3StoreProfiles.Value[0].S3SecretRef.Value.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen deployment name", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.Deployment.Name = modified
+		c2.Clusters[0].Ramen.Deployment.Name = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen deployment namespace", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.Deployment.Namespace = modified
+		c2.Clusters[0].Ramen.Deployment.Namespace = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen deployment replicas", func(t *testing.T) {
@@ -699,12 +700,20 @@ func testClusterStatus() *report.ClustersStatus {
 
 func checkClustersEqual(t *testing.T, c1, c2 *report.ClustersStatus) {
 	if !c1.Equal(c2) {
-		t.Fatalf("clusters are not equal\n%s\n%s", marshal(t, c1), marshal(t, c2))
+		t.Fatalf(
+			"clusters are not equal\n%s\n%s",
+			helpers.MarshalYAML(t, c1),
+			helpers.MarshalYAML(t, c2),
+		)
 	}
 }
 
 func checkClustersNotEqual(t *testing.T, c1, c2 *report.ClustersStatus) {
 	if c1.Equal(c2) {
-		t.Fatalf("clusters are equal\n%s\n%s", marshal(t, c1), marshal(t, c2))
+		t.Fatalf(
+			"clusters are equal\n%s\n%s",
+			helpers.MarshalYAML(t, c1),
+			helpers.MarshalYAML(t, c2),
+		)
 	}
 }

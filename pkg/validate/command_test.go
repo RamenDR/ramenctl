@@ -17,11 +17,11 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
@@ -1820,16 +1820,16 @@ func checkApplicationStatus(
 	expected *report.ApplicationStatus,
 ) {
 	// For manual inspection
-	fmt.Print("\n", marshal(t, expected))
+	fmt.Print("\n", helpers.MarshalYAML(t, expected))
 
 	if expected != nil {
 		if !expected.Equal(report.ApplicationStatus) {
 			t.Fatalf("expected application status:\n%s\ngot:\n%s",
-				marshal(t, expected), marshal(t, report.ApplicationStatus))
+				helpers.MarshalYAML(t, expected), helpers.MarshalYAML(t, report.ApplicationStatus))
 		}
 	} else if report.ApplicationStatus != nil {
 		t.Fatalf("expected application status to be nil, got:\n%s",
-			marshal(t, report.ApplicationStatus))
+			helpers.MarshalYAML(t, report.ApplicationStatus))
 	}
 }
 
@@ -1839,16 +1839,16 @@ func checkClusterStatus(
 	expected *report.ClustersStatus,
 ) {
 	// For manual inspection
-	fmt.Print("\n", marshal(t, expected))
+	fmt.Print("\n", helpers.MarshalYAML(t, expected))
 
 	if expected != nil {
 		if !expected.Equal(report.ClustersStatus) {
 			t.Fatalf("expected clusters status:\n%s\ngot:\n%s",
-				marshal(t, expected), marshal(t, report.ClustersStatus))
+				helpers.MarshalYAML(t, expected), helpers.MarshalYAML(t, report.ClustersStatus))
 		}
 	} else if report.ClustersStatus != nil {
 		t.Fatalf("expected clusters status to be nil, got:\n%s",
-			marshal(t, report.ClustersStatus))
+			helpers.MarshalYAML(t, report.ClustersStatus))
 	}
 }
 
@@ -1856,14 +1856,6 @@ func checkSummary(t *testing.T, report *Report, expected Summary) {
 	if report.Summary != expected {
 		t.Fatalf("expected summary %q, got %q", expected, report.Summary)
 	}
-}
-
-func marshal(t *testing.T, a any) string {
-	data, err := yaml.Marshal(a)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(data)
 }
 
 func totalDuration(steps []*report.Step) float64 {

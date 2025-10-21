@@ -9,8 +9,8 @@ import (
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
-	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 var reportConfig = &e2econfig.Config{
@@ -66,7 +66,7 @@ func TestReportSummary(t *testing.T) {
 }
 
 func TestReportEqual(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	// Helper function to create a standard report
 	createReport := func() *Report {
 		r := newReport("test-command", reportConfig)
@@ -124,7 +124,7 @@ func TestReportEqual(t *testing.T) {
 }
 
 func TestReportMarshaling(t *testing.T) {
-	fakeTime(t)
+	helpers.FakeTime(t)
 	r := newReport("test-command", reportConfig)
 	r.Status = report.Failed
 	r.Duration = 2.0
@@ -207,16 +207,4 @@ func checkRoundtrip(t *testing.T, r1 *Report) {
 	if !r1.Equal(r2) {
 		t.Fatalf("expected report %+v, got %+v", r1, r2)
 	}
-}
-
-var fakeNow = time.Now()
-
-func fakeTime(t *testing.T) {
-	savedNow := time.Now
-	time.Now = func() time.Time {
-		return fakeNow
-	}
-	t.Cleanup(func() {
-		time.Now = savedNow
-	})
 }
