@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/core"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -359,7 +360,7 @@ func (c *Command) validatedProtectedPVCs(
 			Conditions:  c.validatedProtectedPVCConditions(vrg, ppvc),
 		}
 
-		if pvc, err := readPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
+		if pvc, err := core.ReadPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
 			log.Warnf("failed to read pvc \"%s/%s\" from cluster %q: %s",
 				ppvc.Namespace, ppvc.Name, cluster.Name, err)
 			ps.Deleted = c.validatedDeleted(nil)

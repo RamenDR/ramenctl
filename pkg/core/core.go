@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package core
 
 import (
 	v1 "k8s.io/api/core/v1"
@@ -16,7 +16,7 @@ const (
 	secretPlural    = "secrets"
 )
 
-func readPVC(
+func ReadPVC(
 	reader gathering.OutputReader,
 	name, namespace string,
 ) (*v1.PersistentVolumeClaim, error) {
@@ -31,7 +31,7 @@ func readPVC(
 	return pvc, nil
 }
 
-func readConfigMap(
+func ReadConfigMap(
 	reader gathering.OutputReader,
 	name, namespace string,
 ) (*v1.ConfigMap, error) {
@@ -46,7 +46,7 @@ func readConfigMap(
 	return configMap, nil
 }
 
-func readSecret(
+func ReadSecret(
 	reader gathering.OutputReader,
 	name, namespace string,
 ) (*v1.Secret, error) {

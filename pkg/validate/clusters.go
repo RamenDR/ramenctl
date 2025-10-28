@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/core"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -319,7 +320,7 @@ func (c *Command) validateRamenConfigMap(
 	s.Name = name
 	s.Namespace = namespace
 
-	configMap, err := readConfigMap(reader, name, namespace)
+	configMap, err := core.ReadConfigMap(reader, name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("failed to read configmap \"%s/%s\" from cluster %q: %w",
@@ -417,7 +418,7 @@ func (c *Command) validatedSecretRef(
 		namespace = configNamespace
 	}
 
-	_, err := readSecret(reader, secretRef.Name, namespace)
+	_, err := core.ReadSecret(reader, secretRef.Name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			err := fmt.Errorf("failed to read secret \"%s/%s\" from cluster %q: %w",
