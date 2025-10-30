@@ -11,12 +11,10 @@
    1. [Configure pvcSpecs](#configure-pvcspecs)
    1. [Configure tests](#configure-tests)
 1. [Running a test](#running-a-test)
-   1. [The test flow](#the-test-flow)
    1. [The test report](#the-test-report)
    1. [The test-run.yaml](#the-test-runyaml)
    1. [The test-run.log](#the-test-runlog)
 1. [Cleaning up](#cleaning-up)
-   1. [The clean flow](#the-clean-flow)
 1. [Failed tests](#failed-tests)
    1. [Inspecting gathered data](#inspecting-gathered-data)
 1. [Canceling tests](#canceling-tests)
@@ -162,29 +160,6 @@ $ ramenctl test run -o ramenctl-test
 ```
 
 To clean up after the test use the [clean](#cleaning-up) command.
-
-### The test flow
-
-When running the run command *ramenctl* prepares the clusters for the tests and
-run all tests specified in the configuration file.
-
-Preparing the clusters includes:
-1. Create a namespace "test-gitops" on the hub cluster and add a channel for
-   https://github.com/RamenDR/ocm-ramen-samples.
-
-For every test specified in the configuration file perform the following steps:
-1. **deploy**: Deploy the application in namespace
-   "test-{deployer}-{workload}-{pvcSpec}" in the primary cluster.
-1. **protect**: Create a *drpc* resource for the application and wait until the
-   application is protected.
-1. **failover**: Fail over the application to to the secondary cluster and wait
-   until the application is protected.
-1. **relocate**: Relocate the application back to the primary cluster and wait
-   until the application is protected.
-1. **unprotect**: Delete the *drpc* resource for the application and wait until
-   the *drpc* is deleted.
-1. **undeploy**: Undeploy the application from the managed clusters and wait
-   until the application is deleted.
 
 ### The test report
 
@@ -359,20 +334,6 @@ ramenctl-test
 ├── test-run.log
 └── test-run.yaml
 ```
-
-### The clean flow
-
-When running the clean command *ramenctl* deletes all the tests applications
-specified in the configuration file and cleans up the clusters.
-
-For every test specified in the configuration file perform the following steps:
-1. **unprotect**: Delete the *drpc* resource for the application and wait
-   until the *drpc* is deleted.
-2. **undeploy**: Undeploy the application from the managed clusters and wait
-   until the application is deleted.
-
-Cleaning up the clusters includes:
-1. Delete the channel and the namespace "test-gitops" on the hub cluster.
 
 ## Failed tests
 
