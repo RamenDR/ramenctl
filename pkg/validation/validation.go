@@ -11,6 +11,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 // Context is validation context, decoupling the ramenctl command from the backend implementation.
@@ -30,4 +31,9 @@ type Validation interface {
 		clusters []*types.Cluster,
 		options gathering.Options,
 	) <-chan gathering.Result
+	GatherS3(
+		ctx Context,
+		profiles []*s3.Profile,
+		prefix, outputDir string,
+	) <-chan s3.Result
 }

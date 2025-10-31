@@ -8,6 +8,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 // Backend performs validation with real clusters.
@@ -45,4 +46,12 @@ func (b Backend) Gather(
 	options gathering.Options,
 ) <-chan gathering.Result {
 	return gathering.Namespaces(ctx, clusters, options)
+}
+
+func (b Backend) GatherS3(
+	ctx Context,
+	profiles []*s3.Profile,
+	prefix, outputDir string,
+) <-chan s3.Result {
+	return s3.Gather(ctx.Context(), profiles, prefix, outputDir, ctx.Logger())
 }

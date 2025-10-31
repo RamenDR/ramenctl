@@ -5,6 +5,9 @@ package gather
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
@@ -95,6 +98,7 @@ var (
 
 func TestGatherApplicationPassed(t *testing.T) {
 	cmd := testCommand(t, &validation.Mock{})
+	addGatheredData(t, cmd, "appset-deploy-rbd")
 	if err := cmd.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -112,6 +116,9 @@ func TestGatherApplicationPassed(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -198,6 +205,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 	}
 
 	cmd := testCommand(t, mockBackend)
+	addGatheredData(t, cmd, "appset-deploy-rbd")
 	err := cmd.Application(drpcName, drpcNamespace)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -210,6 +218,18 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 }
 
 // Helpers
+
+// addGatheredData adds fake gathered data to the output directory.
+func addGatheredData(t *testing.T, cmd *Command, name string) {
+	testData := fmt.Sprintf("../testdata/%s/validate-application.data", name)
+	source, err := filepath.Abs(testData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(source, cmd.dataDir()); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func testCommand(t *testing.T, backend validation.Validation) *Command {
 	cmd, err := command.ForTest("gather-application", testEnv, t.TempDir())

@@ -21,7 +21,9 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
@@ -66,6 +68,11 @@ func (c *Command) Logger() *zap.SugaredLogger {
 
 func (c *Command) Context() context.Context {
 	return c.context
+}
+
+func (c *Command) outputReader(cluster string) gathering.OutputReader {
+	clusterDir := filepath.Join(c.dataDir(), cluster)
+	return gather.NewOutputReader(clusterDir)
 }
 
 func (c *Command) dataDir() string {
@@ -125,6 +132,15 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 		OutputDir:  c.dataDir(),
 	}
 	if !c.gatherApplication(options) {
+		return c.finishStep()
+	}
+
+	profiles, prefix, ok := c.inspectS3Profiles(drpcName, drpcNamespace)
+	if !ok {
+		return c.finishStep()
+	}
+
+	if !c.gatherApplicationS3Data(profiles, prefix) {
 		return c.finishStep()
 	}
 
@@ -191,6 +207,70 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 	return c.current.Status == report.Passed
 }
 
+func (c *Command) inspectS3Profiles(
+	drpcName, drpcNamespace string,
+) ([]*s3.Profile, string, bool) {
+	start := time.Now()
+	step := &report.Step{Name: "inspect S3 profiles"}
+
+	c.Logger().Infof("Step %q started", step.Name)
+
+	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
+	if err != nil {
+		step.Duration = time.Since(start).Seconds()
+		step.Status = report.Failed
+		console.Error("Failed to %s", step.Name)
+		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
+		c.current.AddStep(step)
+		return nil, "", false
+	}
+
+	step.Duration = time.Since(start).Seconds()
+	step.Status = report.Passed
+	c.current.AddStep(step)
+
+	console.Pass("Inspected S3 profiles")
+	c.Logger().Infof("Step %q passed", step.Name)
+
+	return profiles, prefix, true
+}
+
+func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string) bool {
+	start := time.Now()
+	outputDir := c.dataDir()
+
+	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
+		logging.ProfileNames(profiles), prefix)
+
+	for r := range c.backend.GatherS3(c, profiles, prefix, outputDir) {
+		step := &report.Step{
+			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
+			Duration: r.Duration,
+		}
+		if r.Err != nil {
+			if errors.Is(r.Err, context.Canceled) {
+				msg := fmt.Sprintf("Canceled gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Canceled
+			} else {
+				msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Failed
+			}
+		} else {
+			step.Status = report.Passed
+			console.Pass("Gathered S3 profile %q", r.ProfileName)
+		}
+		c.current.AddStep(step)
+	}
+
+	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
+
+	return c.current.Status == report.Passed
+}
+
 // withTimeout returns a derived command with a deadline. Call cancel to release resources
 // associated with the context as soon as the operation running in the context complete.
 func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) {
@@ -230,6 +310,30 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 	}
 
 	return slices.Sorted(maps.Keys(set)), nil
+}
+
+// applicationS3Info reads S3 profiles and application prefix from gathered hub data.
+func (c *Command) applicationS3Info(
+	drpcName, drpcNamespace string,
+) ([]*s3.Profile, string, error) {
+	// Read S3 profiles from the ramen hub configmap, the source of truth
+	// synced to managed clusters.
+	reader := c.outputReader(c.Env().Hub.Name)
+
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+
+	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		return nil, "", err
+	}
+
+	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return profiles, prefix, nil
 }
 
 // Managing steps.
