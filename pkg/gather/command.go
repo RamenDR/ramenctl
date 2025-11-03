@@ -12,6 +12,7 @@ import (
 	"slices"
 	stdtime "time"
 
+	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
 
@@ -67,6 +68,10 @@ func (c *Command) Context() context.Context {
 	return c.context
 }
 
+func (c *Command) dataDir() string {
+	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+}
+
 func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Validation) *Command {
 	return &Command{
 		command: cmd,
@@ -117,7 +122,7 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 
 	options := gathering.Options{
 		Namespaces: namespaces,
-		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
+		OutputDir:  c.dataDir(),
 	}
 	if !c.gatherApplication(options) {
 		return c.finishStep()
