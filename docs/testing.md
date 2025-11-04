@@ -345,8 +345,8 @@ The following example shows a test run with a failed test, and how to inspect
 the failure.
 
 > [!TIP]
-> To fail the test I scaled down the rbd-mirror deployment on the primary
-> cluster after the application reached the "protected" state.
+> To emulate failing a test, scale down the `rbd-mirror` deployment on the
+> primary cluster after the application reaches the "protected" state.
 
 Running the test:
 
