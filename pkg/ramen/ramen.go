@@ -14,7 +14,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
+	"github.com/ramendr/ramenctl/pkg/core"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 const (
@@ -43,6 +45,10 @@ const (
 	// DRClusterOperatorName is the name of the deploymentg on the managed clusters.
 	// TODO: discover the value from the cluster.
 	DRClusterOperatorName = "ramen-dr-cluster-operator"
+
+	// hubConfigMapName is the name of the ramen configmap on the hub.
+	// https://github.com/RamenDR/ramen/blob/bd59a54fa7cdff2e48c1725460cfd76dda9c27e9/internal/controller/ramenconfig.go#L31
+	hubConfigMapName = HubOperatorName + "-config"
 
 	// ConfigMapRamenConfigKeyName is the name configuration YAML in the ramen configmap.
 	// https://github.com/RamenDR/ramen/blob/ac64bd0bb67bcb194b938d52dc86bd165807987e/internal/controller/ramenconfig.go#L35
@@ -215,4 +221,87 @@ func ListDRPolicies(reader gathering.OutputReader) ([]string, error) {
 func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural
 	return reader.ListResources("", resource)
+}
+
+// GetS3Profiles extracts S3 profiles with credentials from the ramen hub.
+func GetS3Profiles(
+	reader gathering.OutputReader,
+	configMapNamespace string,
+) ([]*s3.Profile, error) {
+	configData, err := getRamenHubConfigData(reader, configMapNamespace)
+	if err != nil {
+		return nil, err
+	}
+	if len(configData.S3StoreProfiles) == 0 {
+		return nil, fmt.Errorf("no S3 profiles found in ramen config")
+	}
+	profiles := make([]*s3.Profile, 0, len(configData.S3StoreProfiles))
+	for _, storeProfile := range configData.S3StoreProfiles {
+		secretName := storeProfile.S3SecretRef.Name
+		secretNamespace := storeProfile.S3SecretRef.Namespace
+		if secretNamespace == "" {
+			secretNamespace = configMapNamespace
+		}
+		accessKeyID, secretAccessKey := getS3SecretKeys(reader, secretName, secretNamespace)
+		profiles = append(profiles, &s3.Profile{
+			Name:          storeProfile.S3ProfileName,
+			Bucket:        storeProfile.S3Bucket,
+			Region:        storeProfile.S3Region,
+			Endpoint:      storeProfile.S3CompatibleEndpoint,
+			CACertificate: storeProfile.CACertificates,
+			AccessKey:     accessKeyID,
+			SecretKey:     secretAccessKey,
+		})
+	}
+	return profiles, nil
+}
+
+// ApplicationS3Prefix returns the s3 object prefix for an application's s3 data.
+func ApplicationS3Prefix(
+	reader gathering.OutputReader,
+	drpcName, drpcNamespace string,
+) (string, error) {
+	drpc, err := ReadDRPC(reader, drpcName, drpcNamespace)
+	if err != nil {
+		return "", fmt.Errorf("failed to read drpc \"%s/%s\": %w",
+			drpcNamespace, drpcName, err)
+	}
+	vrgNamespace := VRGNamespace(drpc)
+	if vrgNamespace == "" {
+		return "", fmt.Errorf("drpc \"%s/%s\" annotation %q not found",
+			drpc.Namespace, drpc.Name, drpcAppNamespaceAnnotation)
+	}
+	return fmt.Sprintf("%s/%s/", vrgNamespace, drpc.Name), nil
+}
+
+// getRamenHubConfigData reads and parse the ramen hub operator configmap data.
+func getRamenHubConfigData(
+	reader gathering.OutputReader,
+	namespace string,
+) (*ramenapi.RamenConfig, error) {
+	configMap, err := core.ReadConfigMap(reader, hubConfigMapName, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read ramen hub configmap \"%s/%s\": %w",
+			namespace, hubConfigMapName, err)
+	}
+	configData := &ramenapi.RamenConfig{}
+	data := []byte(configMap.Data[ConfigMapRamenConfigKeyName])
+	if err := yaml.Unmarshal(data, configData); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal ramen hub configmap data: %w\n%s", err, data)
+	}
+	return configData, nil
+}
+
+// getS3SecretKeys reads S3 credentials from a ramen s3 profile secret.
+func getS3SecretKeys(
+	reader gathering.OutputReader,
+	name, namespace string,
+) (string, string) {
+	secret, err := core.ReadSecret(reader, name, namespace)
+	if err != nil {
+		return "", ""
+	}
+	accessKeyID := string(secret.Data["AWS_ACCESS_KEY_ID"])
+	secretAccessKey := string(secret.Data["AWS_SECRET_ACCESS_KEY"])
+	return accessKeyID, secretAccessKey
 }

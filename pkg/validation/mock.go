@@ -17,6 +17,7 @@ type Mock struct {
 	ValidateFunc              ContextFunc
 	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
 	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GatherS3Func              func(ctx Context, reader gathering.OutputReader, drpcName, drpcNamespace, outputDir string) error
 }
 
 var _ Validation = &Mock{}
@@ -53,4 +54,15 @@ func (m *Mock) Gather(
 	}
 	close(results)
 	return results
+}
+
+func (m *Mock) GatherS3(
+	ctx Context,
+	reader gathering.OutputReader,
+	drpcName, drpcNamespace, outputDir string,
+) error {
+	if m.GatherS3Func != nil {
+		return m.GatherS3Func(ctx, reader, drpcName, drpcNamespace, outputDir)
+	}
+	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"slices"
 	stdtime "time"
 
+	"github.com/nirs/kubectl-gather/pkg/gather"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
 
@@ -67,6 +68,15 @@ func (c *Command) Context() context.Context {
 	return c.context
 }
 
+func (c *Command) outputReader(cluster string) gathering.OutputReader {
+	clusterDir := filepath.Join(c.dataDir(), cluster)
+	return gather.NewOutputReader(clusterDir)
+}
+
+func (c *Command) dataDir() string {
+	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+}
+
 func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Validation) *Command {
 	return &Command{
 		command: cmd,
@@ -117,9 +127,13 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 
 	options := gathering.Options{
 		Namespaces: namespaces,
-		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
+		OutputDir:  c.dataDir(),
 	}
 	if !c.gatherApplication(options) {
+		return c.finishStep()
+	}
+
+	if !c.gatherApplicationS3Data(drpcName, drpcNamespace, options.OutputDir) {
 		return c.finishStep()
 	}
 
@@ -184,6 +198,37 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
 
 	return c.current.Status == report.Passed
+}
+
+func (c *Command) gatherApplicationS3Data(drpcName, drpcNamespace, outputDir string) bool {
+	start := time.Now()
+	step := &report.Step{Name: "gather application S3 data"}
+	reader := c.outputReader(c.Env().Hub.Name)
+
+	c.Logger().Infof("Gathering application S3 data")
+
+	if err := c.backend.GatherS3(c, reader, drpcName, drpcNamespace, outputDir); err != nil {
+		step.Duration = time.Since(start).Seconds()
+		if errors.Is(err, context.Canceled) {
+			console.Error("Canceled %s", step.Name)
+			step.Status = report.Canceled
+		} else {
+			console.Error("Failed to %s", step.Name)
+			step.Status = report.Failed
+		}
+		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
+		c.current.AddStep(step)
+		return false
+	}
+
+	step.Duration = time.Since(start).Seconds()
+	step.Status = report.Passed
+	c.current.AddStep(step)
+
+	console.Pass("Gathered application S3 data")
+	c.Logger().Infof("Gathered application S3 data in %.2f seconds", step.Duration)
+
+	return true
 }
 
 // withTimeout returns a derived command with a deadline. Call cancel to release resources

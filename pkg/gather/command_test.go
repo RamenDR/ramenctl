@@ -91,6 +91,24 @@ var (
 			return results
 		},
 	}
+
+	gatherS3Failed = &validation.Mock{
+		GatherS3Func: func(ctx validation.Context,
+			reader gathering.OutputReader,
+			drpcName, drpcNamespace, outputDir string,
+		) error {
+			return errors.New("no S3 data for you!")
+		},
+	}
+
+	gatherS3Canceled = &validation.Mock{
+		GatherS3Func: func(ctx validation.Context,
+			reader gathering.OutputReader,
+			drpcName, drpcNamespace, outputDir string,
+		) error {
+			return context.Canceled
+		},
+	}
 )
 
 func TestGatherApplicationPassed(t *testing.T) {
@@ -112,6 +130,7 @@ func TestGatherApplicationPassed(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"c1\"", Status: report.Passed},
 		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather application S3 data", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -207,6 +226,54 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 		diff := helpers.UnifiedDiff(t, gatherApplicationNamespaces, cmd.report.Namespaces)
 		t.Fatalf("namespaces not equal\n%s", diff)
 	}
+}
+
+func TestGatherApplicationS3Failed(t *testing.T) {
+	cmd := testCommand(t, gatherS3Failed)
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Failed)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather application S3 data", Status: report.Failed},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationS3Canceled(t *testing.T) {
+	cmd := testCommand(t, gatherS3Canceled)
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Canceled)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Canceled)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"c1\"", Status: report.Passed},
+		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather application S3 data", Status: report.Canceled},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
 }
 
 // Helpers
