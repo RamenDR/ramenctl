@@ -35,14 +35,14 @@ makes this task easy.
 ## Environment
 
 For disaster recovery you must have a hub cluster and 2 managed clusters,
-configured for Regional DR. This document assumes using ODF clusters.
+configured for Regional DR.
 
 > [!NOTE]
 > The `ramenctl` tool is not compatible yet with metro DR.
 
 ## Preparing a configuration file
 
-This section describes how to prepare a configuration file for your ODF clusters
+This section describes how to prepare a configuration file for your clusters
 and run a disaster recovery test.
 
 `ramenctl` uses a configuration file to access the clusters and the related
@@ -77,7 +77,7 @@ clusters:
 Edit the `drPolicy` section to match your DR configuration
 
 ```yaml
-drPolicy: drpolicy-1m
+drPolicy: dr-policy-1m
 ```
 
 > [!TIP]
@@ -85,24 +85,24 @@ drPolicy: drpolicy-1m
 
 ### Configure clusterSet
 
-Edit `clusterSet` to match your ACM configuration:
+Edit `clusterSet` to match your OCM configuration:
 
 ```yaml
-clusterSet: submariner
+clusterSet: default
 ```
 
 ### Configure pvcSpecs
 
 Edit the `pvcSpecs` section to use the right storage class names for your
-clusters:
+clusters. For drenv environments, use the defaults created by `ramenctl init`:
 
 ```yaml
 pvcSpecs:
 - name: rbd
-  storageClassName: ocs-storagecluster-ceph-rbd
+  storageClassName: rook-ceph-block
   accessModes: ReadWriteOnce
 - name: cephfs
-  storageClassName: ocs-storagecluster-cephfs
+  storageClassName: rook-cephfs-fs1
   accessModes: ReadWriteMany
 ```
 
@@ -124,9 +124,9 @@ The available options are:
 - workloads
   - `deploy`: busybox deployment with one PVC
 - deployers
-  - `appset`: ACM managed application deployed using *ApplicationSet*.
-  - `subscr`: ACM managed application deployed using *Subscription*.
-  - `disapp`: ACM discovered application deployed by the test command.`
+  - `appset`: OCM managed application deployed using *ApplicationSet*.
+  - `subscr`: OCM managed application deployed using *Subscription*.
+  - `disapp`: OCM discovered application deployed by the test command.`
 - pvcSpecs:
   - `rbd`: *Ceph* *RBD* storage
   - `cephfs`: *CephFS* storage
@@ -190,7 +190,7 @@ config:
   channel:
     name: https-github-com-ramendr-ocm-ramen-samples-git
     namespace: test-gitops
-  clusterSet: submariner
+  clusterSet: default
   clusters:
     c1:
       kubeconfig: mykubeconfigs/primary-cluster
@@ -198,20 +198,20 @@ config:
       kubeconfig: mykubeconfigs/secondary-cluster
     hub:
       kubeconfig: mykubeconfigs/hub
-  distro: ocp
-  drPolicy: drpolicy-1m
+  distro: k8s
+  drPolicy: dr-policy-1m
   namespaces:
-    argocdNamespace: openshift-gitops
-    ramenDRClusterNamespace: openshift-dr-system
-    ramenHubNamespace: openshift-operators
-    ramenOpsNamespace: openshift-dr-ops
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
   pvcSpecs:
   - accessModes: ReadWriteOnce
     name: rbd
-    storageClassName: ocs-storagecluster-ceph-rbd
+    storageClassName: rook-ceph-block
   - accessModes: ReadWriteMany
     name: cephfs
-    storageClassName: ocs-storagecluster-cephfs
+    storageClassName: rook-cephfs-fs1
   repo:
     branch: main
     url: https://github.com/RamenDR/ocm-ramen-samples.git
@@ -403,17 +403,16 @@ example-failure/test-run.data
 │   ├── cluster
 │   │   └── namespaces
 │   └── namespaces
-│       ├── openshift-gitops
-│       └── openshift-operators
+│       ├── argocd
+│       └── ramen-system
 ├── primary-cluster
 │   ├── cluster
 │   │   ├── namespaces
 │   │   ├── persistentvolumes
 │   │   └── storage.k8s.io
 │   └── namespaces
-│       ├── openshift-dr-system
-│       ├── openshift-gitops
-│       ├── openshift-operators
+│       ├── ramen-system
+│       ├── argocd
 │       └── test-appset-deploy-rbd
 └── secondary-cluster
     ├── cluster
@@ -421,9 +420,8 @@ example-failure/test-run.data
     │   ├── persistentvolumes
     │   └── storage.k8s.io
     └── namespaces
-        ├── openshift-dr-system
-        ├── openshift-gitops
-        ├── openshift-operators
+        ├── ramen-system
+        ├── argocd
         └── test-appset-deploy-rbd
 ```
 
@@ -436,7 +434,7 @@ $ example-failure/test-run.data
 We can start by looking at the *DRPC*:
 
 ```console
-$ cat hub/namespaces/openshift-gitops/ramendr.openshift.io/drplacementcontrols/appset-deploy-rbd.yaml
+$ cat hub/namespaces/argocd/ramendr.openshift.io/drplacementcontrols/appset-deploy-rbd.yaml
 ...
 status:
   actionStartTime: "2025-04-01T18:02:06Z"
@@ -560,8 +558,8 @@ We see that the VR is primary and replicating to the other cluster.
 We can also inspect ramen-dr-cluster-operator logs:
 
 ```console
-% tree secondary-cluster/namespaces/openshift-dr-system/pods/ramen-dr-cluster-operator-5dd448864d-78x8l/manager/
-secondary-cluster/namespaces/openshift-dr-system/pods/ramen-dr-cluster-operator-5dd448864d-78x8l/manager/
+% tree secondary-cluster/namespaces/ramen-system/pods/ramen-dr-cluster-operator-5dd448864d-78x8l/manager/
+secondary-cluster/namespaces/ramen-system/pods/ramen-dr-cluster-operator-5dd448864d-78x8l/manager/
 ├── current.log
 └── previous.log
 ```
@@ -569,8 +567,8 @@ secondary-cluster/namespaces/openshift-dr-system/pods/ramen-dr-cluster-operator-
 In this case the gathered data tells that ramen is not the root cause, and we
 need to inspect the storage.
 
-If more information is needed you can use the standard must-gather with ODF or
-ACM images to do a full gather.
+If more information is needed you can use the standard must-gather with OCM
+images to do a full gather.
 
 When we finished to debug the failed test we need to cleanup up:
 
