@@ -809,7 +809,7 @@ func TestValidateClustersK8s(t *testing.T) {
 					},
 				},
 				Deployment: report.DeploymentSummary{
-					Name:      "ramen-hub-operator",
+					Name:      ramen.HubOperatorName,
 					Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -890,7 +890,7 @@ func TestValidateClustersK8s(t *testing.T) {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -970,7 +970,7 @@ func TestValidateClustersK8s(t *testing.T) {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -1176,7 +1176,7 @@ func TestValidateClustersOcp(t *testing.T) {
 					},
 				},
 				Deployment: report.DeploymentSummary{
-					Name:      "ramen-hub-operator",
+					Name:      ramen.HubOperatorName,
 					Namespace: testOcp.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -1255,7 +1255,7 @@ func TestValidateClustersOcp(t *testing.T) {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -1333,7 +1333,7 @@ func TestValidateClustersOcp(t *testing.T) {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{

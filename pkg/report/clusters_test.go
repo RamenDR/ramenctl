@@ -500,7 +500,7 @@ func testClusterStatus() *report.ClustersStatus {
 					},
 				},
 				Deployment: report.DeploymentSummary{
-					Name:      "ramen-hub-operator",
+					Name:      ramen.HubOperatorName,
 					Namespace: "ramen-system",
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -581,7 +581,7 @@ func testClusterStatus() *report.ClustersStatus {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: "ramen-system",
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -661,7 +661,7 @@ func testClusterStatus() *report.ClustersStatus {
 						},
 					},
 					Deployment: report.DeploymentSummary{
-						Name:      "ramen-dr-cluster-operator",
+						Name:      ramen.DRClusterOperatorName,
 						Namespace: "ramen-system",
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{

@@ -81,6 +81,18 @@ type Context interface {
 	Context() context.Context
 }
 
+// OperatorDeploymentName returns the deployment name for the given controller type.
+func OperatorDeploymentName(controllerType ramenapi.ControllerType) string {
+	switch controllerType {
+	case ramenapi.DRHubType:
+		return HubOperatorName
+	case ramenapi.DRClusterType:
+		return DRClusterOperatorName
+	default:
+		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
+	}
+}
+
 // OperatorConfigMapName returns the ramen configmap name for the given controller type.
 func OperatorConfigMapName(controllerType ramenapi.ControllerType) string {
 	switch controllerType {
