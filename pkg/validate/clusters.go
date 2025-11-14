@@ -274,16 +274,8 @@ func (c *Command) validateRamen(
 	namespace string,
 	controllerType ramenapi.ControllerType,
 ) error {
-	var deploymentName string
-
-	switch controllerType {
-	case ramenapi.DRHubType:
-		deploymentName = ramen.HubOperatorName
-	case ramenapi.DRClusterType:
-		deploymentName = ramen.DRClusterOperatorName
-	default:
-		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
-	}
+	deploymentName := ramen.OperatorDeploymentName(controllerType)
+	configMapName := ramen.OperatorConfigMapName(controllerType)
 
 	if err := c.validateDeployment(
 		&s.Deployment,
@@ -298,7 +290,7 @@ func (c *Command) validateRamen(
 	if err := c.validateRamenConfigMap(
 		&s.ConfigMap,
 		cluster,
-		deploymentName+"-config",
+		configMapName,
 		namespace,
 		controllerType,
 	); err != nil {

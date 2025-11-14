@@ -32,10 +32,6 @@ const (
 	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L55
 	VRGConditionReasonUnused = "Unused"
 
-	// Annotation for application namespace on the managed cluster
-	// from ramen/internal/controllers/drplacementcontrol.go
-	drpcAppNamespaceAnnotation = "drplacementcontrol.ramendr.openshift.io/app-namespace"
-
 	// HubOperatorName is the name of the deploymentg on the hub.
 	// TODO: discover the value from the cluster.
 	HubOperatorName = "ramen-hub-operator"
@@ -44,6 +40,14 @@ const (
 	// TODO: discover the value from the cluster.
 	DRClusterOperatorName = "ramen-dr-cluster-operator"
 
+	// HubOperatorConfigMapName is the name of the ramen configmap on the hub.
+	// https://github.com/RamenDR/ramen/blob/bd59a54fa7cdff2e48c1725460cfd76dda9c27e9/internal/controller/ramenconfig.go#L31
+	HubOperatorConfigMapName = HubOperatorName + configMapNameSuffix
+
+	// DrClusterOperatorConfigMapName is the name of the ramen configmap on the managed clusters.
+	// https://github.com/RamenDR/ramen/blob/bd59a54fa7cdff2e48c1725460cfd76dda9c27e9/internal/controller/ramenconfig.go#L32
+	DrClusterOperatorConfigMapName = DRClusterOperatorName + configMapNameSuffix
+
 	// ConfigMapRamenConfigKeyName is the name configuration YAML in the ramen configmap.
 	// https://github.com/RamenDR/ramen/blob/ac64bd0bb67bcb194b938d52dc86bd165807987e/internal/controller/ramenconfig.go#L35
 	ConfigMapRamenConfigKeyName = "ramen_manager_config.yaml"
@@ -51,6 +55,12 @@ const (
 	// OperatorReplicas is the number of pods in the ramen operator deployment.
 	// TODO: discover the value from the cluster.
 	OperatorReplicas = 1
+)
+
+const (
+	// Annotation for application namespace on the managed cluster
+	// from ramen/internal/controllers/drplacementcontrol.go
+	drpcAppNamespaceAnnotation = "drplacementcontrol.ramendr.openshift.io/app-namespace"
 
 	// TODO: find a way to get this from ramen api. Available in the CRD under spec/names/plural.
 	// Should we gather the CRDs from the cluster?
@@ -58,6 +68,8 @@ const (
 	vrgPlural       = "volumereplicationgroups"
 	drPolicyPlural  = "drpolicies"
 	drClusterPlural = "drclusters"
+
+	configMapNameSuffix = "-config"
 )
 
 // Actions are the valid DRPC and VRG actions.
@@ -67,6 +79,30 @@ var Actions = []string{"", string(ramenapi.ActionFailover), string(ramenapi.Acti
 type Context interface {
 	Env() *e2etypes.Env
 	Context() context.Context
+}
+
+// OperatorDeploymentName returns the deployment name for the given controller type.
+func OperatorDeploymentName(controllerType ramenapi.ControllerType) string {
+	switch controllerType {
+	case ramenapi.DRHubType:
+		return HubOperatorName
+	case ramenapi.DRClusterType:
+		return DRClusterOperatorName
+	default:
+		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
+	}
+}
+
+// OperatorConfigMapName returns the ramen configmap name for the given controller type.
+func OperatorConfigMapName(controllerType ramenapi.ControllerType) string {
+	switch controllerType {
+	case ramenapi.DRHubType:
+		return HubOperatorConfigMapName
+	case ramenapi.DRClusterType:
+		return DrClusterOperatorConfigMapName
+	default:
+		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
+	}
 }
 
 func ApplicationNamespaces(drpc *ramenapi.DRPlacementControl) []string {
@@ -111,13 +147,6 @@ func SecondaryCluster(ctx Context, drpc *ramenapi.DRPlacementControl) (*e2etypes
 	default:
 		return nil, fmt.Errorf("primary cluster %q unknown", clusterName)
 	}
-}
-
-func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
-	if drpc.Spec.Action == ramenapi.ActionFailover {
-		return drpc.Spec.FailoverCluster
-	}
-	return drpc.Spec.PreferredCluster
 }
 
 func StablePhase(action ramenapi.DRAction) (ramenapi.DRState, error) {
@@ -215,4 +244,11 @@ func ListDRPolicies(reader gathering.OutputReader) ([]string, error) {
 func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural
 	return reader.ListResources("", resource)
+}
+
+func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
+	if drpc.Spec.Action == ramenapi.ActionFailover {
+		return drpc.Spec.FailoverCluster
+	}
+	return drpc.Spec.PreferredCluster
 }
