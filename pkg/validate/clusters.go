@@ -285,6 +285,8 @@ func (c *Command) validateRamen(
 		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
 	}
 
+	configMapName := ramen.OperatorConfigMapName(controllerType)
+
 	if err := c.validateDeployment(
 		&s.Deployment,
 		cluster,
@@ -298,7 +300,7 @@ func (c *Command) validateRamen(
 	if err := c.validateRamenConfigMap(
 		&s.ConfigMap,
 		cluster,
-		deploymentName+"-config",
+		configMapName,
 		namespace,
 		controllerType,
 	); err != nil {

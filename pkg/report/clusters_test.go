@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/helpers"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -453,7 +454,7 @@ func testClusterStatus() *report.ClustersStatus {
 			},
 			Ramen: report.RamenSummary{
 				ConfigMap: report.ConfigMapSummary{
-					Name:      "ramen-hub-operator-config",
+					Name:      ramen.HubOperatorConfigMapName,
 					Namespace: "ramen-system",
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -534,7 +535,7 @@ func testClusterStatus() *report.ClustersStatus {
 				Name: "dr1",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      "ramen-dr-cluster-operator-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: "ramen-system",
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -614,7 +615,7 @@ func testClusterStatus() *report.ClustersStatus {
 				Name: "dr2",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      "ramen-dr-cluster-operator-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: "ramen-system",
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{

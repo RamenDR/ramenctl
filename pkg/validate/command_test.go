@@ -763,7 +763,7 @@ func TestValidateClustersK8s(t *testing.T) {
 			},
 			Ramen: report.RamenSummary{
 				ConfigMap: report.ConfigMapSummary{
-					Name:      ramen.HubOperatorName + "-config",
+					Name:      ramen.HubOperatorConfigMapName,
 					Namespace: testK8s.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -844,7 +844,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				Name: "dr1",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      ramen.DRClusterOperatorName + "-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -924,7 +924,7 @@ func TestValidateClustersK8s(t *testing.T) {
 				Name: "dr2",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      ramen.DRClusterOperatorName + "-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: testK8s.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -1132,7 +1132,7 @@ func TestValidateClustersOcp(t *testing.T) {
 			},
 			Ramen: report.RamenSummary{
 				ConfigMap: report.ConfigMapSummary{
-					Name:      ramen.HubOperatorName + "-config",
+					Name:      ramen.HubOperatorConfigMapName,
 					Namespace: testOcp.config.Namespaces.RamenHubNamespace,
 					Deleted: report.ValidatedBool{
 						Validated: report.Validated{
@@ -1211,7 +1211,7 @@ func TestValidateClustersOcp(t *testing.T) {
 				Name: "prsurve-s2-c1",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      ramen.DRClusterOperatorName + "-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{
@@ -1289,7 +1289,7 @@ func TestValidateClustersOcp(t *testing.T) {
 				Name: "prsurve-s2-c2",
 				Ramen: report.RamenSummary{
 					ConfigMap: report.ConfigMapSummary{
-						Name:      ramen.DRClusterOperatorName + "-config",
+						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: testOcp.config.Namespaces.RamenDRClusterNamespace,
 						Deleted: report.ValidatedBool{
 							Validated: report.Validated{

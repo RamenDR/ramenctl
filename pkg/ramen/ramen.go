@@ -40,6 +40,14 @@ const (
 	// TODO: discover the value from the cluster.
 	DRClusterOperatorName = "ramen-dr-cluster-operator"
 
+	// HubOperatorConfigMapName is the name of the ramen configmap on the hub.
+	// https://github.com/RamenDR/ramen/blob/bd59a54fa7cdff2e48c1725460cfd76dda9c27e9/internal/controller/ramenconfig.go#L31
+	HubOperatorConfigMapName = HubOperatorName + configMapNameSuffix
+
+	// DrClusterOperatorConfigMapName is the name of the ramen configmap on the managed clusters.
+	// https://github.com/RamenDR/ramen/blob/bd59a54fa7cdff2e48c1725460cfd76dda9c27e9/internal/controller/ramenconfig.go#L32
+	DrClusterOperatorConfigMapName = DRClusterOperatorName + configMapNameSuffix
+
 	// ConfigMapRamenConfigKeyName is the name configuration YAML in the ramen configmap.
 	// https://github.com/RamenDR/ramen/blob/ac64bd0bb67bcb194b938d52dc86bd165807987e/internal/controller/ramenconfig.go#L35
 	ConfigMapRamenConfigKeyName = "ramen_manager_config.yaml"
@@ -60,6 +68,8 @@ const (
 	vrgPlural       = "volumereplicationgroups"
 	drPolicyPlural  = "drpolicies"
 	drClusterPlural = "drclusters"
+
+	configMapNameSuffix = "-config"
 )
 
 // Actions are the valid DRPC and VRG actions.
@@ -69,6 +79,18 @@ var Actions = []string{"", string(ramenapi.ActionFailover), string(ramenapi.Acti
 type Context interface {
 	Env() *e2etypes.Env
 	Context() context.Context
+}
+
+// OperatorConfigMapName returns the ramen configmap name for the given controller type.
+func OperatorConfigMapName(controllerType ramenapi.ControllerType) string {
+	switch controllerType {
+	case ramenapi.DRHubType:
+		return HubOperatorConfigMapName
+	case ramenapi.DRClusterType:
+		return DrClusterOperatorConfigMapName
+	default:
+		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
+	}
 }
 
 func ApplicationNamespaces(drpc *ramenapi.DRPlacementControl) []string {
