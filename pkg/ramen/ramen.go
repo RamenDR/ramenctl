@@ -32,10 +32,6 @@ const (
 	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L55
 	VRGConditionReasonUnused = "Unused"
 
-	// Annotation for application namespace on the managed cluster
-	// from ramen/internal/controllers/drplacementcontrol.go
-	drpcAppNamespaceAnnotation = "drplacementcontrol.ramendr.openshift.io/app-namespace"
-
 	// HubOperatorName is the name of the deploymentg on the hub.
 	// TODO: discover the value from the cluster.
 	HubOperatorName = "ramen-hub-operator"
@@ -51,6 +47,12 @@ const (
 	// OperatorReplicas is the number of pods in the ramen operator deployment.
 	// TODO: discover the value from the cluster.
 	OperatorReplicas = 1
+)
+
+const (
+	// Annotation for application namespace on the managed cluster
+	// from ramen/internal/controllers/drplacementcontrol.go
+	drpcAppNamespaceAnnotation = "drplacementcontrol.ramendr.openshift.io/app-namespace"
 
 	// TODO: find a way to get this from ramen api. Available in the CRD under spec/names/plural.
 	// Should we gather the CRDs from the cluster?
@@ -111,13 +113,6 @@ func SecondaryCluster(ctx Context, drpc *ramenapi.DRPlacementControl) (*e2etypes
 	default:
 		return nil, fmt.Errorf("primary cluster %q unknown", clusterName)
 	}
-}
-
-func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
-	if drpc.Spec.Action == ramenapi.ActionFailover {
-		return drpc.Spec.FailoverCluster
-	}
-	return drpc.Spec.PreferredCluster
 }
 
 func StablePhase(action ramenapi.DRAction) (ramenapi.DRState, error) {
@@ -215,4 +210,11 @@ func ListDRPolicies(reader gathering.OutputReader) ([]string, error) {
 func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural
 	return reader.ListResources("", resource)
+}
+
+func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
+	if drpc.Spec.Action == ramenapi.ActionFailover {
+		return drpc.Spec.FailoverCluster
+	}
+	return drpc.Spec.PreferredCluster
 }
