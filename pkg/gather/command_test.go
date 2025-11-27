@@ -20,6 +20,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
@@ -88,6 +89,44 @@ var (
 					results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
 				} else {
 					results <- gathering.Result{Name: cluster.Name}
+				}
+			}
+			close(results)
+			return results
+		},
+	}
+
+	gatherS3Failed = &validation.Mock{
+		GatherS3Func: func(
+			ctx validation.Context,
+			profiles []*s3.Profile,
+			prefix, outputDir string,
+		) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for i, profile := range profiles {
+				if i == 0 {
+					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
+				} else {
+					results <- s3.Result{ProfileName: profile.Name}
+				}
+			}
+			close(results)
+			return results
+		},
+	}
+
+	gatherS3Canceled = &validation.Mock{
+		GatherS3Func: func(
+			ctx validation.Context,
+			profiles []*s3.Profile,
+			prefix, outputDir string,
+		) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for i, profile := range profiles {
+				if i == 0 {
+					results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+				} else {
+					results <- s3.Result{ProfileName: profile.Name}
 				}
 			}
 			close(results)
@@ -215,6 +254,84 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 		diff := helpers.UnifiedDiff(t, gatherApplicationNamespaces, cmd.report.Namespaces)
 		t.Fatalf("namespaces not equal\n%s", diff)
 	}
+}
+
+func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
+	cmd := testCommand(t, &validation.Mock{})
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Failed)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Failed},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationS3DataFailed(t *testing.T) {
+	cmd := testCommand(t, gatherS3Failed)
+	addGatheredData(t, cmd, "appset-deploy-rbd")
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Failed)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationS3DataCanceled(t *testing.T) {
+	cmd := testCommand(t, gatherS3Canceled)
+	addGatheredData(t, cmd, "appset-deploy-rbd")
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Canceled)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Canceled)
+
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Canceled},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
 }
 
 // Helpers
