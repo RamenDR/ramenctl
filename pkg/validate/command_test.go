@@ -1757,7 +1757,7 @@ func testCommand(
 
 // addGatheredData adds fake gathered data to the output directory.
 func addGatheredData(t *testing.T, cmd *Command, name string) {
-	testData := fmt.Sprintf("testdata/%s/%s.data", name, cmd.report.Name)
+	testData := fmt.Sprintf("../testdata/%s/%s.data", name, cmd.report.Name)
 	source, err := filepath.Abs(testData)
 	if err != nil {
 		t.Fatal(err)
