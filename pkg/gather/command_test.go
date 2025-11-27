@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	drpcName             = "drpc-name"
-	drpcNamespace        = "drpc-namespace"
-	applicationNamespace = "application-namespace"
+	drpcName             = "appset-deploy-rbd"
+	drpcNamespace        = "argocd"
+	applicationNamespace = "e2e-appset-deploy-rbd"
 )
 
 var (
@@ -34,8 +34,8 @@ var (
 
 	testEnv = &types.Env{
 		Hub: &types.Cluster{Name: "hub"},
-		C1:  &types.Cluster{Name: "c1"},
-		C2:  &types.Cluster{Name: "c2"},
+		C1:  &types.Cluster{Name: "dr1"},
+		C2:  &types.Cluster{Name: "dr2"},
 	}
 
 	testApplication = &report.Application{
@@ -110,8 +110,8 @@ func TestGatherApplicationPassed(t *testing.T) {
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Passed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -181,8 +181,8 @@ func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Failed},
-		{Name: "gather \"c1\"", Status: report.Passed},
-		{Name: "gather \"c2\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
