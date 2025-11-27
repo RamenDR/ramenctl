@@ -1,0 +1,86 @@
+apiVersion: v1
+data:
+  ramen_manager_config.yaml: |
+    apiVersion: ramendr.openshift.io/v1alpha1
+    kind: RamenConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:9289
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: hub.ramendr.openshift.io
+    ramenControllerType: dr-hub
+    maxConcurrentReconciles: 50
+    drClusterOperator:
+      deploymentAutomationEnabled: true
+      s3SecretDistributionEnabled: true
+      channelName: alpha
+      packageName: ramen-dr-cluster-operator
+      namespaceName: ramen-system
+      catalogSourceName: ramen-catalog
+      catalogSourceNamespaceName: ramen-system
+      clusterServiceVersionName: ramen-dr-cluster-operator.v0.0.1
+    kubeObjectProtection:
+      veleroNamespaceName: velero
+    volSync:
+      disabled: false
+      destinationCopyMethod: Direct
+    multiNamespace:
+      FeatureEnabled: true
+      volsyncSupported: true
+    volumeUnprotectionEnabled: true
+    ramenOpsNamespace: ramen-ops
+    s3StoreProfiles:
+    - s3ProfileName: minio-on-dr1
+      s3Bucket: bucket
+      s3CompatibleEndpoint: http://example-cluster:30000
+      s3Region: us-west-1
+      s3SecretRef:
+        name: ramen-s3-secret-dr1
+        namespace: ramen-system
+    - s3ProfileName: minio-on-dr2
+      s3Bucket: bucket
+      s3CompatibleEndpoint: http://example-cluster:30000
+      s3Region: us-east-1
+      s3SecretRef:
+        name: ramen-s3-secret-dr2
+        namespace: ramen-system
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"ramen_manager_config.yaml":"apiVersion: ramendr.openshift.io/v1alpha1\nkind: RamenConfig\nhealth:\n  healthProbeBindAddress: :8081\nmetrics:\n  bindAddress: 127.0.0.1:9289\nwebhook:\n  port: 9443\nleaderElection:\n  leaderElect: true\n  resourceName: hub.ramendr.openshift.io\nramenControllerType: dr-hub\nmaxConcurrentReconciles: 50\ndrClusterOperator:\n  deploymentAutomationEnabled: true\n  s3SecretDistributionEnabled: true\n  channelName: alpha\n  packageName: ramen-dr-cluster-operator\n  namespaceName: ramen-system\n  catalogSourceName: ramen-catalog\n  catalogSourceNamespaceName: ramen-system\n  clusterServiceVersionName: ramen-dr-cluster-operator.v0.0.1\nkubeObjectProtection:\n  veleroNamespaceName: velero\nvolSync:\n  disabled: false\n  destinationCopyMethod: Direct\nmultiNamespace:\n  FeatureEnabled: true\n  volsyncSupported: true\nvolumeUnprotectionEnabled: true\nramenOpsNamespace: ramen-ops\ns3StoreProfiles:\n- s3ProfileName: minio-on-dr1\n  s3Bucket: bucket\n  s3CompatibleEndpoint: http://example-cluster:30000\n  s3Region: us-west-1\n  s3SecretRef:\n    name: ramen-s3-secret-dr1\n    namespace: ramen-system\n- s3ProfileName: minio-on-dr2\n  s3Bucket: bucket\n  s3CompatibleEndpoint: http://example-cluster:30000\n  s3Region: us-east-1\n  s3SecretRef:\n    name: ramen-s3-secret-dr2\n    namespace: ramen-system\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"cluster.open-cluster-management.io/backup":"resource"},"name":"ramen-hub-operator-config","namespace":"ramen-system"}}
+  creationTimestamp: "2025-08-11T09:46:18Z"
+  labels:
+    cluster.open-cluster-management.io/backup: ramen
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:ramen_manager_config.yaml: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+        f:labels: {}
+    manager: kubectl-client-side-apply
+    operation: Update
+    time: "2025-08-11T09:46:45Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          f:cluster.open-cluster-management.io/backup: {}
+    manager: manager
+    operation: Update
+    time: "2025-08-11T09:46:45Z"
+  name: ramen-hub-operator-config
+  namespace: ramen-system
+  resourceVersion: "3638"
+  uid: f97cbbe7-2f43-4b61-87a9-764cd855e3b8
