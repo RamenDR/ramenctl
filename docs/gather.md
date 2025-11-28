@@ -30,8 +30,8 @@ Use "ramenctl gather [command] --help" for more information about a command.
 ## gather application
 
 The gather application command gathers data for a specific disaster recover
-protected application. It gathers entire namespaces related to the protected
-application across the hub and the managed clusters.
+protected application. It gathers entire namespaces and S3 data related to the
+protected application across the hub and the managed clusters.
 
 ### Looking up applications
 
@@ -62,6 +62,9 @@ $ ramenctl gather application --name appset-deploy-rbd --namespace argocd -o out
    ✅ Gathered data from cluster "hub"
    ✅ Gathered data from cluster "dr1"
    ✅ Gathered data from cluster "dr2"
+   ✅ Inspected S3 profiles
+   ✅ Gathered S3 profile "minio-on-dr1"
+   ✅ Gathered S3 profile "minio-on-dr2"
 
 ✅ Gather completed
 ```
@@ -79,8 +82,9 @@ out
 
 ### The gather-appplication.data directory
 
-This directory contains the namespaces and cluster scope resources related to
-the protected application. The data depend on the application deployment type.
+This directory contains resources (namespaced and cluster scoped) and S3 data
+related to the protected application. The data depend on the application
+deployment type.
 
 ```console
 $ tree -L3 out/gather-application.data
@@ -99,12 +103,17 @@ out/gather-application.data
 │   └── namespaces
 │       ├── e2e-appset-deploy-rbd
 │       └── ramen-system
-└── hub
-    ├── cluster
-    │   └── namespaces
-    └── namespaces
-        ├── argocd
-        └── ramen-system
+├── hub
+│   ├── cluster
+│   │   └── namespaces
+│   └── namespaces
+│       ├── argocd
+│       └── ramen-system
+└── s3
+    ├── minio-on-dr1
+    │   └── test-appset-deploy-rbd
+    └── minio-on-dr2
+        └── test-appset-deploy-rbd
 ```
 
 You can use standard tools to inspect the resources:
