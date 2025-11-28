@@ -7,6 +7,7 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 type ContextFunc func(Context) error
@@ -17,6 +18,7 @@ type Mock struct {
 	ValidateFunc              ContextFunc
 	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
 	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GatherS3Func              func(ctx Context, profiles []*s3.Profile, prefix, outputDir string) <-chan s3.Result
 }
 
 var _ Validation = &Mock{}
@@ -50,6 +52,22 @@ func (m *Mock) Gather(
 	results := make(chan gathering.Result, len(clusters))
 	for _, cluster := range clusters {
 		results <- gathering.Result{Name: cluster.Name, Err: nil}
+	}
+	close(results)
+	return results
+}
+
+func (m *Mock) GatherS3(
+	ctx Context,
+	profiles []*s3.Profile,
+	prefix, outputDir string,
+) <-chan s3.Result {
+	if m.GatherS3Func != nil {
+		return m.GatherS3Func(ctx, profiles, prefix, outputDir)
+	}
+	results := make(chan s3.Result, len(profiles))
+	for _, profile := range profiles {
+		results <- s3.Result{ProfileName: profile.Name, Err: nil}
 	}
 	close(results)
 	return results
