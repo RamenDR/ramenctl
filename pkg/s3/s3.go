@@ -5,11 +5,13 @@ package s3
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -226,7 +228,7 @@ func (s *objectStore) listObjects(ctx context.Context, prefix string) ([]string,
 	return keys, nil
 }
 
-// downloadObject downloads an object from S3 store.
+// downloadObject downloads and decompresses an object from S3 store.
 func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string) error {
 	start := time.Now()
 
@@ -240,7 +242,35 @@ func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string
 	}
 	defer result.Body.Close()
 
-	filePath := filepath.Join(profileDir, key)
+	fileName := key
+	encoding := "none"
+
+	// Detect gzip body format. Bytes consumed during detection are kept in buf.
+	// Always reads 4 KiB, can read up to 66 KiB.
+	var buf bytes.Buffer
+	tee := io.TeeReader(result.Body, &buf)
+	gzipReader, err := gzip.NewReader(tee)
+
+	// Create a reader exposing the entire response, including bytes consumed during detection.
+	reader := io.MultiReader(bytes.NewReader(buf.Bytes()), result.Body)
+
+	if err == nil {
+		// Detected gzip format.
+
+		defer gzipReader.Close()
+
+		// Reset the reader to read the entire response without copying the data.
+		// Should never fail since we just created a reader with this stream.
+		if err := gzipReader.Reset(reader); err != nil {
+			return fmt.Errorf("failed to reset reader for object %q: %w", key, err)
+		}
+
+		reader = gzipReader
+		encoding = "gzip"
+		fileName = strings.TrimSuffix(key, ".gz")
+	}
+
+	filePath := filepath.Join(profileDir, fileName)
 
 	if err := os.MkdirAll(filepath.Dir(filePath), dirPerm); err != nil {
 		return err
@@ -252,9 +282,8 @@ func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string
 	}
 	defer file.Close()
 
-	if _, err := io.Copy(file, result.Body); err != nil {
-		return fmt.Errorf("failed to copy %q to %q: %w",
-			key, filePath, err)
+	if _, err := io.Copy(file, reader); err != nil {
+		return fmt.Errorf("failed to copy %q to %q: %w", key, filePath, err)
 	}
 
 	// Close the file explicitly after copy.
@@ -262,8 +291,8 @@ func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string
 		return fmt.Errorf("failed to close %q: %w", filePath, err)
 	}
 
-	s.log.Debugf("Downloaded object %q in %.3f seconds",
-		key, time.Since(start).Seconds())
+	s.log.Debugf("Downloaded object %q (encoding: %s) in %.3f seconds",
+		key, encoding, time.Since(start).Seconds())
 
 	return nil
 }
