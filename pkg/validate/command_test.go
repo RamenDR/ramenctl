@@ -94,6 +94,8 @@ var (
 	})
 
 	validateApplicationNamespaces = sets.Sorted([]string{
+		testK8s.config.Namespaces.RamenHubNamespace,
+		testK8s.config.Namespaces.RamenDRClusterNamespace,
 		drpcNamespace,
 		applicationNamespace,
 	})

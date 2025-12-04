@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 
@@ -70,7 +71,7 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	step := &report.Step{Name: "inspect application"}
 	c.Logger().Infof("Step %q started", step.Name)
 
-	namespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	namespaces, err := c.namespacesToGather(drpcName, drpcNamespace)
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -93,10 +94,26 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	console.Pass("Inspected application")
 	c.Logger().Infof("Step %q passed", step.Name)
 
-	// For consistent gather order and report.
-	slices.Sort(namespaces)
-
 	return namespaces, true
+}
+
+func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
+	set := map[string]struct{}{
+		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
+		c.config.Namespaces.RamenHubNamespace:       {},
+		c.config.Namespaces.RamenDRClusterNamespace: {},
+	}
+
+	appNamespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ns := range appNamespaces {
+		set[ns] = struct{}{}
+	}
+
+	return slices.Sorted(maps.Keys(set)), nil
 }
 
 func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string) bool {
