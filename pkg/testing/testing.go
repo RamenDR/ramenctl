@@ -7,6 +7,7 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 // Testing interface for ramenctl commands.
@@ -31,4 +32,10 @@ type Testing interface {
 		clusters []*types.Cluster,
 		options gathering.Options,
 	) <-chan gathering.Result
+	GatherS3(
+		ctx types.Context,
+		profiles []*s3.Profile,
+		prefixes []string,
+		outputDir string,
+	) <-chan s3.Result
 }

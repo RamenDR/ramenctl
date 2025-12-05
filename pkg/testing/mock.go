@@ -7,6 +7,7 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 type ContextFunc func(types.Context) error
@@ -30,7 +31,8 @@ type Mock struct {
 	PurgeFunc     TestContextFunc
 
 	// Handling failures.
-	GatherFunc func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GatherFunc   func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GatherS3Func func(ctx types.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
 }
 
 var _ Testing = &Mock{}
@@ -117,6 +119,23 @@ func (m *Mock) Gather(
 	results := make(chan gathering.Result, len(clusters))
 	for _, cluster := range clusters {
 		results <- gathering.Result{Name: cluster.Name, Err: nil}
+	}
+	close(results)
+	return results
+}
+
+func (m *Mock) GatherS3(
+	ctx types.Context,
+	profiles []*s3.Profile,
+	prefixes []string,
+	outputDir string,
+) <-chan s3.Result {
+	if m.GatherS3Func != nil {
+		return m.GatherS3Func(ctx, profiles, prefixes, outputDir)
+	}
+	results := make(chan s3.Result, len(profiles))
+	for _, profile := range profiles {
+		results <- s3.Result{ProfileName: profile.Name, Err: nil}
 	}
 	close(results)
 	return results

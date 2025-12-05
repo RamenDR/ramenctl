@@ -53,5 +53,5 @@ func (b Backend) GatherS3(
 	profiles []*s3.Profile,
 	prefix, outputDir string,
 ) <-chan s3.Result {
-	return s3.Gather(ctx.Context(), profiles, prefix, outputDir, ctx.Logger())
+	return s3.Gather(ctx.Context(), profiles, []string{prefix}, outputDir, ctx.Logger())
 }

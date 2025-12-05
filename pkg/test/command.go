@@ -13,6 +13,7 @@ import (
 	"sync"
 	stdtime "time"
 
+	"github.com/nirs/kubectl-gather/pkg/gather"
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
@@ -21,6 +22,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -145,6 +147,15 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 	return &c, cancel
 }
 
+func (c *Command) outputReader(cluster string) gathering.OutputReader {
+	clusterDir := filepath.Join(c.dataDir(), cluster)
+	return gather.NewOutputReader(clusterDir)
+}
+
+func (c *Command) dataDir() string {
+	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+}
+
 func (c *Command) validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
@@ -197,7 +208,7 @@ func (c *Command) gatherData() {
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 	options := gathering.Options{
 		Namespaces: c.namespacesToGather(),
-		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
+		OutputDir:  c.dataDir(),
 	}
 	start := time.Now()
 
@@ -215,6 +226,60 @@ func (c *Command) gatherData() {
 	}
 
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
+}
+
+func (c *Command) gatherS3Data() {
+	console.Step("Gather S3 data")
+	start := time.Now()
+	reader := c.outputReader(c.Env().Hub.Name)
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+
+	// Get S3 profiles from gathered hub data.
+	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		c.Logger().Errorf("Failed to get S3 profiles: %s", err)
+		console.Error("Failed to get S3 profiles")
+		return
+	}
+
+	// Collect S3 prefixes for all failed tests.
+	var prefixes []string
+	for _, test := range c.tests {
+		if test.Status != report.Failed {
+			continue
+		}
+
+		prefix, err := ramen.ApplicationS3Prefix(reader, test.Name(), test.ManagementNamespace())
+		if err != nil {
+			// Test may fail before the DRPC is created (e.g., during deploy).
+			// Log warning and continue gathering S3 data for other failed tests.
+			c.Logger().Warnf("Failed to get S3 prefix for application \"%s/%s\": %s",
+				test.ManagementNamespace(), test.Name(), err)
+			continue
+		}
+		prefixes = append(prefixes, prefix)
+	}
+
+	if len(prefixes) == 0 {
+		c.Logger().Info("Application S3 prefixes not found")
+		return
+	}
+
+	c.Logger().Infof("Gathering S3 data from profiles %q with prefixes %q",
+		logging.ProfileNames(profiles), prefixes)
+
+	for r := range c.backend.GatherS3(c, profiles, prefixes, c.dataDir()) {
+		if r.Err != nil {
+			msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+			console.Error(msg)
+			c.Logger().Errorf("%s: %s", msg, r.Err)
+		} else {
+			console.Pass("Gathered S3 profile %q", r.ProfileName)
+		}
+	}
+
+	c.Logger().Infof("Gathered S3 data in %.2f seconds", time.Since(start).Seconds())
 }
 
 func (c *Command) failed() error {
@@ -295,6 +360,7 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	res := c.finishStep()
 	if c.report.Status == report.Failed {
 		c.gatherData()
+		c.gatherS3Data()
 	}
 	return res
 }
