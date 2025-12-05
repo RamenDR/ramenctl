@@ -10,6 +10,7 @@ import (
 	"github.com/ramendr/ramen/e2e/validate"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 type Backend struct{}
@@ -62,4 +63,13 @@ func (b Backend) Gather(
 	options gathering.Options,
 ) <-chan gathering.Result {
 	return gathering.Namespaces(ctx, clusters, options)
+}
+
+func (b Backend) GatherS3(
+	ctx types.Context,
+	profiles []*s3.Profile,
+	prefixes []string,
+	outputDir string,
+) <-chan s3.Result {
+	return s3.Gather(ctx.Context(), profiles, prefixes, outputDir, ctx.Logger())
 }

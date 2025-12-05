@@ -13,6 +13,7 @@ import (
 	"sync"
 	stdtime "time"
 
+	"github.com/nirs/kubectl-gather/pkg/gather"
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
@@ -21,6 +22,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -145,6 +147,11 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 	return &c, cancel
 }
 
+func (c *Command) outputReader(cluster string) gathering.OutputReader {
+	clusterDir := filepath.Join(c.dataDir(), cluster)
+	return gather.NewOutputReader(clusterDir)
+}
+
 func (c *Command) dataDir() string {
 	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
 }
@@ -219,6 +226,51 @@ func (c *Command) gatherData() {
 	}
 
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
+}
+
+func (c *Command) gatherS3Data() {
+	start := time.Now()
+
+	// Read S3 profiles and prefixes from gathered hub data. The hub configmap
+	// is the source of truth, synced to managed clusters.
+	reader := c.outputReader(c.Env().Hub.Name)
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+
+	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		c.Logger().Warnf("Failed to get S3 profiles: %s", err)
+		return
+	}
+
+	prefixes := c.s3PrefixesToGather(reader)
+	if len(prefixes) == 0 {
+		c.Logger().Warn("No application S3 prefixes found to gather S3 data")
+		return
+	}
+
+	console.Step("Gather S3 data")
+
+	c.Logger().Infof("Gathering S3 data from profiles %q with prefixes %q",
+		logging.ProfileNames(profiles), prefixes)
+
+	for r := range c.backend.GatherS3(c, profiles, prefixes, c.dataDir()) {
+		if r.Err != nil {
+			if errors.Is(r.Err, context.Canceled) {
+				msg := fmt.Sprintf("Canceled gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+			} else {
+				msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+			}
+		} else {
+			console.Pass("Gathered S3 profile %q", r.ProfileName)
+		}
+	}
+
+	c.Logger().Infof("Gathered S3 data in %.2f seconds", time.Since(start).Seconds())
 }
 
 func (c *Command) failed() error {
@@ -299,6 +351,7 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	res := c.finishStep()
 	if c.report.Status == report.Failed {
 		c.gatherData()
+		c.gatherS3Data()
 	}
 	return res
 }
@@ -342,4 +395,23 @@ func (c *Command) namespacesToGather() []string {
 	}
 
 	return slices.Sorted(maps.Keys(set))
+}
+
+func (c *Command) s3PrefixesToGather(reader gathering.OutputReader) []string {
+	var prefixes []string
+	for _, test := range c.tests {
+		if test.Status != report.Failed {
+			continue
+		}
+		// Test may fail before the DRPC is created (e.g., during deploy).
+		// Log warning and continue gathering S3 data for other failed tests.
+		prefix, err := ramen.ApplicationS3Prefix(reader, test.Name(), test.ManagementNamespace())
+		if err != nil {
+			c.Logger().Warnf("Failed to get S3 prefix for application \"%s/%s\": %s",
+				test.ManagementNamespace(), test.Name(), err)
+			continue
+		}
+		prefixes = append(prefixes, prefix)
+	}
+	return prefixes
 }
