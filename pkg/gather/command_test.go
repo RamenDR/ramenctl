@@ -100,7 +100,8 @@ var (
 		GatherS3Func: func(
 			ctx validation.Context,
 			profiles []*s3.Profile,
-			prefix, outputDir string,
+			prefixes []string,
+			outputDir string,
 		) <-chan s3.Result {
 			results := make(chan s3.Result, 2)
 			for i, profile := range profiles {
@@ -119,7 +120,8 @@ var (
 		GatherS3Func: func(
 			ctx validation.Context,
 			profiles []*s3.Profile,
-			prefix, outputDir string,
+			prefixes []string,
+			outputDir string,
 		) <-chan s3.Result {
 			results := make(chan s3.Result, 2)
 			for i, profile := range profiles {

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -62,7 +63,8 @@ type objectStore struct {
 func Gather(
 	ctx context.Context,
 	profiles []*Profile,
-	prefix, outputDir string,
+	prefixes []string,
+	outputDir string,
 	log *zap.SugaredLogger,
 ) <-chan Result {
 	results := make(chan Result)
@@ -74,7 +76,7 @@ func Gather(
 		go func() {
 			defer wg.Done()
 			start := time.Now()
-			err := gatherData(ctx, profile, prefix, outputDir, log)
+			err := gatherData(ctx, profile, prefixes, outputDir, log)
 			results <- Result{
 				ProfileName: profile.Name,
 				Err:         err,
@@ -92,11 +94,12 @@ func Gather(
 }
 
 // gatherData creates client for the given profile and downloads objects from S3
-// using the provided prefix.
+// using the provided prefixes.
 func gatherData(
 	ctx context.Context,
 	profile *Profile,
-	prefix, outputDir string,
+	prefixes []string,
+	outputDir string,
 	log *zap.SugaredLogger,
 ) error {
 	objectStore, err := newObjectStore(ctx, profile, log)
@@ -105,9 +108,16 @@ func gatherData(
 			profile.Name, err)
 	}
 
-	if err := objectStore.downloadObjects(ctx, prefix, outputDir); err != nil {
+	var errs []error
+	for _, prefix := range prefixes {
+		if err := objectStore.downloadObjects(ctx, prefix, outputDir); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
 		return fmt.Errorf("failed to download objects from profile %q: %w",
-			profile.Name, err)
+			profile.Name, errors.Join(errs...))
 	}
 
 	return nil
@@ -176,7 +186,8 @@ func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir str
 
 	profileDir := filepath.Join(outputDir, dirName, s.profile.Name)
 	if err := os.MkdirAll(profileDir, dirPerm); err != nil {
-		return err
+		return fmt.Errorf("failed to create directory %q for prefix %q: %w",
+			profileDir, prefix, err)
 	}
 
 	downloaded := 0

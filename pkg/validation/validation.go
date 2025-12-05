@@ -34,6 +34,7 @@ type Validation interface {
 	GatherS3(
 		ctx Context,
 		profiles []*s3.Profile,
-		prefix, outputDir string,
+		prefixes []string,
+		outputDir string,
 	) <-chan s3.Result
 }
