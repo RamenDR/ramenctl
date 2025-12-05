@@ -145,6 +145,10 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 	return &c, cancel
 }
 
+func (c *Command) dataDir() string {
+	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+}
+
 func (c *Command) validate() bool {
 	c.startStep(ValidateStep)
 	console.Step("Validate config")
@@ -197,7 +201,7 @@ func (c *Command) gatherData() {
 	clusters := []*types.Cluster{env.Hub, env.C1, env.C2}
 	options := gathering.Options{
 		Namespaces: c.namespacesToGather(),
-		OutputDir:  filepath.Join(c.command.OutputDir(), c.command.Name()+".data"),
+		OutputDir:  c.dataDir(),
 	}
 	start := time.Now()
 
