@@ -371,6 +371,10 @@ $ ramenctl test run -o example-failure
    ✅ Gathered data from cluster "secondary-cluster"
    ✅ Gathered data from cluster "primary-cluster"
 
+🔎 Gather S3 data ...
+   ✅ Gathered S3 profile "minio-on-primary-cluster"
+   ✅ Gathered S3 profile "minio-on-secondary-cluster"
+
 ❌ failed (0 passed, 1 failed, 0 skipped)
 ```
 
@@ -382,7 +386,8 @@ example-failure
 ├── test-run.data
 │   ├── hub
 │   ├── primary-cluster
-│   └── secondary-cluster
+│   ├── secondary-cluster
+│   └── s3
 ├── test-run.log
 └── test-run.yaml
 ```
@@ -393,8 +398,9 @@ example-failure
 
 ### Inspecting gathered data
 
-The command gathers all the namespaces related to the failed test, and related
-cluster scope resources such as storage classes and persistent volumes.
+The command gathers all the namespaces related to the failed test, related
+cluster scope resources such as storage classes and persistent volumes, and
+S3 data stored by ramen for the failed applications.
 
 ```console
 $ tree -L3 example-failure/test-run.data
@@ -414,14 +420,19 @@ example-failure/test-run.data
 │       ├── ramen-system
 │       ├── argocd
 │       └── test-appset-deploy-rbd
-└── secondary-cluster
-    ├── cluster
-    │   ├── namespaces
-    │   ├── persistentvolumes
-    │   └── storage.k8s.io
-    └── namespaces
-        ├── ramen-system
-        ├── argocd
+├── secondary-cluster
+│    ├── cluster
+│    │   ├── namespaces
+│    │   ├── persistentvolumes
+│    │   └── storage.k8s.io
+│    └── namespaces
+│        ├── ramen-system
+│        ├── argocd
+│        └── test-appset-deploy-rbd
+└── s3
+    ├── minio-on-primary-cluster
+    │   └── test-appset-deploy-rbd
+    └── minio-on-secondary-cluster
         └── test-appset-deploy-rbd
 ```
 
