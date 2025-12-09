@@ -13,6 +13,7 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 
 	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 	rtesting "github.com/ramendr/ramenctl/pkg/testing"
 )
@@ -24,9 +25,10 @@ const (
 
 var (
 	testConfig = &e2econfig.Config{
+		Namespaces: e2econfig.K8sNamespaces,
 		PVCSpecs: []e2econfig.PVCSpec{
-			{Name: "block", StorageClassName: "block-storage"},
-			{Name: "file", StorageClassName: "file-storage"},
+			{Name: "rbd", StorageClassName: "block-storage"},
+			{Name: "cephfs", StorageClassName: "file-storage"},
 		},
 		Deployers: []e2econfig.Deployer{
 			{Name: "appset", Type: "appset"},
@@ -34,12 +36,12 @@ var (
 			{Name: "disapp", Type: "disapp"},
 		},
 		Tests: []e2econfig.Test{
-			{Workload: "deploy", Deployer: "appset", PVCSpec: "block"},
-			{Workload: "deploy", Deployer: "appset", PVCSpec: "file"},
-			{Workload: "deploy", Deployer: "subscr", PVCSpec: "block"},
-			{Workload: "deploy", Deployer: "subscr", PVCSpec: "file"},
-			{Workload: "deploy", Deployer: "disapp", PVCSpec: "block"},
-			{Workload: "deploy", Deployer: "disapp", PVCSpec: "file"},
+			{Workload: "deploy", Deployer: "appset", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "appset", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "subscr", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "subscr", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "disapp", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "disapp", PVCSpec: "cephfs"},
 		},
 	}
 
@@ -210,7 +212,7 @@ func TestRunSetupCanceled(t *testing.T) {
 
 func TestRunTestsFailed(t *testing.T) {
 	test := testCommand(t, testRun, failoverFailed)
-
+	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -233,7 +235,7 @@ func TestRunTestsFailed(t *testing.T) {
 
 func TestRunDisappFailed(t *testing.T) {
 	test := testCommand(t, testRun, disappFailoverFailed)
-
+	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -336,7 +338,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 
 func TestCleanPurgeFailed(t *testing.T) {
 	test := testCommand(t, testClean, purgeFailed)
-
+	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
 	}
