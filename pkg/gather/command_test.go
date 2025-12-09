@@ -5,9 +5,6 @@ package gather
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
-	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
@@ -139,7 +136,7 @@ var (
 
 func TestGatherApplicationPassed(t *testing.T) {
 	cmd := testCommand(t, &validation.Mock{})
-	addGatheredData(t, cmd, "appset-deploy-rbd")
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -246,7 +243,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 	}
 
 	cmd := testCommand(t, mockBackend)
-	addGatheredData(t, cmd, "appset-deploy-rbd")
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	err := cmd.Application(drpcName, drpcNamespace)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -284,7 +281,7 @@ func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 
 func TestGatherApplicationS3DataFailed(t *testing.T) {
 	cmd := testCommand(t, gatherS3Failed)
-	addGatheredData(t, cmd, "appset-deploy-rbd")
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -311,7 +308,7 @@ func TestGatherApplicationS3DataFailed(t *testing.T) {
 
 func TestGatherApplicationS3DataCanceled(t *testing.T) {
 	cmd := testCommand(t, gatherS3Canceled)
-	addGatheredData(t, cmd, "appset-deploy-rbd")
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -337,18 +334,6 @@ func TestGatherApplicationS3DataCanceled(t *testing.T) {
 }
 
 // Helpers
-
-// addGatheredData adds fake gathered data to the output directory.
-func addGatheredData(t *testing.T, cmd *Command, name string) {
-	testData := fmt.Sprintf("../testdata/%s/validate-application.data", name)
-	source, err := filepath.Abs(testData)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Symlink(source, cmd.dataDir()); err != nil {
-		t.Fatal(err)
-	}
-}
 
 func testCommand(t *testing.T, backend validation.Validation) *Command {
 	cmd, err := command.ForTest("gather-application", testEnv, t.TempDir())

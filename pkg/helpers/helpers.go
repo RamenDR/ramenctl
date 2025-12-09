@@ -5,6 +5,9 @@
 package helpers
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/aymanbagabas/go-udiff"
@@ -40,6 +43,18 @@ func UnifiedDiff(t *testing.T, expected, actual any) string {
 	expectedString := marshal(t, expected)
 	actualString := marshal(t, actual)
 	return udiff.Unified("expected", "actual", expectedString, actualString)
+}
+
+// AddGatheredData adds fake gathered data to the output directory.
+func AddGatheredData(t *testing.T, dataDir, name, commandName string) {
+	testData := fmt.Sprintf("../testdata/%s/%s.data", name, commandName)
+	source, err := filepath.Abs(testData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(source, dataDir); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func marshal(t *testing.T, obj any) string {

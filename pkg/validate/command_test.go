@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
@@ -620,7 +619,7 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 
 func TestValidateClustersK8s(t *testing.T) {
 	validate := testCommand(t, validateClusters, &validation.Mock{}, testK8s)
-	addGatheredData(t, validate, "clusters/"+testK8s.name)
+	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -1011,7 +1010,7 @@ func TestValidateClustersK8s(t *testing.T) {
 
 func TestValidateClustersOcp(t *testing.T) {
 	validate := testCommand(t, validateClusters, &validation.Mock{}, testOcp)
-	addGatheredData(t, validate, "clusters/"+testOcp.name)
+	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testOcp.name, validate.report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -1439,7 +1438,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 
 func TestValidateApplicationPassed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationMock, testK8s)
-	addGatheredData(t, validate, "appset-deploy-rbd")
+	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -1755,18 +1754,6 @@ func testCommand(
 		cmd.Close()
 	})
 	return newCommand(cmd, system.config, backend)
-}
-
-// addGatheredData adds fake gathered data to the output directory.
-func addGatheredData(t *testing.T, cmd *Command, name string) {
-	testData := fmt.Sprintf("../testdata/%s/%s.data", name, cmd.report.Name)
-	source, err := filepath.Abs(testData)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Symlink(source, cmd.dataDir()); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func checkReport(t *testing.T, cmd *Command, status report.Status) {
