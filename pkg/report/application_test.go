@@ -255,6 +255,41 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.SecondaryCluster.VRG.Conditions[0].State = report.Problem
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("s3 status profiles value nil", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Value = nil
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profiles state", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.State = report.Problem
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profiles description", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Description = "S3 profiles not available"
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile name", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Value[0].Name = helpers.Modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile gathered value", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Value[0].Gathered.Value = false
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile gathered state", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Value[0].Gathered.State = report.Problem
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile gathered description", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles.Value[0].Gathered.Description = "connection refused"
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 }
 
 func TestReportApplicationStatusMarshaling(t *testing.T) {
@@ -442,6 +477,33 @@ func testApplicationStatus() *report.ApplicationStatus {
 							State: report.OK,
 						},
 						Type: "NoClusterDataConflict",
+					},
+				},
+			},
+		},
+		S3: report.S3Status{
+			Profiles: report.ValidatedS3ProfileStatusList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.S3ProfileStatus{
+					{
+						Name: "minio-on-dr1",
+						Gathered: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+					{
+						Name: "minio-on-dr2",
+						Gathered: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
 					},
 				},
 			},
