@@ -19,8 +19,10 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/core"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
 
@@ -56,6 +58,14 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 	}
 	if !c.gatherNamespaces(options) {
 		return c.finishStep()
+	}
+
+	// If inspectS3Profiles fails, skip S3 data gathering but continue validation.
+	// Missing S3 data will be reported as a problem during validation.
+	if profiles, prefix, ok := c.inspectS3Profiles(drpcName, drpcNamespace); ok {
+		if !c.gatherApplicationS3Data(profiles, prefix) {
+			return c.finishStep()
+		}
 	}
 
 	if !c.validateGatheredApplicationData(drpcName, drpcNamespace) {
@@ -97,6 +107,75 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
+func (c *Command) inspectS3Profiles(
+	drpcName, drpcNamespace string,
+) ([]*s3.Profile, string, bool) {
+	start := time.Now()
+	step := &report.Step{Name: "inspect S3 profiles"}
+
+	c.Logger().Infof("Step %q started", step.Name)
+
+	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
+	if err != nil {
+		step.Duration = time.Since(start).Seconds()
+		step.Status = report.Failed
+		console.Error("Failed to %s", step.Name)
+		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
+		c.current.AddStep(step)
+		return nil, "", false
+	}
+
+	step.Duration = time.Since(start).Seconds()
+	step.Status = report.Passed
+	c.current.AddStep(step)
+
+	console.Pass("Inspected S3 profiles")
+	c.Logger().Infof("Step %q passed", step.Name)
+
+	return profiles, prefix, true
+}
+
+func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string) bool {
+	start := time.Now()
+	outputDir := c.dataDir()
+
+	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
+		logging.ProfileNames(profiles), prefix)
+
+	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
+		// Store the s3 gather result for validation.
+		c.applicationS3Results = append(c.applicationS3Results, r)
+
+		step := &report.Step{
+			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
+			Duration: r.Duration,
+		}
+		if r.Err != nil {
+			if errors.Is(r.Err, context.Canceled) {
+				msg := fmt.Sprintf("Canceled gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Canceled
+			} else {
+				msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Failed
+			}
+		} else {
+			step.Status = report.Passed
+			console.Pass("Gathered S3 profile %q", r.ProfileName)
+		}
+		c.current.AddStep(step)
+	}
+
+	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
+
+	// We want to stop only if the user cancelled. Errors will be
+	// reported during validation.
+	return c.current.Status != report.Canceled
+}
+
 func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
 	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
@@ -114,6 +193,29 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 	}
 
 	return slices.Sorted(maps.Keys(set)), nil
+}
+
+// applicationS3Info reads S3 profiles and application prefix from gathered hub data.
+func (c *Command) applicationS3Info(
+	drpcName, drpcNamespace string,
+) ([]*s3.Profile, string, error) {
+	// Read S3 profiles from the ramen hub configmap, the source of truth
+	// synced to managed clusters.
+	reader := c.outputReader(c.Env().Hub.Name)
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+
+	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		return nil, "", err
+	}
+
+	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return profiles, prefix, nil
 }
 
 func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string) bool {
@@ -153,6 +255,8 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		log.Errorf("%s: %s", msg, err)
 		return false
 	}
+
+	c.validateS3Data(&s.S3)
 
 	if c.report.Summary.HasIssues() {
 		step.Status = report.Failed
@@ -204,6 +308,55 @@ func (c *Command) validateApplicationSecondaryCluster(
 	}
 	s.Name = cluster.Name
 	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
+}
+
+func (c *Command) validateS3Data(s *report.S3Status) {
+	c.validatedS3ProfileStatus(&s.Profiles)
+}
+
+func (c *Command) validatedS3ProfileStatus(s *report.ValidatedS3ProfileStatusList) {
+	// This happens when inspectS3Profiles fails to get S3 profiles or
+	// application prefix from the gathered hub data.
+	if len(c.applicationS3Results) == 0 {
+		s.State = report.Problem
+		s.Description = "S3 data not available"
+		c.report.Summary.Add(s)
+		return
+	}
+
+	for _, result := range c.applicationS3Results {
+		validated := c.validatedS3Profile(result)
+		s.Value = append(s.Value, validated)
+	}
+
+	s.State = report.OK
+	c.report.Summary.Add(s)
+}
+
+func (c *Command) validatedS3Profile(result s3.Result) report.S3ProfileStatus {
+	profileStatus := report.S3ProfileStatus{
+		Name: result.ProfileName,
+	}
+
+	if result.Err != nil {
+		profileStatus.Gathered = report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: result.Err.Error(),
+			},
+			Value: false,
+		}
+	} else {
+		profileStatus.Gathered = report.ValidatedBool{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: true,
+		}
+	}
+
+	c.report.Summary.Add(&profileStatus.Gathered)
+	return profileStatus
 }
 
 func (c *Command) validateApplicationDRPC(

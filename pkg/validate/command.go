@@ -22,6 +22,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
@@ -45,6 +46,9 @@ type Command struct {
 	// current validation step.
 	current        *report.Step
 	currentStarted time.Time
+
+	// applicationS3Results stores the S3 gather results for validation.
+	applicationS3Results []s3.Result
 }
 
 // Ensure that command implements validation.Context.
