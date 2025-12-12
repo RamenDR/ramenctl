@@ -255,6 +255,26 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.SecondaryCluster.VRG.Conditions[0].State = report.Problem
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("s3 status profiles nil", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles = nil
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile name", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles[0].Name = helpers.Modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile state", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles[0].Status.State = report.Problem
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("s3 status profile description", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.S3.Profiles[0].Status.Description = "connection refused"
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 }
 
 func TestReportApplicationStatusMarshaling(t *testing.T) {
@@ -442,6 +462,26 @@ func testApplicationStatus() *report.ApplicationStatus {
 							State: report.OK,
 						},
 						Type: "NoClusterDataConflict",
+					},
+				},
+			},
+		},
+		S3: report.S3Status{
+			Profiles: []report.S3ProfileStatus{
+				{
+					Name: "minio-on-dr1",
+					Status: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+				},
+				{
+					Name: "minio-on-dr2",
+					Status: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
 					},
 				},
 			},

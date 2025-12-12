@@ -64,11 +64,23 @@ type ApplicationStatusCluster struct {
 	VRG  VRGSummary `json:"vrg"`
 }
 
+// S3ProfileStatus is the validation status of an S3 profile.
+type S3ProfileStatus struct {
+	Name   string          `json:"name"`
+	Status ValidatedString `json:"status"`
+}
+
+// S3Status is the status of all S3 profiles.
+type S3Status struct {
+	Profiles []S3ProfileStatus `json:"profiles,omitempty"`
+}
+
 // ApplicationStatus is protected application status in multi-cluster environment.
 type ApplicationStatus struct {
 	Hub              ApplicationStatusHub     `json:"hub"`
 	PrimaryCluster   ApplicationStatusCluster `json:"primaryCluster"`
 	SecondaryCluster ApplicationStatusCluster `json:"secondaryCluster"`
+	S3               S3Status                 `json:"s3"`
 }
 
 func (a *ApplicationStatus) Equal(o *ApplicationStatus) bool {
@@ -85,6 +97,9 @@ func (a *ApplicationStatus) Equal(o *ApplicationStatus) bool {
 		return false
 	}
 	if !a.SecondaryCluster.Equal(&o.SecondaryCluster) {
+		return false
+	}
+	if !a.S3.Equal(&o.S3) {
 		return false
 	}
 	return true
@@ -232,6 +247,41 @@ func (p *PVCGroupsSummary) Equal(o *PVCGroupsSummary) bool {
 		return false
 	}
 	if !slices.Equal(p.Grouped, o.Grouped) {
+		return false
+	}
+	return true
+}
+
+func (p *S3ProfileStatus) Equal(o *S3ProfileStatus) bool {
+	if p == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if p.Name != o.Name {
+		return false
+	}
+	if p.Status != o.Status {
+		return false
+	}
+	return true
+}
+
+func (s *S3Status) Equal(o *S3Status) bool {
+	if s == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if !slices.EqualFunc(
+		s.Profiles,
+		o.Profiles,
+		func(a S3ProfileStatus, b S3ProfileStatus) bool {
+			return a.Equal(&b)
+		},
+	) {
 		return false
 	}
 	return true

@@ -24,6 +24,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/time"
 	"github.com/ramendr/ramenctl/pkg/validation"
@@ -143,6 +144,44 @@ var (
 				} else {
 					results <- gathering.Result{Name: cluster.Name}
 				}
+			}
+			close(results)
+			return results
+		},
+	}
+
+	gatherS3Failed = &validation.Mock{
+		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
+		GatherS3Func: func(
+			ctx validation.Context,
+			profiles []*s3.Profile,
+			prefixes []string,
+			outputDir string,
+		) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for i, profile := range profiles {
+				if i == 0 {
+					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
+				} else {
+					results <- s3.Result{ProfileName: profile.Name}
+				}
+			}
+			close(results)
+			return results
+		},
+	}
+
+	gatherS3Canceled = &validation.Mock{
+		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
+		GatherS3Func: func(
+			ctx validation.Context,
+			profiles []*s3.Profile,
+			prefixes []string,
+			outputDir string,
+		) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for _, profile := range profiles {
+				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
 			}
 			close(results)
 			return results
@@ -1457,6 +1496,9 @@ func TestValidateApplicationPassed(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
@@ -1620,10 +1662,30 @@ func TestValidateApplicationPassed(t *testing.T) {
 				},
 			},
 		},
+		S3: report.S3Status{
+			Profiles: []report.S3ProfileStatus{
+				{
+					Name: "minio-on-dr1",
+					Status: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+				},
+				{
+					Name: "minio-on-dr2",
+					Status: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
+				},
+			},
+		},
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, Summary{OK: 21})
+	checkSummary(t, validate.report, Summary{OK: 23})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -1732,6 +1794,94 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
+}
+
+func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
+	validate := testCommand(t, validateApplication, applicationMock, testK8s)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Failed)
+	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+
+	// If inspecting S3 profiles fails, skip the gather S3 and validation steps.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	checkApplicationStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
+}
+
+func TestValidateApplicationGatherS3Failed(t *testing.T) {
+	validate := testCommand(t, validateApplication, gatherS3Failed, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Failed)
+	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+
+	// Validate data step reports S3 gather failure as problem.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
+		{Name: "validate data", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	checkSummary(t, validate.report, Summary{OK: 22, Problem: 1})
+}
+
+func TestValidateApplicationGatherS3Canceled(t *testing.T) {
+	validate := testCommand(t, validateApplication, gatherS3Canceled, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Canceled)
+	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+
+	// Gather S3 stops on first cancellation, remaining profiles and validation are skipped.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Canceled},
+	}
+	checkItems(t, validate.report.Steps[1], items)
 	checkSummary(t, validate.report, Summary{})
 }
 
