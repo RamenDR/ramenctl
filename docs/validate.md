@@ -37,8 +37,8 @@ The command supports the following sub-commands:
 ## validate application
 
 The validate application command validates a specific DR-protected application
-by gathering related namespaces from all clusters and inspecting the gathered
-resources.
+by gathering related namespaces from all clusters, S3 data and inspecting the
+gathered resources.
 
 ### Looking up applications
 
@@ -69,9 +69,12 @@ $ ramenctl validate application --name appset-deploy-rbd --namespace argocd -o o
    ✅ Gathered data from cluster "dr2"
    ✅ Gathered data from cluster "dr1"
    ✅ Gathered data from cluster "hub"
+   ✅ Inspected S3 profiles
+   ✅ Gathered S3 profile "minio-on-dr1"
+   ✅ Gathered S3 profile "minio-on-dr2"
    ✅ Application validated
 
-✅ Validation completed (21 ok, 0 stale, 0 problem)
+✅ Validation completed (24 ok, 0 stale, 0 problem)
 ```
 
 The command gathered related namespaced from all clusters, inspected the
@@ -156,6 +159,18 @@ applicationStatus:
       state:
         state: ok ✅
         value: Primary
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr1
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr2
   secondaryCluster:
     name: dr2
     vrg:
@@ -192,11 +207,16 @@ out/validate-application.data
 │   │   └── namespaces
 │   └── namespaces
 │       └── e2e-appset-deploy-rbd
-└── hub
-    ├── cluster
-    │   └── namespaces
-    └── namespaces
-        └── argocd
+├── hub
+│   ├── cluster
+│   │   └── namespaces
+│   └── namespaces
+│       └── argocd
+└── s3
+    ├── minio-on-dr1
+    │   └── e2e-appset-deploy-rbd
+    └── minio-on-dr2
+        └── e2e-appset-deploy-rbd
 ```
 
 ### The validate-application.log
