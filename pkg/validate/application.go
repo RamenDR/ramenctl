@@ -256,7 +256,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	c.validateS3Data(&s.S3)
+	c.validateApplicationS3(&s.S3)
 
 	if c.report.Summary.HasIssues() {
 		step.Status = report.Failed
@@ -310,7 +310,7 @@ func (c *Command) validateApplicationSecondaryCluster(
 	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
-func (c *Command) validateS3Data(s *report.S3Status) {
+func (c *Command) validateApplicationS3(s *report.S3Status) {
 	c.validatedS3ProfileStatus(&s.Profiles)
 }
 
