@@ -315,21 +315,19 @@ func (c *Command) validateApplicationS3(s *report.S3Status) {
 }
 
 func (c *Command) validatedS3ProfileStatus(s *report.ValidatedS3ProfileStatusList) {
-	// This happens when inspectS3Profiles fails to get S3 profiles or
-	// application prefix from the gathered hub data.
-	if len(c.applicationS3Results) == 0 {
+	if len(c.applicationS3Results) > 0 {
+		// Gathered objects from one or more profiles, validate the results.
+		s.State = report.OK
+		for _, result := range c.applicationS3Results {
+			validated := c.validatedS3Profile(result)
+			s.Value = append(s.Value, validated)
+		}
+	} else {
+		// Failed to get S3 profiles or application prefix from the gathered hub data.
 		s.State = report.Problem
 		s.Description = "S3 data not available"
-		c.report.Summary.Add(s)
-		return
 	}
 
-	for _, result := range c.applicationS3Results {
-		validated := c.validatedS3Profile(result)
-		s.Value = append(s.Value, validated)
-	}
-
-	s.State = report.OK
 	c.report.Summary.Add(s)
 }
 
