@@ -75,6 +75,12 @@ type ValidatedApplicationS3ProfileStatusList struct {
 	Value []ApplicationS3ProfileStatus `json:"value,omitempty"`
 }
 
+// ValidatedClustersS3ProfileStatusList is a validated list of S3 profile statuses.
+type ValidatedClustersS3ProfileStatusList struct {
+	Validated
+	Value []ClustersS3ProfileStatus `json:"value,omitempty"`
+}
+
 // ValidatedDRClustersList is a validated list of DR clusters.
 type ValidatedDRClustersList struct {
 	Validated
@@ -216,6 +222,31 @@ func (v *ValidatedApplicationS3ProfileStatusList) Equal(
 		v.Value,
 		o.Value,
 		func(a ApplicationS3ProfileStatus, b ApplicationS3ProfileStatus) bool {
+			return a.Equal(&b)
+		},
+	) {
+		return false
+	}
+	return true
+}
+
+func (v *ValidatedClustersS3ProfileStatusList) Equal(o *ValidatedClustersS3ProfileStatusList) bool {
+	if v == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if v.State != o.State {
+		return false
+	}
+	if v.Description != o.Description {
+		return false
+	}
+	if !slices.EqualFunc(
+		v.Value,
+		o.Value,
+		func(a ClustersS3ProfileStatus, b ClustersS3ProfileStatus) bool {
 			return a.Equal(&b)
 		},
 	) {

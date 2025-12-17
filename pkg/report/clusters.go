@@ -73,10 +73,22 @@ type ClustersStatusCluster struct {
 	Ramen RamenSummary `json:"ramen"`
 }
 
+// ClustersS3ProfileStatus is the status of an S3 profile.
+type ClustersS3ProfileStatus struct {
+	Name       string        `json:"name"`
+	Accessible ValidatedBool `json:"accessible"`
+}
+
+// ClustersS3Status is the status of all S3 profiles.
+type ClustersS3Status struct {
+	Profiles ValidatedClustersS3ProfileStatusList `json:"profiles"`
+}
+
 // ClustersStatus is cluster status in multi-cluster environment.
 type ClustersStatus struct {
 	Hub      ClustersStatusHub       `json:"hub"`
 	Clusters []ClustersStatusCluster `json:"clusters"`
+	S3       ClustersS3Status        `json:"s3"`
 }
 
 func (c *ClustersStatus) Equal(o *ClustersStatus) bool {
@@ -96,6 +108,9 @@ func (c *ClustersStatus) Equal(o *ClustersStatus) bool {
 			return a.Equal(&b)
 		},
 	) {
+		return false
+	}
+	if !c.S3.Equal(&o.S3) {
 		return false
 	}
 	return true
@@ -251,6 +266,35 @@ func (s *S3StoreProfilesSummary) Equal(o *S3StoreProfilesSummary) bool {
 		return false
 	}
 	if s.S3SecretRef != o.S3SecretRef {
+		return false
+	}
+	return true
+}
+
+func (s *ClustersS3ProfileStatus) Equal(o *ClustersS3ProfileStatus) bool {
+	if s == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if s.Name != o.Name {
+		return false
+	}
+	if s.Accessible != o.Accessible {
+		return false
+	}
+	return true
+}
+
+func (s *ClustersS3Status) Equal(o *ClustersS3Status) bool {
+	if s == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if !s.Profiles.Equal(&o.Profiles) {
 		return false
 	}
 	return true

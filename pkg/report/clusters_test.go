@@ -314,6 +314,44 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Clusters[0].Ramen.Deployment.Conditions[0].State = report.Problem
 		checkClustersNotEqual(t, c1, c2)
 	})
+
+	// ClustersS3Status tests
+
+	t.Run("s3 status profiles nil", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Value = nil
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profiles state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.State = report.Problem
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profiles description", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Description = "S3 profiles not available"
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profile name", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Value[0].Name = helpers.Modified
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profile accessible state", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Value[0].Accessible.State = report.Problem
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profile accessible value", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Value[0].Accessible.Value = false
+		checkClustersNotEqual(t, c1, c2)
+	})
+	t.Run("s3 status profile accessible description", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.S3.Profiles.Value[0].Accessible.Description = "connection refused"
+		checkClustersNotEqual(t, c1, c2)
+	})
 }
 
 func TestReportClusterStatusMarshaling(t *testing.T) {
@@ -687,6 +725,33 @@ func testClusterStatus() *report.ClustersStatus {
 								},
 								Type: "Progressing",
 							},
+						},
+					},
+				},
+			},
+		},
+		S3: report.ClustersS3Status{
+			Profiles: report.ValidatedClustersS3ProfileStatusList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.ClustersS3ProfileStatus{
+					{
+						Name: "minio-on-dr1",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+					{
+						Name: "minio-on-dr2",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
 						},
 					},
 				},
