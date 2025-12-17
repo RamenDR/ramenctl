@@ -310,11 +310,11 @@ func (c *Command) validateApplicationSecondaryCluster(
 	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
-func (c *Command) validateApplicationS3(s *report.S3Status) {
+func (c *Command) validateApplicationS3(s *report.ApplicationS3Status) {
 	c.validatedS3ProfileStatus(&s.Profiles)
 }
 
-func (c *Command) validatedS3ProfileStatus(s *report.ValidatedS3ProfileStatusList) {
+func (c *Command) validatedS3ProfileStatus(s *report.ValidatedApplicationS3ProfileStatusList) {
 	if len(c.applicationS3Results) > 0 {
 		// Gathered objects from one or more profiles, validate the results.
 		s.State = report.OK
@@ -331,8 +331,8 @@ func (c *Command) validatedS3ProfileStatus(s *report.ValidatedS3ProfileStatusLis
 	c.report.Summary.Add(s)
 }
 
-func (c *Command) validatedS3Profile(result s3.Result) report.S3ProfileStatus {
-	profileStatus := report.S3ProfileStatus{
+func (c *Command) validatedS3Profile(result s3.Result) report.ApplicationS3ProfileStatus {
+	profileStatus := report.ApplicationS3ProfileStatus{
 		Name: result.ProfileName,
 	}
 

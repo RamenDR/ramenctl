@@ -69,10 +69,10 @@ type ValidatedS3StoreProfilesList struct {
 	Value []S3StoreProfilesSummary `json:"value,omitempty"`
 }
 
-// ValidatedS3ProfileStatusList is a validated list of S3 profile statuses.
-type ValidatedS3ProfileStatusList struct {
+// ValidatedApplicationS3ProfileStatusList is a validated list of S3 profile statuses.
+type ValidatedApplicationS3ProfileStatusList struct {
 	Validated
-	Value []S3ProfileStatus `json:"value,omitempty"`
+	Value []ApplicationS3ProfileStatus `json:"value,omitempty"`
 }
 
 // ValidatedDRClustersList is a validated list of DR clusters.
@@ -197,7 +197,9 @@ func (v *ValidatedS3StoreProfilesList) Equal(o *ValidatedS3StoreProfilesList) bo
 	return true
 }
 
-func (v *ValidatedS3ProfileStatusList) Equal(o *ValidatedS3ProfileStatusList) bool {
+func (v *ValidatedApplicationS3ProfileStatusList) Equal(
+	o *ValidatedApplicationS3ProfileStatusList,
+) bool {
 	if v == o {
 		return true
 	}
@@ -213,7 +215,7 @@ func (v *ValidatedS3ProfileStatusList) Equal(o *ValidatedS3ProfileStatusList) bo
 	if !slices.EqualFunc(
 		v.Value,
 		o.Value,
-		func(a S3ProfileStatus, b S3ProfileStatus) bool {
+		func(a ApplicationS3ProfileStatus, b ApplicationS3ProfileStatus) bool {
 			return a.Equal(&b)
 		},
 	) {

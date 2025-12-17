@@ -481,12 +481,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 				},
 			},
 		},
-		S3: report.S3Status{
-			Profiles: report.ValidatedS3ProfileStatusList{
+		S3: report.ApplicationS3Status{
+			Profiles: report.ValidatedApplicationS3ProfileStatusList{
 				Validated: report.Validated{
 					State: report.OK,
 				},
-				Value: []report.S3ProfileStatus{
+				Value: []report.ApplicationS3ProfileStatus{
 					{
 						Name: "minio-on-dr1",
 						Gathered: report.ValidatedBool{
