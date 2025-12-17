@@ -93,6 +93,38 @@ func Gather(
 	return results
 }
 
+// Check verifies S3 bucket accessibility for all profiles in parallel. Returns a
+// channel for getting check results.
+func Check(
+	ctx context.Context,
+	profiles []*Profile,
+	log *zap.SugaredLogger,
+) <-chan Result {
+	results := make(chan Result)
+	var wg sync.WaitGroup
+
+	for _, profile := range profiles {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			start := time.Now()
+			err := checkBucket(ctx, profile, log)
+			results <- Result{
+				ProfileName: profile.Name,
+				Err:         err,
+				Duration:    time.Since(start).Seconds(),
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	return results
+}
+
 // gatherData creates client for the given profile and downloads objects from S3
 // using the provided prefixes.
 func gatherData(
@@ -118,6 +150,31 @@ func gatherData(
 	if len(errs) > 0 {
 		return fmt.Errorf("failed to download objects from profile %q: %w",
 			profile.Name, errors.Join(errs...))
+	}
+
+	return nil
+}
+
+// checkBucket creates client for the given profile and checks if the bucket is accessible.
+func checkBucket(
+	ctx context.Context,
+	profile *Profile,
+	log *zap.SugaredLogger,
+) error {
+	objectStore, err := newObjectStore(ctx, profile, log)
+	if err != nil {
+		return fmt.Errorf("failed to create S3 client for profile %q: %w",
+			profile.Name, err)
+	}
+
+	// HeadBucket response is dropped since it contains optional location metadata (usually nil)
+	// and internal SDK result metadata with no useful debugging information.
+	_, err = objectStore.client.HeadBucket(ctx, &s3.HeadBucketInput{
+		Bucket: aws.String(profile.Bucket),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to access bucket %q for profile %q: %w",
+			profile.Bucket, profile.Name, err)
 	}
 
 	return nil
