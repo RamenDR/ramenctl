@@ -676,6 +676,9 @@ func TestValidateClustersK8s(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "check S3 profile \"minio-on-dr1\"", Status: report.Passed},
+		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate clusters data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
@@ -1041,10 +1044,37 @@ func TestValidateClustersK8s(t *testing.T) {
 				},
 			},
 		},
+		S3: report.ClustersS3Status{
+			Profiles: report.ValidatedClustersS3ProfileStatusList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.ClustersS3ProfileStatus{
+					{
+						Name: "minio-on-dr1",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+					{
+						Name: "minio-on-dr2",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+				},
+			},
+		},
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 39})
+	checkSummary(t, validate.report, Summary{OK: 42})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -1067,6 +1097,15 @@ func TestValidateClustersOcp(t *testing.T) {
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"prsurve-s2-c1\"", Status: report.Passed},
 		{Name: "gather \"prsurve-s2-c2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{
+			Name:   "check S3 profile \"s3profile-prsurve-s2-c1-ocs-storagecluster\"",
+			Status: report.Passed,
+		},
+		{
+			Name:   "check S3 profile \"s3profile-prsurve-s2-c2-ocs-storagecluster\"",
+			Status: report.Passed,
+		},
 		{Name: "validate clusters data", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
@@ -1404,10 +1443,37 @@ func TestValidateClustersOcp(t *testing.T) {
 				},
 			},
 		},
+		S3: report.ClustersS3Status{
+			Profiles: report.ValidatedClustersS3ProfileStatusList{
+				Validated: report.Validated{
+					State: report.OK,
+				},
+				Value: []report.ClustersS3ProfileStatus{
+					{
+						Name: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+					{
+						Name: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+						Accessible: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
+					},
+				},
+			},
+		},
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 37})
+	checkSummary(t, validate.report, Summary{OK: 40})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {

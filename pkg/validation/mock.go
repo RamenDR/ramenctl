@@ -19,6 +19,7 @@ type Mock struct {
 	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
 	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
 	GatherS3Func              func(ctx Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
+	CheckS3Func               func(ctx Context, profiles []*s3.Profile) <-chan s3.Result
 }
 
 var _ Validation = &Mock{}
@@ -65,6 +66,18 @@ func (m *Mock) GatherS3(
 ) <-chan s3.Result {
 	if m.GatherS3Func != nil {
 		return m.GatherS3Func(ctx, profiles, prefixes, outputDir)
+	}
+	results := make(chan s3.Result, len(profiles))
+	for _, profile := range profiles {
+		results <- s3.Result{ProfileName: profile.Name, Err: nil}
+	}
+	close(results)
+	return results
+}
+
+func (m *Mock) CheckS3(ctx Context, profiles []*s3.Profile) <-chan s3.Result {
+	if m.CheckS3Func != nil {
+		return m.CheckS3Func(ctx, profiles)
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
