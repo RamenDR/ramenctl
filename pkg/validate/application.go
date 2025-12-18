@@ -144,7 +144,7 @@ func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string)
 
 	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
 		// Store the s3 gather result for validation.
-		c.applicationS3Results = append(c.applicationS3Results, r)
+		c.s3Results = append(c.s3Results, r)
 
 		step := &report.Step{
 			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
@@ -315,10 +315,10 @@ func (c *Command) validateApplicationS3(s *report.ApplicationS3Status) {
 }
 
 func (c *Command) validatedS3ProfileStatus(s *report.ValidatedApplicationS3ProfileStatusList) {
-	if len(c.applicationS3Results) > 0 {
+	if len(c.s3Results) > 0 {
 		// Gathered objects from one or more profiles, validate the results.
 		s.State = report.OK
-		for _, result := range c.applicationS3Results {
+		for _, result := range c.s3Results {
 			validated := c.validatedS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}

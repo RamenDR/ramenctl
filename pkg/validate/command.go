@@ -47,8 +47,8 @@ type Command struct {
 	current        *report.Step
 	currentStarted time.Time
 
-	// applicationS3Results stores the S3 gather results for validation.
-	applicationS3Results []s3.Result
+	// s3Results stores S3 operation results for validation.
+	s3Results []s3.Result
 }
 
 // Ensure that command implements validation.Context.
