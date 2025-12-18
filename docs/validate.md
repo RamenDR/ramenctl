@@ -228,7 +228,8 @@ the log.
 ## validate clusters
 
 The validate clusters command validates the disaster recovery clusters by
-gathering cluster scoped and related ramen resources from all clusters.
+gathering cluster scoped and related ramen resources from all clusters, and
+validates that configured S3 endpoints are accessible.
 
 ### Validating clusters
 
@@ -246,9 +247,12 @@ $ ramenctl validate clusters -o out
    ✅ Gathered data from cluster "hub"
    ✅ Gathered data from cluster "dr1"
    ✅ Gathered data from cluster "dr2"
+   ✅ Inspected S3 profiles
+   ✅ Checked S3 profile "minio-on-dr2"
+   ✅ Checked S3 profile "minio-on-dr1"
    ✅ Clusters validated
 
-✅ Validation completed (36 ok, 0 stale, 0 problem)
+✅ Validation completed (42 ok, 0 stale, 0 problem)
 ```
 
 The command gathered cluster scoped and ramen resources from all clusters,
@@ -423,6 +427,18 @@ clustersStatus:
         replicas:
           state: ok ✅
           value: 1
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - accessible:
+          state: ok ✅
+          value: true
+        name: minio-on-dr2
+      - accessible:
+          state: ok ✅
+          value: true
+        name: minio-on-dr1
 ```
 
 ### The validate-clusters.data directory
