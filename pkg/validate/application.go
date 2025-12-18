@@ -62,7 +62,7 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 
 	// If inspectS3Profiles fails, skip S3 data gathering but continue validation.
 	// Missing S3 data will be reported as a problem during validation.
-	if profiles, prefix, ok := c.inspectS3Profiles(drpcName, drpcNamespace); ok {
+	if profiles, prefix, ok := c.inspectApplicationS3Profiles(drpcName, drpcNamespace); ok {
 		if !c.gatherApplicationS3Data(profiles, prefix) {
 			return c.finishStep()
 		}
@@ -107,7 +107,7 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
-func (c *Command) inspectS3Profiles(
+func (c *Command) inspectApplicationS3Profiles(
 	drpcName, drpcNamespace string,
 ) ([]*s3.Profile, string, bool) {
 	start := time.Now()
@@ -256,7 +256,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	c.validateApplicationS3(&s.S3)
+	c.validateApplicationS3Status(&s.S3)
 
 	if c.report.Summary.HasIssues() {
 		step.Status = report.Failed
@@ -310,16 +310,18 @@ func (c *Command) validateApplicationSecondaryCluster(
 	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
-func (c *Command) validateApplicationS3(s *report.ApplicationS3Status) {
-	c.validatedS3ProfileStatus(&s.Profiles)
+func (c *Command) validateApplicationS3Status(s *report.ApplicationS3Status) {
+	c.validatedApplicationS3ProfileStatus(&s.Profiles)
 }
 
-func (c *Command) validatedS3ProfileStatus(s *report.ValidatedApplicationS3ProfileStatusList) {
+func (c *Command) validatedApplicationS3ProfileStatus(
+	s *report.ValidatedApplicationS3ProfileStatusList,
+) {
 	if len(c.s3Results) > 0 {
 		// Gathered objects from one or more profiles, validate the results.
 		s.State = report.OK
 		for _, result := range c.s3Results {
-			validated := c.validatedS3Profile(result)
+			validated := c.validatedApplicationS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}
 	} else {
@@ -331,7 +333,9 @@ func (c *Command) validatedS3ProfileStatus(s *report.ValidatedApplicationS3Profi
 	c.report.Summary.Add(s)
 }
 
-func (c *Command) validatedS3Profile(result s3.Result) report.ApplicationS3ProfileStatus {
+func (c *Command) validatedApplicationS3Profile(
+	result s3.Result,
+) report.ApplicationS3ProfileStatus {
 	profileStatus := report.ApplicationS3ProfileStatus{
 		Name: result.ProfileName,
 	}
