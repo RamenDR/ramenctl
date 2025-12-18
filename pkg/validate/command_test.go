@@ -187,6 +187,32 @@ var (
 			return results
 		},
 	}
+
+	checkS3Failed = &validation.Mock{
+		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for i, profile := range profiles {
+				if i == 0 {
+					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("connection refused")}
+				} else {
+					results <- s3.Result{ProfileName: profile.Name}
+				}
+			}
+			close(results)
+			return results
+		},
+	}
+
+	checkS3Canceled = &validation.Mock{
+		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+			results := make(chan s3.Result, 2)
+			for _, profile := range profiles {
+				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+			}
+			close(results)
+			return results
+		},
+	}
 )
 
 // Command common tests
@@ -1535,6 +1561,101 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkApplicationStatus(t, validate.report, nil)
+	checkClusterStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, Summary{})
+}
+
+func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
+	validate := testCommand(t, validateClusters, &validation.Mock{}, testK8s)
+	// We don't add test data to cause inspect S3 profiles to fail.
+	if err := validate.Clusters(); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Failed)
+	checkApplication(t, validate.report, nil)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+
+	// Inspect S3 profiles fails, check S3 is skipped. Validation runs and reports missing S3
+	// status as problem.
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Failed},
+		{Name: "validate clusters data", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	if validate.report.ClustersStatus == nil {
+		t.Fatal("clusters status is nil")
+	}
+	checkSummary(t, validate.report, Summary{Problem: 9})
+}
+
+func TestValidateClustersCheckS3Failed(t *testing.T) {
+	validate := testCommand(t, validateClusters, checkS3Failed, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	if err := validate.Clusters(); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Failed)
+	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+
+	// Check s3 fails for one profile, other profile succeeds. Validation runs and reports the
+	// failed profile as problem.
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "check S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Passed},
+		{Name: "validate clusters data", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	if validate.report.ClustersStatus == nil {
+		t.Fatal("clusters status is nil")
+	}
+	checkSummary(t, validate.report, Summary{OK: 41, Problem: 1})
+}
+
+func TestValidateClustersCheckS3Canceled(t *testing.T) {
+	validate := testCommand(t, validateClusters, checkS3Canceled, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	if err := validate.Clusters(); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Canceled)
+	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Canceled)
+
+	// Check S3 is canceled, validation is skipped.
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "check S3 profile \"minio-on-dr1\"", Status: report.Canceled},
+		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Canceled},
+	}
+	checkItems(t, validate.report.Steps[1], items)
 	checkClusterStatus(t, validate.report, nil)
 	checkSummary(t, validate.report, Summary{})
 }
