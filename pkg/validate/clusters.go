@@ -381,8 +381,14 @@ func (c *Command) validateRamenConfigMap(
 
 	s.RamenControllerType = c.validatedRamenControllerType(config, controllerType)
 
-	if err := c.validatedS3Profiles(&s.S3StoreProfiles, cluster, config, namespace); err != nil {
-		return fmt.Errorf("failed to validate s3 profiles: %w", err)
+	if controllerType == ramenapi.DRHubType {
+		if err := c.validatedHubS3Profiles(&s.S3StoreProfiles, cluster, config, namespace); err != nil {
+			return fmt.Errorf("failed to validate hub s3 profiles: %w", err)
+		}
+	} else {
+		if err := c.validatedManagedClusterS3Profiles(&s.S3StoreProfiles, cluster, config, namespace); err != nil {
+			return fmt.Errorf("failed to validate managed cluster s3 profiles: %w", err)
+		}
 	}
 
 	// TODO: Validate that configmap is identical to the configmap on the hub except the controller
@@ -408,7 +414,8 @@ func (c *Command) validatedRamenControllerType(
 	return validated
 }
 
-func (c *Command) validatedS3Profiles(
+// validatedHubS3Profiles validates that S3 profile fields in the hub are not empty.
+func (c *Command) validatedHubS3Profiles(
 	s *report.ValidatedS3StoreProfilesList,
 	cluster *types.Cluster,
 	config *ramenapi.RamenConfig,
@@ -425,6 +432,7 @@ func (c *Command) validatedS3Profiles(
 
 		ps := report.S3StoreProfilesSummary{
 			S3ProfileName: profile.S3ProfileName,
+			S3Bucket:      c.validatedRequiredString(profile.S3Bucket),
 			S3SecretRef:   validatedSecret,
 		}
 		s.Value = append(s.Value, ps)
@@ -432,13 +440,106 @@ func (c *Command) validatedS3Profiles(
 
 	if len(s.Value) == 0 {
 		s.State = report.Problem
-		s.Description = "No s3 profiles found"
+		s.Description = "No s3 profiles found in hub"
 	} else {
 		s.State = report.OK
 	}
 	c.report.Summary.Add(s)
 
 	return nil
+}
+
+// validatedManagedClusterS3Profiles validates that managed cluster S3 profile fields
+// are not empty and match the hub profile.
+func (c *Command) validatedManagedClusterS3Profiles(
+	s *report.ValidatedS3StoreProfilesList,
+	cluster *types.Cluster,
+	config *ramenapi.RamenConfig,
+	configNamespace string,
+) error {
+	for i := range config.S3StoreProfiles {
+		profile := &config.S3StoreProfiles[i]
+
+		validatedSecret, err := c.validatedSecretRef(profile.S3SecretRef, cluster, configNamespace)
+		if err != nil {
+			return fmt.Errorf("failed to validate s3 profile %q secret: %w",
+				profile.S3ProfileName, err)
+		}
+
+		hubS3Profile, found := c.lookupHubS3StoreProfileSummary(profile.S3ProfileName)
+
+		var hubS3Bucket *string
+		if found {
+			hubS3Bucket = &hubS3Profile.S3Bucket.Value
+		}
+
+		ps := report.S3StoreProfilesSummary{
+			S3ProfileName: profile.S3ProfileName,
+			S3Bucket:      c.validatedManagedClusterRequiredString(profile.S3Bucket, hubS3Bucket),
+			S3SecretRef:   validatedSecret,
+		}
+		s.Value = append(s.Value, ps)
+	}
+
+	if len(s.Value) == 0 {
+		s.State = report.Problem
+		s.Description = "No s3 profiles found in managed cluster"
+	} else {
+		s.State = report.OK
+	}
+	c.report.Summary.Add(s)
+
+	return nil
+}
+
+func (c *Command) validatedRequiredString(value string) report.ValidatedString {
+	validated := report.ValidatedString{Value: value}
+
+	if value == "" {
+		validated.State = report.Problem
+		validated.Description = "value is empty"
+	} else {
+		validated.State = report.OK
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
+}
+
+func (c *Command) validatedManagedClusterRequiredString(
+	value string,
+	hubValue *string,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: value}
+
+	switch {
+	case value == "":
+		validated.State = report.Problem
+		validated.Description = "value is empty"
+	case hubValue == nil:
+		validated.State = report.Problem
+		validated.Description = "profile not found in hub"
+	case value != *hubValue:
+		validated.State = report.Problem
+		validated.Description = fmt.Sprintf("%q does not match hub %q", value, *hubValue)
+	default:
+		validated.State = report.OK
+	}
+
+	c.report.Summary.Add(&validated)
+	return validated
+}
+
+func (c *Command) lookupHubS3StoreProfileSummary(
+	name string,
+) (report.S3StoreProfilesSummary, bool) {
+	profiles := c.report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value
+	for i := range profiles {
+		if profiles[i].S3ProfileName == name {
+			return profiles[i], true
+		}
+	}
+	return report.S3StoreProfilesSummary{}, false
 }
 
 func (c *Command) validatedSecretRef(

@@ -33,6 +33,7 @@ type PeerClassesSummary struct {
 // S3StoreProfilesSummary is the summary of S3 store profiles in the ConfigMap
 type S3StoreProfilesSummary struct {
 	S3ProfileName string               `json:"s3ProfileName"`
+	S3Bucket      ValidatedString      `json:"s3Bucket"`
 	S3SecretRef   ValidatedS3SecretRef `json:"s3SecretRef"`
 }
 
@@ -263,6 +264,9 @@ func (s *S3StoreProfilesSummary) Equal(o *S3StoreProfilesSummary) bool {
 		return false
 	}
 	if s.S3ProfileName != o.S3ProfileName {
+		return false
+	}
+	if s.S3Bucket != o.S3Bucket {
 		return false
 	}
 	if s.S3SecretRef != o.S3SecretRef {

@@ -852,6 +852,12 @@ func TestValidateClustersK8s(t *testing.T) {
 						Value: []report.S3StoreProfilesSummary{
 							{
 								S3ProfileName: "minio-on-dr1",
+								S3Bucket: report.ValidatedString{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: "bucket",
+								},
 								S3SecretRef: report.ValidatedS3SecretRef{
 									Validated: report.Validated{
 										State: report.OK,
@@ -864,6 +870,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							},
 							{
 								S3ProfileName: "minio-on-dr2",
+								S3Bucket: report.ValidatedString{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: "bucket",
+								},
 								S3SecretRef: report.ValidatedS3SecretRef{
 									Validated: report.Validated{
 										State: report.OK,
@@ -933,6 +945,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							Value: []report.S3StoreProfilesSummary{
 								{
 									S3ProfileName: "minio-on-dr1",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "bucket",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -945,6 +963,12 @@ func TestValidateClustersK8s(t *testing.T) {
 								},
 								{
 									S3ProfileName: "minio-on-dr2",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "bucket",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1013,6 +1037,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							Value: []report.S3StoreProfilesSummary{
 								{
 									S3ProfileName: "minio-on-dr1",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "bucket",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1025,6 +1055,12 @@ func TestValidateClustersK8s(t *testing.T) {
 								},
 								{
 									S3ProfileName: "minio-on-dr2",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "bucket",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1100,7 +1136,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 42})
+	checkSummary(t, validate.report, Summary{OK: 48})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -1257,6 +1293,12 @@ func TestValidateClustersOcp(t *testing.T) {
 						Value: []report.S3StoreProfilesSummary{
 							{
 								S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+								S3Bucket: report.ValidatedString{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: "odrbucket-244c8f95bf0d",
+								},
 								S3SecretRef: report.ValidatedS3SecretRef{
 									Validated: report.Validated{
 										State: report.OK,
@@ -1268,6 +1310,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							},
 							{
 								S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+								S3Bucket: report.ValidatedString{
+									Validated: report.Validated{
+										State: report.OK,
+									},
+									Value: "odrbucket-244c8f95bf0d",
+								},
 								S3SecretRef: report.ValidatedS3SecretRef{
 									Validated: report.Validated{
 										State: report.OK,
@@ -1336,6 +1384,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							Value: []report.S3StoreProfilesSummary{
 								{
 									S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "odrbucket-244c8f95bf0d",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1347,6 +1401,12 @@ func TestValidateClustersOcp(t *testing.T) {
 								},
 								{
 									S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "odrbucket-244c8f95bf0d",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1414,6 +1474,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							Value: []report.S3StoreProfilesSummary{
 								{
 									S3ProfileName: "s3profile-prsurve-s2-c1-ocs-storagecluster",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "odrbucket-244c8f95bf0d",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1425,6 +1491,12 @@ func TestValidateClustersOcp(t *testing.T) {
 								},
 								{
 									S3ProfileName: "s3profile-prsurve-s2-c2-ocs-storagecluster",
+									S3Bucket: report.ValidatedString{
+										Validated: report.Validated{
+											State: report.OK,
+										},
+										Value: "odrbucket-244c8f95bf0d",
+									},
 									S3SecretRef: report.ValidatedS3SecretRef{
 										Validated: report.Validated{
 											State: report.OK,
@@ -1499,7 +1571,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, Summary{OK: 40})
+	checkSummary(t, validate.report, Summary{OK: 46})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -1627,7 +1699,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 	if validate.report.ClustersStatus == nil {
 		t.Fatal("clusters status is nil")
 	}
-	checkSummary(t, validate.report, Summary{OK: 41, Problem: 1})
+	checkSummary(t, validate.report, Summary{OK: 47, Problem: 1})
 }
 
 func TestValidateClustersCheckS3Canceled(t *testing.T) {
