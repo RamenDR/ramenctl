@@ -40,8 +40,10 @@ func detectDistro(ctx Context) error {
 		if detectedDistro == "" {
 			detectedDistro = distro
 		} else if detectedDistro != distro {
-			return fmt.Errorf("clusters have inconsistent distributions, cluster %q has distro %q, expected %q",
-				cluster.Name, distro, detectedDistro)
+			return fmt.Errorf(
+				"clusters have inconsistent distributions, cluster %q has distro %q, expected %q",
+				cluster.Name, distro, detectedDistro,
+			)
 		}
 	}
 

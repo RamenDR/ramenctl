@@ -304,7 +304,9 @@ func (c *Command) validateClustersClusters(s *[]report.ClustersStatusCluster) er
 
 	for _, cluster := range env.ManagedClusters() {
 		cs := report.ClustersStatusCluster{Name: cluster.Name}
-		if err := c.validateRamen(&cs.Ramen, cluster, namespace, ramenapi.DRClusterType); err != nil {
+		if err := c.validateRamen(
+			&cs.Ramen, cluster, namespace, ramenapi.DRClusterType,
+		); err != nil {
 			return fmt.Errorf("failed to validate ramen: %w", err)
 		}
 		*s = append(*s, cs)
