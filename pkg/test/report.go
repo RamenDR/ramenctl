@@ -5,6 +5,7 @@ package test
 
 import (
 	"fmt"
+	"maps"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 
@@ -18,19 +19,11 @@ const (
 	CleanupStep  = "cleanup"
 )
 
-// Summary summaries a test run or clean.
-type Summary struct {
-	Passed   int `json:"passed"`
-	Failed   int `json:"failed"`
-	Skipped  int `json:"skipped"`
-	Canceled int `json:"canceled"`
-}
-
 // Report created by test sub commands.
 type Report struct {
 	*report.Base
 	Config  *e2econfig.Config `json:"config"`
-	Summary Summary           `json:"summary"`
+	Summary report.Summary    `json:"summary"`
 }
 
 func newReport(commandName string, config *e2econfig.Config) *Report {
@@ -38,8 +31,9 @@ func newReport(commandName string, config *e2econfig.Config) *Report {
 		panic("config must not be nil")
 	}
 	return &Report{
-		Base:   report.NewBase(commandName),
-		Config: config,
+		Base:    report.NewBase(commandName),
+		Config:  config,
+		Summary: report.Summary{},
 	}
 }
 
@@ -50,7 +44,7 @@ func (r *Report) AddStep(step *report.Step) {
 	// Handle the special "tests" step.
 	if step.Name == TestsStep {
 		for _, t := range step.Items {
-			r.Summary.AddTest(t)
+			addTest(r.Summary, t)
 		}
 	}
 }
@@ -73,26 +67,27 @@ func (r *Report) Equal(o *Report) bool {
 	} else if r.Config != o.Config {
 		return false
 	}
-	if r.Summary != o.Summary {
+	if !maps.Equal(r.Summary, o.Summary) {
 		return false
 	}
 	return true
 }
 
-func (s *Summary) AddTest(t *report.Step) {
+func addTest(s report.Summary, t *report.Step) {
 	switch t.Status {
 	case report.Passed:
-		s.Passed++
+		s.Add(report.TestPassed)
 	case report.Failed:
-		s.Failed++
+		s.Add(report.TestFailed)
 	case report.Skipped:
-		s.Skipped++
+		s.Add(report.TestSkipped)
 	case report.Canceled:
-		s.Canceled++
+		s.Add(report.TestCanceled)
 	}
 }
 
-func (s Summary) String() string {
+func summaryString(s report.Summary) string {
 	return fmt.Sprintf("%d passed, %d failed, %d skipped, %d canceled",
-		s.Passed, s.Failed, s.Skipped, s.Canceled)
+		s.Get(report.TestPassed), s.Get(report.TestFailed),
+		s.Get(report.TestSkipped), s.Get(report.TestCanceled))
 }

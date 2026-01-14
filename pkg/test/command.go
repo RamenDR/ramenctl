@@ -275,12 +275,12 @@ func (c *Command) gatherS3Data() {
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("%s (%s)", c.report.Status, c.report.Summary)
+	return fmt.Errorf("%s (%s)", c.report.Status, summaryString(c.report.Summary))
 }
 
 func (c *Command) passed() {
 	c.command.WriteYAMLReport(c.report)
-	console.Completed("%s (%s)", c.report.Status, c.report.Summary)
+	console.Completed("%s (%s)", c.report.Status, summaryString(c.report.Summary))
 }
 
 func (c *Command) startStep(name string) {

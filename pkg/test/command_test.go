@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"testing"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -130,7 +131,12 @@ func TestRunPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.report, report.Passed, Summary{Passed: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Passed,
+		report.Summary{report.TestPassed: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -153,7 +159,7 @@ func TestRunValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{})
+	checkReport(t, test.report, report.Failed, report.Summary{})
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -168,7 +174,7 @@ func TestRunValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{})
+	checkReport(t, test.report, report.Canceled, report.Summary{})
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -183,7 +189,7 @@ func TestRunSetupFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{})
+	checkReport(t, test.report, report.Failed, report.Summary{})
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -200,7 +206,7 @@ func TestRunSetupCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{})
+	checkReport(t, test.report, report.Canceled, report.Summary{})
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -217,7 +223,12 @@ func TestRunTestsFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{Failed: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Failed,
+		report.Summary{report.TestFailed: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -240,7 +251,12 @@ func TestRunDisappFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{Passed: 4, Failed: 2})
+	checkReport(
+		t,
+		test.report,
+		report.Failed,
+		report.Summary{report.TestPassed: 4, report.TestFailed: 2},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -267,7 +283,12 @@ func TestRunTestsCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{Canceled: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Canceled,
+		report.Summary{report.TestCanceled: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -290,7 +311,7 @@ func TestCleanPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.report, report.Passed, Summary{Passed: 6})
+	checkReport(t, test.report, report.Passed, report.Summary{report.TestPassed: 6})
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -313,7 +334,7 @@ func TestCleanValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{})
+	checkReport(t, test.report, report.Failed, report.Summary{})
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -328,7 +349,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{})
+	checkReport(t, test.report, report.Canceled, report.Summary{})
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -343,7 +364,12 @@ func TestCleanPurgeFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{Failed: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Failed,
+		report.Summary{report.TestFailed: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -364,7 +390,12 @@ func TestCleanPurgeCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{Canceled: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Canceled,
+		report.Summary{report.TestCanceled: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -385,7 +416,12 @@ func TestCleanCleanupFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Failed, Summary{Passed: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Failed,
+		report.Summary{report.TestPassed: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -408,7 +444,12 @@ func TestCleanCleanupCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 
-	checkReport(t, test.report, report.Canceled, Summary{Passed: len(testConfig.Tests)})
+	checkReport(
+		t,
+		test.report,
+		report.Canceled,
+		report.Summary{report.TestPassed: len(testConfig.Tests)},
+	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -437,16 +478,16 @@ func testCommand(t *testing.T, name string, backend rtesting.Testing) *Command {
 	return newCommand(cmd, testConfig, backend)
 }
 
-func checkReport(t *testing.T, report *Report, status report.Status, summary Summary) {
-	if report.Status != status {
-		t.Errorf("expected status %q, got %q", status, report.Status)
+func checkReport(t *testing.T, r *Report, status report.Status, summary report.Summary) {
+	if r.Status != status {
+		t.Errorf("expected status %q, got %q", status, r.Status)
 	}
-	if report.Summary != summary {
-		t.Errorf("expected summary %+v, got %+v", summary, report.Summary)
+	if !maps.Equal(r.Summary, summary) {
+		t.Errorf("expected summary %+v, got %+v", summary, r.Summary)
 	}
-	duration := totalDuration(report.Steps)
-	if report.Duration != duration {
-		t.Fatalf("expected duration %v, got %v", duration, report.Duration)
+	duration := totalDuration(r.Steps)
+	if r.Duration != duration {
+		t.Fatalf("expected duration %v, got %v", duration, r.Duration)
 	}
 }
 
