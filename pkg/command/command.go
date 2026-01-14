@@ -15,9 +15,9 @@ import (
 	e2eenv "github.com/ramendr/ramen/e2e/env"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
-	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/report"
 )
 
 // Command is a ramenctl generic command used by all ramenctl commands. Note that the config is not
@@ -134,14 +134,33 @@ func (c *Command) Close() {
 	c.closeLog()
 }
 
-// WriteReport writes report in yaml format to the command output directory.
-func (c *Command) WriteReport(report any) error {
-	data, err := yaml.Marshal(report)
+// OpenReport opens a report file for writing in the specified format.
+func (c *Command) OpenReport(format string) (*os.File, error) {
+	path := filepath.Join(c.outputDir, c.name+"."+format)
+	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("failed to marshal report: %w", err)
+		return nil, fmt.Errorf("failed to create report file %s: %w", path, err)
 	}
-	path := filepath.Join(c.outputDir, c.name+".yaml")
-	return os.WriteFile(path, data, 0o640)
+	return file, nil
+}
+
+// WriteYAMLReport writes any report as YAML to the command output directory.
+func (c *Command) WriteYAMLReport(r any) {
+	file, err := c.OpenReport("yaml")
+	if err != nil {
+		console.Error("failed to open report file: %s", err)
+		return
+	}
+	defer file.Close()
+
+	if err := report.WriteYAML(file, r); err != nil {
+		console.Error("failed to write report: %s", err)
+		return
+	}
+
+	if err := file.Close(); err != nil {
+		console.Error("failed to close report file: %s", err)
+	}
 }
 
 func logName(commandName string) string {

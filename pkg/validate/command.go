@@ -182,16 +182,12 @@ func (c *Command) dataDir() string {
 // Completing commands.
 
 func (c *Command) failed() error {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	return fmt.Errorf("validation %s (%s)", c.report.Status, c.report.Summary)
 }
 
 func (c *Command) passed() {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	console.Completed("Validation completed (%s)", c.report.Summary)
 }
 

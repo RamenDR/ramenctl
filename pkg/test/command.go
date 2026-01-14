@@ -274,16 +274,12 @@ func (c *Command) gatherS3Data() {
 }
 
 func (c *Command) failed() error {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	return fmt.Errorf("%s (%s)", c.report.Status, c.report.Summary)
 }
 
 func (c *Command) passed() {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	console.Completed("%s (%s)", c.report.Status, c.report.Summary)
 }
 

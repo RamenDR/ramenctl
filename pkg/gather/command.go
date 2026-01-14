@@ -280,16 +280,12 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 }
 
 func (c *Command) failed() error {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	return fmt.Errorf("Gather %s", c.report.Status)
 }
 
 func (c *Command) passed() {
-	if err := c.command.WriteReport(c.report); err != nil {
-		console.Error("failed to write report: %s", err)
-	}
+	c.command.WriteYAMLReport(c.report)
 	console.Completed("Gather completed")
 }
 
