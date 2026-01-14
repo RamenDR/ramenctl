@@ -134,7 +134,7 @@ func TestRunPassed(t *testing.T) {
 		t,
 		test.report,
 		report.Passed,
-		report.Summary{report.TestPassed: len(testConfig.Tests)},
+		report.Summary{Passed: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -226,7 +226,7 @@ func TestRunTestsFailed(t *testing.T) {
 		t,
 		test.report,
 		report.Failed,
-		report.Summary{report.TestFailed: len(testConfig.Tests)},
+		report.Summary{Failed: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -254,7 +254,7 @@ func TestRunDisappFailed(t *testing.T) {
 		t,
 		test.report,
 		report.Failed,
-		report.Summary{report.TestPassed: 4, report.TestFailed: 2},
+		report.Summary{Passed: 4, Failed: 2},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -286,7 +286,7 @@ func TestRunTestsCanceled(t *testing.T) {
 		t,
 		test.report,
 		report.Canceled,
-		report.Summary{report.TestCanceled: len(testConfig.Tests)},
+		report.Summary{Canceled: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -310,7 +310,7 @@ func TestCleanPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.report, report.Passed, report.Summary{report.TestPassed: 6})
+	checkReport(t, test.report, report.Passed, report.Summary{Passed: 6})
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
@@ -367,7 +367,7 @@ func TestCleanPurgeFailed(t *testing.T) {
 		t,
 		test.report,
 		report.Failed,
-		report.Summary{report.TestFailed: len(testConfig.Tests)},
+		report.Summary{Failed: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -393,7 +393,7 @@ func TestCleanPurgeCanceled(t *testing.T) {
 		t,
 		test.report,
 		report.Canceled,
-		report.Summary{report.TestCanceled: len(testConfig.Tests)},
+		report.Summary{Canceled: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -419,7 +419,7 @@ func TestCleanCleanupFailed(t *testing.T) {
 		t,
 		test.report,
 		report.Failed,
-		report.Summary{report.TestPassed: len(testConfig.Tests)},
+		report.Summary{Passed: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -447,7 +447,7 @@ func TestCleanCleanupCanceled(t *testing.T) {
 		t,
 		test.report,
 		report.Canceled,
-		report.Summary{report.TestPassed: len(testConfig.Tests)},
+		report.Summary{Passed: len(testConfig.Tests)},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)

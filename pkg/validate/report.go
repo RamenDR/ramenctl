@@ -9,25 +9,32 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
+// Summary keys for validation reports.
+const (
+	OK      = report.SummaryKey("ok")
+	Stale   = report.SummaryKey("stale")
+	Problem = report.SummaryKey("problem")
+)
+
 // addValidation adds a validation to the summary.
 func addValidation(s *report.Summary, v report.Validation) {
 	switch v.GetState() {
 	case report.OK:
-		s.Add(report.ValidationOK)
+		s.Add(OK)
 	case report.Stale:
-		s.Add(report.ValidationStale)
+		s.Add(Stale)
 	case report.Problem:
-		s.Add(report.ValidationProblem)
+		s.Add(Problem)
 	}
 }
 
 // hasIssues returns true if there are any problems or stale results.
 func hasIssues(s *report.Summary) bool {
-	return s.Get(report.ValidationStale) > 0 || s.Get(report.ValidationProblem) > 0
+	return s.Get(Stale) > 0 || s.Get(Problem) > 0
 }
 
 // summaryString returns a string representation.
 func summaryString(s *report.Summary) string {
 	return fmt.Sprintf("%d ok, %d stale, %d problem",
-		s.Get(report.ValidationOK), s.Get(report.ValidationStale), s.Get(report.ValidationProblem))
+		s.Get(OK), s.Get(Stale), s.Get(Problem))
 }

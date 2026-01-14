@@ -265,7 +265,7 @@ func TestValidatedDeleted(t *testing.T) {
 	})
 
 	t.Run("update summary", func(t *testing.T) {
-		expected := report.Summary{report.ValidationOK: 1, report.ValidationProblem: 2}
+		expected := report.Summary{OK: 1, Problem: 2}
 		if !cmd.report.Summary.Equal(&expected) {
 			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 		}
@@ -315,7 +315,7 @@ func TestValidatedDRPCAction(t *testing.T) {
 	})
 
 	t.Run("update summary", func(t *testing.T) {
-		expected := report.Summary{report.ValidationOK: 3, report.ValidationProblem: 1}
+		expected := report.Summary{OK: 3, Problem: 1}
 		if !cmd.report.Summary.Equal(&expected) {
 			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 		}
@@ -400,7 +400,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 	for _, group := range unstable {
 		errors += len(group.cases)
 	}
-	expected := report.Summary{report.ValidationProblem: errors}
+	expected := report.Summary{Problem: errors}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -442,7 +442,7 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 		})
 	}
 
-	expected := report.Summary{report.ValidationOK: len(cases)}
+	expected := report.Summary{OK: len(cases)}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -470,7 +470,7 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 		}
 	})
 
-	expected := report.Summary{report.ValidationOK: 1}
+	expected := report.Summary{OK: 1}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -527,7 +527,7 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 		})
 	}
 
-	expected := report.Summary{report.ValidationProblem: len(progressions)}
+	expected := report.Summary{Problem: len(progressions)}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -564,7 +564,7 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 		})
 	}
 
-	expected := report.Summary{report.ValidationOK: len(cases)}
+	expected := report.Summary{OK: len(cases)}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -607,7 +607,7 @@ func TestValidatedVRGSTateError(t *testing.T) {
 		})
 	}
 
-	expected := report.Summary{report.ValidationProblem: len(cases)}
+	expected := report.Summary{Problem: len(cases)}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -634,7 +634,7 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 		}
 	})
 
-	expected := report.Summary{report.ValidationOK: 1}
+	expected := report.Summary{OK: 1}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -674,7 +674,7 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 		})
 	}
 
-	expected := report.Summary{report.ValidationProblem: len(cases)}
+	expected := report.Summary{Problem: len(cases)}
 	if !cmd.report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
@@ -1100,7 +1100,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, report.Summary{report.ValidationOK: 42})
+	checkSummary(t, validate.report, report.Summary{OK: 42})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -1499,7 +1499,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, report.Summary{report.ValidationOK: 40})
+	checkSummary(t, validate.report, report.Summary{OK: 40})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -1593,7 +1593,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 	if validate.report.ClustersStatus == nil {
 		t.Fatal("clusters status is nil")
 	}
-	checkSummary(t, validate.report, report.Summary{report.ValidationProblem: 9})
+	checkSummary(t, validate.report, report.Summary{Problem: 9})
 }
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
@@ -1630,7 +1630,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.report,
-		report.Summary{report.ValidationOK: 41, report.ValidationProblem: 1},
+		report.Summary{OK: 41, Problem: 1},
 	)
 }
 
@@ -1883,7 +1883,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, report.Summary{report.ValidationOK: 24})
+	checkSummary(t, validate.report, report.Summary{OK: 24})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -2057,7 +2057,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.report,
-		report.Summary{report.ValidationOK: 23, report.ValidationProblem: 1},
+		report.Summary{OK: 23, Problem: 1},
 	)
 }
 

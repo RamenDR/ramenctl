@@ -18,6 +18,14 @@ const (
 	CleanupStep  = "cleanup"
 )
 
+// Summary keys for test reports.
+const (
+	Passed   = report.SummaryKey("passed")
+	Failed   = report.SummaryKey("failed")
+	Skipped  = report.SummaryKey("skipped")
+	Canceled = report.SummaryKey("canceled")
+)
+
 // Report created by test sub commands.
 type Report struct {
 	*report.Base
@@ -72,18 +80,18 @@ func (r *Report) Equal(o *Report) bool {
 func addTest(s *report.Summary, t *report.Step) {
 	switch t.Status {
 	case report.Passed:
-		s.Add(report.TestPassed)
+		s.Add(Passed)
 	case report.Failed:
-		s.Add(report.TestFailed)
+		s.Add(Failed)
 	case report.Skipped:
-		s.Add(report.TestSkipped)
+		s.Add(Skipped)
 	case report.Canceled:
-		s.Add(report.TestCanceled)
+		s.Add(Canceled)
 	}
 }
 
 func summaryString(s *report.Summary) string {
 	return fmt.Sprintf("%d passed, %d failed, %d skipped, %d canceled",
-		s.Get(report.TestPassed), s.Get(report.TestFailed),
-		s.Get(report.TestSkipped), s.Get(report.TestCanceled))
+		s.Get(Passed), s.Get(Failed),
+		s.Get(Skipped), s.Get(Canceled))
 }

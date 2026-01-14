@@ -60,10 +60,10 @@ func TestReportSummary(t *testing.T) {
 	r.AddStep(testsStep)
 
 	expectedSummary := &report.Summary{
-		report.TestPassed:   1,
-		report.TestFailed:   1,
-		report.TestSkipped:  1,
-		report.TestCanceled: 1,
+		Passed:   1,
+		Failed:   1,
+		Skipped:  1,
+		Canceled: 1,
 	}
 	if !r.Summary.Equal(expectedSummary) {
 		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
@@ -75,7 +75,7 @@ func TestReportEqual(t *testing.T) {
 	// Helper function to create a standard report
 	createReport := func() *Report {
 		r := newReport("test-command", reportConfig)
-		r.Summary = &report.Summary{report.TestPassed: 2}
+		r.Summary = &report.Summary{Passed: 2}
 		return r
 	}
 
@@ -144,7 +144,7 @@ func TestReportMarshaling(t *testing.T) {
 			Duration: 1.0,
 		},
 	}
-	r.Summary = &report.Summary{report.TestPassed: 2, report.TestFailed: 1}
+	r.Summary = &report.Summary{Passed: 2, Failed: 1}
 
 	// Test roundtrip marshaling/unmarshaling
 	checkRoundtrip(t, r)
@@ -152,10 +152,10 @@ func TestReportMarshaling(t *testing.T) {
 
 func TestSummaryString(t *testing.T) {
 	summary := &report.Summary{
-		report.TestPassed:   5,
-		report.TestFailed:   2,
-		report.TestSkipped:  3,
-		report.TestCanceled: 1,
+		Passed:   5,
+		Failed:   2,
+		Skipped:  3,
+		Canceled: 1,
 	}
 	expectedString := "5 passed, 2 failed, 3 skipped, 1 canceled"
 	if summaryString(summary) != expectedString {
@@ -175,10 +175,10 @@ func TestSummaryCount(t *testing.T) {
 	addTest(summary, &report.Step{Status: report.Passed})
 
 	expectedSummary := &report.Summary{
-		report.TestPassed:   3,
-		report.TestFailed:   1,
-		report.TestSkipped:  1,
-		report.TestCanceled: 1,
+		Passed:   3,
+		Failed:   1,
+		Skipped:  1,
+		Canceled: 1,
 	}
 	if !summary.Equal(expectedSummary) {
 		t.Errorf("expected summary %+v, got %+v", expectedSummary, summary)

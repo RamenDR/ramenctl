@@ -14,10 +14,10 @@ import (
 
 func TestTestSummaryYAMLRoundtrip(t *testing.T) {
 	s1 := report.Summary{
-		report.TestPassed:   5,
-		report.TestFailed:   2,
-		report.TestSkipped:  1,
-		report.TestCanceled: 0,
+		report.SummaryKey("passed"):   5,
+		report.SummaryKey("failed"):   2,
+		report.SummaryKey("skipped"):  1,
+		report.SummaryKey("canceled"): 0,
 	}
 
 	data, err := yaml.Marshal(s1)
@@ -37,9 +37,9 @@ func TestTestSummaryYAMLRoundtrip(t *testing.T) {
 
 func TestValidationSummaryYAMLRoundtrip(t *testing.T) {
 	s1 := report.Summary{
-		report.ValidationOK:      10,
-		report.ValidationStale:   1,
-		report.ValidationProblem: 2,
+		report.SummaryKey("ok"):      10,
+		report.SummaryKey("stale"):   1,
+		report.SummaryKey("problem"): 2,
 	}
 
 	data, err := yaml.Marshal(s1)

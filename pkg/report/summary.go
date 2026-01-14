@@ -6,25 +6,10 @@ package report
 import "maps"
 
 // SummaryKey is a typed key for Summary counters.
+// Each package defines its own keys (e.g., validate.OK, test.Passed).
 type SummaryKey string
 
-// Summary key constants for tests.
-const (
-	TestPassed   = SummaryKey("passed")
-	TestFailed   = SummaryKey("failed")
-	TestSkipped  = SummaryKey("skipped")
-	TestCanceled = SummaryKey("canceled")
-)
-
-// Summary key constants for validations.
-const (
-	ValidationOK      = SummaryKey("ok")
-	ValidationStale   = SummaryKey("stale")
-	ValidationProblem = SummaryKey("problem")
-)
-
 // Summary is a counter for report summaries.
-// Use TestXxx keys for test reports, ValidationXxx keys for validation reports.
 type Summary map[SummaryKey]int
 
 // Add increments the counter for the given key.

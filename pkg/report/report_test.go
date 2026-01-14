@@ -164,9 +164,9 @@ func TestBaseNotEqual(t *testing.T) {
 	})
 	t.Run("summary", func(t *testing.T) {
 		r1 := report.NewBase("name")
-		r1.Summary = &report.Summary{report.ValidationOK: 5}
+		r1.Summary = &report.Summary{report.SummaryKey("ok"): 5}
 		r2 := report.NewBase("name")
-		r2.Summary = &report.Summary{report.ValidationOK: 3}
+		r2.Summary = &report.Summary{report.SummaryKey("ok"): 3}
 		if r1.Equal(r2) {
 			t.Error("reports with different summary should not be equal")
 		}

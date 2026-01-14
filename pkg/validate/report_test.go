@@ -24,9 +24,9 @@ func TestSummaryAdd(t *testing.T) {
 	addValidation(s, &report.Validated{State: report.Problem})
 
 	expected := report.Summary{
-		report.ValidationOK:      3,
-		report.ValidationStale:   2,
-		report.ValidationProblem: 1,
+		OK:      3,
+		Stale:   2,
+		Problem: 1,
 	}
 	if !s.Equal(&expected) {
 		t.Fatalf("expected %+v, got %+v", expected, *s)
@@ -40,12 +40,12 @@ func TestSummaryHasProblems(t *testing.T) {
 		expected bool
 	}{
 		{"empty", &report.Summary{}, false},
-		{"ok", &report.Summary{report.ValidationOK: 5}, false},
-		{"only stale", &report.Summary{report.ValidationStale: 2}, true},
-		{"only problem", &report.Summary{report.ValidationProblem: 4}, true},
+		{"ok", &report.Summary{OK: 5}, false},
+		{"only stale", &report.Summary{Stale: 2}, true},
+		{"only problem", &report.Summary{Problem: 4}, true},
 		{
 			"problem and stale",
-			&report.Summary{report.ValidationStale: 2, report.ValidationProblem: 3},
+			&report.Summary{Stale: 2, Problem: 3},
 			true,
 		},
 	}
@@ -58,8 +58,8 @@ func TestSummaryHasProblems(t *testing.T) {
 
 func TestSummaryString(t *testing.T) {
 	s := &report.Summary{
-		report.ValidationOK:      1,
-		report.ValidationProblem: 2,
+		OK:      1,
+		Problem: 2,
 	}
 	expected := "1 ok, 0 stale, 2 problem"
 	if summaryString(s) != expected {
@@ -109,9 +109,9 @@ func TestReportNotEqual(t *testing.T) {
 func TestReportRoundtrip(t *testing.T) {
 	r1 := report.NewReport("name", &config.Config{})
 	r1.Summary = &report.Summary{
-		report.ValidationOK:      3,
-		report.ValidationStale:   2,
-		report.ValidationProblem: 1,
+		OK:      3,
+		Stale:   2,
+		Problem: 1,
 	}
 	b, err := yaml.Marshal(r1)
 	if err != nil {
