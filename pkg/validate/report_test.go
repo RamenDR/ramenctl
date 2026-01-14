@@ -4,6 +4,7 @@
 package validate
 
 import (
+	"maps"
 	"testing"
 
 	"sigs.k8s.io/yaml"
@@ -14,17 +15,21 @@ import (
 )
 
 func TestSummaryAdd(t *testing.T) {
-	s := Summary{}
+	s := report.Summary{}
 
-	s.Add(&report.Validated{State: report.OK})
-	s.Add(&report.Validated{State: report.OK})
-	s.Add(&report.Validated{State: report.Stale})
-	s.Add(&report.Validated{State: report.OK})
-	s.Add(&report.Validated{State: report.Stale})
-	s.Add(&report.Validated{State: report.Problem})
+	addValidation(s, &report.Validated{State: report.OK})
+	addValidation(s, &report.Validated{State: report.OK})
+	addValidation(s, &report.Validated{State: report.Stale})
+	addValidation(s, &report.Validated{State: report.OK})
+	addValidation(s, &report.Validated{State: report.Stale})
+	addValidation(s, &report.Validated{State: report.Problem})
 
-	expected := Summary{OK: 3, Stale: 2, Problem: 1}
-	if s != expected {
+	expected := report.Summary{
+		report.ValidationOK:      3,
+		report.ValidationStale:   2,
+		report.ValidationProblem: 1,
+	}
+	if !maps.Equal(s, expected) {
 		t.Fatalf("expected %+v, got %+v", expected, s)
 	}
 }
@@ -32,33 +37,40 @@ func TestSummaryAdd(t *testing.T) {
 func TestSummaryHasProblems(t *testing.T) {
 	cases := []struct {
 		name     string
-		summary  Summary
+		summary  report.Summary
 		expected bool
 	}{
-		{"empty", Summary{}, false},
-		{"ok", Summary{OK: 5}, false},
-		{"only stale", Summary{Stale: 2}, true},
-		{"only problem", Summary{Problem: 4}, true},
-		{"problem and stale", Summary{Stale: 2, Problem: 3}, true},
+		{"empty", report.Summary{}, false},
+		{"ok", report.Summary{report.ValidationOK: 5}, false},
+		{"only stale", report.Summary{report.ValidationStale: 2}, true},
+		{"only problem", report.Summary{report.ValidationProblem: 4}, true},
+		{
+			"problem and stale",
+			report.Summary{report.ValidationStale: 2, report.ValidationProblem: 3},
+			true,
+		},
 	}
 	for _, tc := range cases {
-		if got := tc.summary.HasIssues(); got != tc.expected {
+		if got := hasIssues(tc.summary); got != tc.expected {
 			t.Errorf("%s: expected %v, got %v", tc.name, tc.expected, got)
 		}
 	}
 }
 
 func TestSummaryString(t *testing.T) {
-	s := Summary{OK: 1, Stale: 0, Problem: 2}
+	s := report.Summary{
+		report.ValidationOK:      1,
+		report.ValidationProblem: 2,
+	}
 	expected := "1 ok, 0 stale, 2 problem"
-	if s.String() != expected {
-		t.Fatalf("expected %q, got %q", expected, s.String())
+	if summaryString(s) != expected {
+		t.Fatalf("expected %q, got %q", expected, summaryString(s))
 	}
 }
 
 func TestReportEqual(t *testing.T) {
 	helpers.FakeTime(t)
-	r1 := &Report{Report: report.NewReport("name", &config.Config{})}
+	r1 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
 		if !r1.Equal(r2) {
@@ -67,7 +79,7 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 	t.Run("equal reports", func(t *testing.T) {
-		r2 := &Report{Report: report.NewReport("name", &config.Config{})}
+		r2 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
 		if !r1.Equal(r2) {
 			diff := helpers.UnifiedDiff(t, r1, r2)
 			t.Fatalf("reports not equal\n%s", diff)
@@ -77,23 +89,30 @@ func TestReportEqual(t *testing.T) {
 
 func TestReportNotEqual(t *testing.T) {
 	helpers.FakeTime(t)
-	r1 := &Report{Report: report.NewReport("name", &config.Config{})}
+	r1 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
 			t.Fatal("report should not be equal to nil")
 		}
 	})
 	t.Run("report", func(t *testing.T) {
-		r2 := &Report{Report: report.NewReport("other", &config.Config{})}
+		r2 := &Report{
+			Report:  report.NewReport("other", &config.Config{}),
+			Summary: report.Summary{},
+		}
 		if r1.Equal(r2) {
 			t.Fatal("reports with different report should not be equal")
 		}
 	})
 	t.Run("summary", func(t *testing.T) {
-		r1 := &Report{Report: report.NewReport("name", &config.Config{})}
-		r1.Summary = Summary{OK: 5}
-		r2 := &Report{Report: report.NewReport("name", &config.Config{})}
-		r2.Summary = Summary{OK: 3}
+		r1 := &Report{
+			Report:  report.NewReport("name", &config.Config{}),
+			Summary: report.Summary{report.ValidationOK: 5},
+		}
+		r2 := &Report{
+			Report:  report.NewReport("name", &config.Config{}),
+			Summary: report.Summary{report.ValidationOK: 3},
+		}
 		if r1.Equal(r2) {
 			t.Fatal("reports with different summary should not be equal")
 		}
@@ -102,8 +121,12 @@ func TestReportNotEqual(t *testing.T) {
 
 func TestReportRoundtrip(t *testing.T) {
 	r1 := &Report{
-		Report:  report.NewReport("name", &config.Config{}),
-		Summary: Summary{OK: 3, Stale: 2, Problem: 1},
+		Report: report.NewReport("name", &config.Config{}),
+		Summary: report.Summary{
+			report.ValidationOK:      3,
+			report.ValidationStale:   2,
+			report.ValidationProblem: 1,
+		},
 	}
 	b, err := yaml.Marshal(r1)
 	if err != nil {

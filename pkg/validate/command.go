@@ -60,7 +60,7 @@ func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Val
 		config:  cfg,
 		backend: backend,
 		context: cmd.Context(),
-		report:  &Report{Report: report.NewReport(cmd.Name(), cfg)},
+		report:  &Report{Report: report.NewReport(cmd.Name(), cfg), Summary: report.Summary{}},
 	}
 }
 
@@ -123,7 +123,7 @@ func (c *Command) validatedDeleted(obj client.Object) report.ValidatedBool {
 			validated.State = report.OK
 		}
 	}
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -135,7 +135,7 @@ func (c *Command) validatedConditions(
 	for i := range conditions {
 		condition := &conditions[i]
 		validated := validatedCondition(obj, condition, metav1.ConditionTrue)
-		c.report.Summary.Add(&validated)
+		addValidation(c.report.Summary, &validated)
 		validatedConditions = append(validatedConditions, validated)
 	}
 	return validatedConditions
@@ -183,12 +183,12 @@ func (c *Command) dataDir() string {
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("validation %s (%s)", c.report.Status, c.report.Summary)
+	return fmt.Errorf("validation %s (%s)", c.report.Status, summaryString(c.report.Summary))
 }
 
 func (c *Command) passed() {
 	c.command.WriteYAMLReport(c.report)
-	console.Completed("Validation completed (%s)", c.report.Summary)
+	console.Completed("Validation completed (%s)", summaryString(c.report.Summary))
 }
 
 // Managing steps.

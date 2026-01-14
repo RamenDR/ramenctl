@@ -5,20 +5,15 @@ package validate
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
-type Summary struct {
-	Problem uint `json:"error"`
-	Stale   uint `json:"stale"`
-	OK      uint `json:"ok"`
-}
-
 // Report created by validate sub commands.
 type Report struct {
 	*report.Report
-	Summary Summary `json:"summary"`
+	Summary report.Summary `json:"summary"`
 }
 
 func (r *Report) Equal(o *Report) bool {
@@ -31,30 +26,31 @@ func (r *Report) Equal(o *Report) bool {
 	if !r.Report.Equal(o.Report) {
 		return false
 	}
-	if r.Summary != o.Summary {
+	if !maps.Equal(r.Summary, o.Summary) {
 		return false
 	}
 	return true
 }
 
-// Add a validation to the summary.
-func (s *Summary) Add(v report.Validation) {
+// addValidation adds a validation to the summary.
+func addValidation(s report.Summary, v report.Validation) {
 	switch v.GetState() {
 	case report.OK:
-		s.OK++
+		s.Add(report.ValidationOK)
 	case report.Stale:
-		s.Stale++
+		s.Add(report.ValidationStale)
 	case report.Problem:
-		s.Problem++
+		s.Add(report.ValidationProblem)
 	}
 }
 
-// HasIssues returns true if there are any problems or stale results.
-func (s *Summary) HasIssues() bool {
-	return s.Stale > 0 || s.Problem > 0
+// hasIssues returns true if there are any problems or stale results.
+func hasIssues(s report.Summary) bool {
+	return s.Get(report.ValidationStale) > 0 || s.Get(report.ValidationProblem) > 0
 }
 
-// String returns a string representation.
-func (s Summary) String() string {
-	return fmt.Sprintf("%d ok, %d stale, %d problem", s.OK, s.Stale, s.Problem)
+// summaryString returns a string representation.
+func summaryString(s report.Summary) string {
+	return fmt.Sprintf("%d ok, %d stale, %d problem",
+		s.Get(report.ValidationOK), s.Get(report.ValidationStale), s.Get(report.ValidationProblem))
 }

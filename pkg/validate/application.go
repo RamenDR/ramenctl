@@ -258,11 +258,11 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 
 	c.validateApplicationS3Status(&s.S3)
 
-	if c.report.Summary.HasIssues() {
+	if hasIssues(c.report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, c.report.Summary)
+		log.Errorf("%s: %s", msg, summaryString(c.report.Summary))
 		return false
 	}
 
@@ -330,7 +330,7 @@ func (c *Command) validatedApplicationS3ProfileStatus(
 		s.Description = "S3 data not available"
 	}
 
-	c.report.Summary.Add(s)
+	addValidation(c.report.Summary, s)
 }
 
 func (c *Command) validatedApplicationS3Profile(
@@ -357,7 +357,7 @@ func (c *Command) validatedApplicationS3Profile(
 		}
 	}
 
-	c.report.Summary.Add(&profileStatus.Gathered)
+	addValidation(c.report.Summary, &profileStatus.Gathered)
 	return profileStatus
 }
 
@@ -431,7 +431,7 @@ func (c *Command) validatedDRPCPhase(drpc *ramenapi.DRPlacementControl) report.V
 		}
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -452,7 +452,7 @@ func (c *Command) validatedDRPCProgression(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -471,7 +471,7 @@ func (c *Command) validatedVRGState(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -488,7 +488,7 @@ func (c *Command) validatedProtectedPVCPhase(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -500,7 +500,7 @@ func (c *Command) validatedDRPCAction(action string) report.ValidatedString {
 		validated.State = report.Problem
 		validated.Description = fmt.Sprintf("Unknown action %q", action)
 	}
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -565,7 +565,7 @@ func (c *Command) validatedVRGConditions(
 			continue
 		}
 		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		c.report.Summary.Add(&validated)
+		addValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
@@ -609,7 +609,7 @@ func (c *Command) validatedProtectedPVCConditions(
 		}
 
 		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		c.report.Summary.Add(&validated)
+		addValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions

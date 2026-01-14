@@ -140,11 +140,11 @@ func (c *Command) validateGatheredClustersData() bool {
 
 	c.validateClustersS3Status(&s.S3)
 
-	if c.report.Summary.HasIssues() {
+	if hasIssues(c.report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, c.report.Summary)
+		log.Errorf("%s: %s", msg, summaryString(c.report.Summary))
 		return false
 	}
 
@@ -206,7 +206,7 @@ func (c *Command) validateClustersDRPolicies(
 		drPoliciesList.State = report.OK
 	}
 
-	c.report.Summary.Add(drPoliciesList)
+	addValidation(c.report.Summary, drPoliciesList)
 
 	return nil
 }
@@ -231,7 +231,7 @@ func (c *Command) validatedPeerClasses(
 	} else {
 		peerClassesList.State = report.OK
 	}
-	c.report.Summary.Add(&peerClassesList)
+	addValidation(c.report.Summary, &peerClassesList)
 
 	return peerClassesList
 }
@@ -270,7 +270,7 @@ func (c *Command) validateClustersDRClusters(
 		drClustersList.State = report.OK
 	}
 
-	c.report.Summary.Add(drClustersList)
+	addValidation(c.report.Summary, drClustersList)
 
 	return nil
 }
@@ -291,7 +291,7 @@ func (c *Command) validatedDRClusterConditions(
 			validated = validatedCondition(drCluster, condition, metav1.ConditionTrue)
 		}
 
-		c.report.Summary.Add(&validated)
+		addValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -409,7 +409,7 @@ func (c *Command) validatedRamenControllerType(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -441,7 +441,7 @@ func (c *Command) validatedS3Profiles(
 	} else {
 		s.State = report.OK
 	}
-	c.report.Summary.Add(s)
+	addValidation(c.report.Summary, s)
 
 	return nil
 }
@@ -480,7 +480,7 @@ func (c *Command) validatedSecretRef(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 
 	return validated, nil
 }
@@ -535,7 +535,7 @@ func (c *Command) validatedDeploymentReplicas(
 		validated.State = report.OK
 	}
 
-	c.report.Summary.Add(&validated)
+	addValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -562,7 +562,7 @@ func (c *Command) validatedDeploymentConditions(
 		}
 
 		validated := validatedDeploymentCondition(condition, expectedStatus)
-		c.report.Summary.Add(&validated)
+		addValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -626,7 +626,7 @@ func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3
 		s.Description = "No s3 profiles found"
 	}
 
-	c.report.Summary.Add(s)
+	addValidation(c.report.Summary, s)
 }
 
 func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
@@ -651,6 +651,6 @@ func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3
 		}
 	}
 
-	c.report.Summary.Add(&profileStatus.Accessible)
+	addValidation(c.report.Summary, &profileStatus.Accessible)
 	return profileStatus
 }
