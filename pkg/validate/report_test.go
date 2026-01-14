@@ -104,15 +104,6 @@ func TestReportNotEqual(t *testing.T) {
 			t.Fatal("reports with different report should not be equal")
 		}
 	})
-	t.Run("summary", func(t *testing.T) {
-		r1 := report.NewReport("name", &config.Config{})
-		r1.Summary = &report.Summary{report.ValidationOK: 5}
-		r2 := report.NewReport("name", &config.Config{})
-		r2.Summary = &report.Summary{report.ValidationOK: 3}
-		if r1.Equal(r2) {
-			t.Fatal("reports with different summary should not be equal")
-		}
-	})
 }
 
 func TestReportRoundtrip(t *testing.T) {

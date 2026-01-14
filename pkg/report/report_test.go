@@ -162,6 +162,23 @@ func TestBaseNotEqual(t *testing.T) {
 			t.Error("reports with different step should not be equal")
 		}
 	})
+	t.Run("summary", func(t *testing.T) {
+		r1 := report.NewBase("name")
+		r1.Summary = &report.Summary{report.ValidationOK: 5}
+		r2 := report.NewBase("name")
+		r2.Summary = &report.Summary{report.ValidationOK: 3}
+		if r1.Equal(r2) {
+			t.Error("reports with different summary should not be equal")
+		}
+	})
+	t.Run("nil vs non-nil summary", func(t *testing.T) {
+		r1 := report.NewBase("name")
+		r2 := report.NewBase("name")
+		r2.Summary = &report.Summary{}
+		if r1.Equal(r2) {
+			t.Error("reports with nil vs non-nil summary should not be equal")
+		}
+	})
 }
 
 func TestBaseDuration(t *testing.T) {

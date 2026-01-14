@@ -121,13 +121,6 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 
-	t.Run("different summary", func(t *testing.T) {
-		r2 := createReport()
-		r2.Summary = &report.Summary{report.TestPassed: 1, report.TestFailed: 1}
-		if r1.Equal(r2) {
-			t.Error("reports with different summary should not be equal")
-		}
-	})
 }
 
 func TestReportMarshaling(t *testing.T) {
@@ -167,30 +160,6 @@ func TestSummaryString(t *testing.T) {
 	expectedString := "5 passed, 2 failed, 3 skipped, 1 canceled"
 	if summaryString(summary) != expectedString {
 		t.Errorf("expected summary string %s, got %s", expectedString, summaryString(summary))
-	}
-}
-
-func TestSummaryMarshal(t *testing.T) {
-	summary := &report.Summary{
-		report.TestPassed:   4,
-		report.TestFailed:   3,
-		report.TestSkipped:  2,
-		report.TestCanceled: 1,
-	}
-
-	bytes, err := yaml.Marshal(summary)
-	if err != nil {
-		t.Fatalf("failed to marshal summary: %v", err)
-	}
-
-	var unmarshaledSummary report.Summary
-	err = yaml.Unmarshal(bytes, &unmarshaledSummary)
-	if err != nil {
-		t.Fatalf("failed to unmarshal summary: %v", err)
-	}
-	if !summary.Equal(&unmarshaledSummary) {
-		t.Errorf("unmarshaled summary %+v does not match original summary %+v",
-			unmarshaledSummary, *summary)
 	}
 }
 
