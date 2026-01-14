@@ -4,7 +4,6 @@
 package validate
 
 import (
-	"maps"
 	"testing"
 
 	"sigs.k8s.io/yaml"
@@ -15,7 +14,7 @@ import (
 )
 
 func TestSummaryAdd(t *testing.T) {
-	s := report.Summary{}
+	s := &report.Summary{}
 
 	addValidation(s, &report.Validated{State: report.OK})
 	addValidation(s, &report.Validated{State: report.OK})
@@ -29,24 +28,24 @@ func TestSummaryAdd(t *testing.T) {
 		report.ValidationStale:   2,
 		report.ValidationProblem: 1,
 	}
-	if !maps.Equal(s, expected) {
-		t.Fatalf("expected %+v, got %+v", expected, s)
+	if !s.Equal(&expected) {
+		t.Fatalf("expected %+v, got %+v", expected, *s)
 	}
 }
 
 func TestSummaryHasProblems(t *testing.T) {
 	cases := []struct {
 		name     string
-		summary  report.Summary
+		summary  *report.Summary
 		expected bool
 	}{
-		{"empty", report.Summary{}, false},
-		{"ok", report.Summary{report.ValidationOK: 5}, false},
-		{"only stale", report.Summary{report.ValidationStale: 2}, true},
-		{"only problem", report.Summary{report.ValidationProblem: 4}, true},
+		{"empty", &report.Summary{}, false},
+		{"ok", &report.Summary{report.ValidationOK: 5}, false},
+		{"only stale", &report.Summary{report.ValidationStale: 2}, true},
+		{"only problem", &report.Summary{report.ValidationProblem: 4}, true},
 		{
 			"problem and stale",
-			report.Summary{report.ValidationStale: 2, report.ValidationProblem: 3},
+			&report.Summary{report.ValidationStale: 2, report.ValidationProblem: 3},
 			true,
 		},
 	}
@@ -58,7 +57,7 @@ func TestSummaryHasProblems(t *testing.T) {
 }
 
 func TestSummaryString(t *testing.T) {
-	s := report.Summary{
+	s := &report.Summary{
 		report.ValidationOK:      1,
 		report.ValidationProblem: 2,
 	}
@@ -70,7 +69,8 @@ func TestSummaryString(t *testing.T) {
 
 func TestReportEqual(t *testing.T) {
 	helpers.FakeTime(t)
-	r1 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
+	r1 := report.NewReport("name", &config.Config{})
+	r1.Summary = &report.Summary{}
 	t.Run("equal to self", func(t *testing.T) {
 		r2 := r1
 		if !r1.Equal(r2) {
@@ -79,7 +79,8 @@ func TestReportEqual(t *testing.T) {
 		}
 	})
 	t.Run("equal reports", func(t *testing.T) {
-		r2 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
+		r2 := report.NewReport("name", &config.Config{})
+		r2.Summary = &report.Summary{}
 		if !r1.Equal(r2) {
 			diff := helpers.UnifiedDiff(t, r1, r2)
 			t.Fatalf("reports not equal\n%s", diff)
@@ -89,30 +90,25 @@ func TestReportEqual(t *testing.T) {
 
 func TestReportNotEqual(t *testing.T) {
 	helpers.FakeTime(t)
-	r1 := &Report{Report: report.NewReport("name", &config.Config{}), Summary: report.Summary{}}
+	r1 := report.NewReport("name", &config.Config{})
+	r1.Summary = &report.Summary{}
 	t.Run("nil", func(t *testing.T) {
 		if r1.Equal(nil) {
 			t.Fatal("report should not be equal to nil")
 		}
 	})
 	t.Run("report", func(t *testing.T) {
-		r2 := &Report{
-			Report:  report.NewReport("other", &config.Config{}),
-			Summary: report.Summary{},
-		}
+		r2 := report.NewReport("other", &config.Config{})
+		r2.Summary = &report.Summary{}
 		if r1.Equal(r2) {
 			t.Fatal("reports with different report should not be equal")
 		}
 	})
 	t.Run("summary", func(t *testing.T) {
-		r1 := &Report{
-			Report:  report.NewReport("name", &config.Config{}),
-			Summary: report.Summary{report.ValidationOK: 5},
-		}
-		r2 := &Report{
-			Report:  report.NewReport("name", &config.Config{}),
-			Summary: report.Summary{report.ValidationOK: 3},
-		}
+		r1 := report.NewReport("name", &config.Config{})
+		r1.Summary = &report.Summary{report.ValidationOK: 5}
+		r2 := report.NewReport("name", &config.Config{})
+		r2.Summary = &report.Summary{report.ValidationOK: 3}
 		if r1.Equal(r2) {
 			t.Fatal("reports with different summary should not be equal")
 		}
@@ -120,19 +116,17 @@ func TestReportNotEqual(t *testing.T) {
 }
 
 func TestReportRoundtrip(t *testing.T) {
-	r1 := &Report{
-		Report: report.NewReport("name", &config.Config{}),
-		Summary: report.Summary{
-			report.ValidationOK:      3,
-			report.ValidationStale:   2,
-			report.ValidationProblem: 1,
-		},
+	r1 := report.NewReport("name", &config.Config{})
+	r1.Summary = &report.Summary{
+		report.ValidationOK:      3,
+		report.ValidationStale:   2,
+		report.ValidationProblem: 1,
 	}
 	b, err := yaml.Marshal(r1)
 	if err != nil {
 		t.Fatalf("failed to marshal yaml: %s", err)
 	}
-	r2 := &Report{}
+	r2 := &report.Report{}
 	if err := yaml.Unmarshal(b, r2); err != nil {
 		t.Fatalf("failed to unmarshal yaml: %s", err)
 	}

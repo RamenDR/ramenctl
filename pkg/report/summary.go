@@ -3,6 +3,8 @@
 
 package report
 
+import "maps"
+
 // SummaryKey is a typed key for Summary counters.
 type SummaryKey string
 
@@ -33,4 +35,16 @@ func (s Summary) Add(key SummaryKey) {
 // Get returns the count for the given key.
 func (s Summary) Get(key SummaryKey) int {
 	return s[key]
+}
+
+// Equal returns true if both summaries are equal.
+// Handles nil pointers: two nil summaries are equal, nil and non-nil are not.
+func (s *Summary) Equal(o *Summary) bool {
+	if s == o {
+		return true
+	}
+	if s == nil || o == nil {
+		return false
+	}
+	return maps.Equal(*s, *o)
 }

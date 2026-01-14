@@ -4,7 +4,6 @@
 package test
 
 import (
-	"maps"
 	"testing"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -60,13 +59,13 @@ func TestReportSummary(t *testing.T) {
 	}
 	r.AddStep(testsStep)
 
-	expectedSummary := report.Summary{
+	expectedSummary := &report.Summary{
 		report.TestPassed:   1,
 		report.TestFailed:   1,
 		report.TestSkipped:  1,
 		report.TestCanceled: 1,
 	}
-	if !maps.Equal(r.Summary, expectedSummary) {
+	if !r.Summary.Equal(expectedSummary) {
 		t.Errorf("expected summary %+v, got %+v", expectedSummary, r.Summary)
 	}
 }
@@ -76,7 +75,7 @@ func TestReportEqual(t *testing.T) {
 	// Helper function to create a standard report
 	createReport := func() *Report {
 		r := newReport("test-command", reportConfig)
-		r.Summary = report.Summary{report.TestPassed: 2}
+		r.Summary = &report.Summary{report.TestPassed: 2}
 		return r
 	}
 
@@ -124,7 +123,7 @@ func TestReportEqual(t *testing.T) {
 
 	t.Run("different summary", func(t *testing.T) {
 		r2 := createReport()
-		r2.Summary = report.Summary{report.TestPassed: 1, report.TestFailed: 1}
+		r2.Summary = &report.Summary{report.TestPassed: 1, report.TestFailed: 1}
 		if r1.Equal(r2) {
 			t.Error("reports with different summary should not be equal")
 		}
@@ -152,14 +151,14 @@ func TestReportMarshaling(t *testing.T) {
 			Duration: 1.0,
 		},
 	}
-	r.Summary = report.Summary{report.TestPassed: 2, report.TestFailed: 1}
+	r.Summary = &report.Summary{report.TestPassed: 2, report.TestFailed: 1}
 
 	// Test roundtrip marshaling/unmarshaling
 	checkRoundtrip(t, r)
 }
 
 func TestSummaryString(t *testing.T) {
-	summary := report.Summary{
+	summary := &report.Summary{
 		report.TestPassed:   5,
 		report.TestFailed:   2,
 		report.TestSkipped:  3,
@@ -172,7 +171,7 @@ func TestSummaryString(t *testing.T) {
 }
 
 func TestSummaryMarshal(t *testing.T) {
-	summary := report.Summary{
+	summary := &report.Summary{
 		report.TestPassed:   4,
 		report.TestFailed:   3,
 		report.TestSkipped:  2,
@@ -189,14 +188,14 @@ func TestSummaryMarshal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to unmarshal summary: %v", err)
 	}
-	if !maps.Equal(unmarshaledSummary, summary) {
+	if !summary.Equal(&unmarshaledSummary) {
 		t.Errorf("unmarshaled summary %+v does not match original summary %+v",
-			unmarshaledSummary, summary)
+			unmarshaledSummary, *summary)
 	}
 }
 
 func TestSummaryCount(t *testing.T) {
-	summary := report.Summary{}
+	summary := &report.Summary{}
 
 	// Add multiple tests of different status
 	addTest(summary, &report.Step{Status: report.Passed})
@@ -206,13 +205,13 @@ func TestSummaryCount(t *testing.T) {
 	addTest(summary, &report.Step{Status: report.Canceled})
 	addTest(summary, &report.Step{Status: report.Passed})
 
-	expectedSummary := report.Summary{
+	expectedSummary := &report.Summary{
 		report.TestPassed:   3,
 		report.TestFailed:   1,
 		report.TestSkipped:  1,
 		report.TestCanceled: 1,
 	}
-	if !maps.Equal(summary, expectedSummary) {
+	if !summary.Equal(expectedSummary) {
 		t.Errorf("expected summary %+v, got %+v", expectedSummary, summary)
 	}
 }

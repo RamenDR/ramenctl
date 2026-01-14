@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
 	"testing"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -482,8 +481,8 @@ func checkReport(t *testing.T, r *Report, status report.Status, summary report.S
 	if r.Status != status {
 		t.Errorf("expected status %q, got %q", status, r.Status)
 	}
-	if !maps.Equal(r.Summary, summary) {
-		t.Errorf("expected summary %+v, got %+v", summary, r.Summary)
+	if !r.Summary.Equal(&summary) {
+		t.Errorf("expected summary %+v, got %+v", summary, *r.Summary)
 	}
 	duration := totalDuration(r.Steps)
 	if r.Duration != duration {

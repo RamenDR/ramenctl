@@ -5,7 +5,6 @@ package test
 
 import (
 	"fmt"
-	"maps"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 
@@ -22,18 +21,18 @@ const (
 // Report created by test sub commands.
 type Report struct {
 	*report.Base
-	Config  *e2econfig.Config `json:"config"`
-	Summary report.Summary    `json:"summary"`
+	Config *e2econfig.Config `json:"config"`
 }
 
 func newReport(commandName string, config *e2econfig.Config) *Report {
 	if config == nil {
 		panic("config must not be nil")
 	}
+	base := report.NewBase(commandName)
+	base.Summary = &report.Summary{}
 	return &Report{
-		Base:    report.NewBase(commandName),
-		Config:  config,
-		Summary: report.Summary{},
+		Base:   base,
+		Config: config,
 	}
 }
 
@@ -67,13 +66,10 @@ func (r *Report) Equal(o *Report) bool {
 	} else if r.Config != o.Config {
 		return false
 	}
-	if !maps.Equal(r.Summary, o.Summary) {
-		return false
-	}
 	return true
 }
 
-func addTest(s report.Summary, t *report.Step) {
+func addTest(s *report.Summary, t *report.Step) {
 	switch t.Status {
 	case report.Passed:
 		s.Add(report.TestPassed)
@@ -86,7 +82,7 @@ func addTest(s report.Summary, t *report.Step) {
 	}
 }
 
-func summaryString(s report.Summary) string {
+func summaryString(s *report.Summary) string {
 	return fmt.Sprintf("%d passed, %d failed, %d skipped, %d canceled",
 		s.Get(report.TestPassed), s.Get(report.TestFailed),
 		s.Get(report.TestSkipped), s.Get(report.TestCanceled))

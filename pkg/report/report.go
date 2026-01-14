@@ -51,6 +51,9 @@ type Base struct {
 	Status   Status    `json:"status,omitempty"`
 	Duration float64   `json:"duration,omitempty"`
 	Steps    []*Step   `json:"steps"`
+
+	// Summary is set by `validate` and `test` commands.
+	Summary *Summary `json:"summary,omitempty"`
 }
 
 // Application is application info.
@@ -128,9 +131,15 @@ func (r *Base) Equal(o *Base) bool {
 	if r.Duration != o.Duration {
 		return false
 	}
-	return slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
+	if !slices.EqualFunc(r.Steps, o.Steps, func(a *Step, b *Step) bool {
 		return a.Equal(b)
-	})
+	}) {
+		return false
+	}
+	if !r.Summary.Equal(o.Summary) {
+		return false
+	}
+	return true
 }
 
 // AddStep adds a step to the report.

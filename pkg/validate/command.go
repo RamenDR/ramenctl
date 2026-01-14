@@ -41,7 +41,7 @@ type Command struct {
 	context context.Context
 
 	// report describes the command execution.
-	report *Report
+	report *report.Report
 
 	// current validation step.
 	current        *report.Step
@@ -55,12 +55,14 @@ type Command struct {
 var _ validation.Context = &Command{}
 
 func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Validation) *Command {
+	r := report.NewReport(cmd.Name(), cfg)
+	r.Summary = &report.Summary{}
 	return &Command{
 		command: cmd,
 		config:  cfg,
 		backend: backend,
 		context: cmd.Context(),
-		report:  &Report{Report: report.NewReport(cmd.Name(), cfg), Summary: report.Summary{}},
+		report:  r,
 	}
 }
 

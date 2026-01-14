@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"reflect"
 	"slices"
@@ -267,8 +266,8 @@ func TestValidatedDeleted(t *testing.T) {
 
 	t.Run("update summary", func(t *testing.T) {
 		expected := report.Summary{report.ValidationOK: 1, report.ValidationProblem: 2}
-		if !maps.Equal(cmd.report.Summary, expected) {
-			t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+		if !cmd.report.Summary.Equal(&expected) {
+			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 		}
 	})
 }
@@ -317,8 +316,8 @@ func TestValidatedDRPCAction(t *testing.T) {
 
 	t.Run("update summary", func(t *testing.T) {
 		expected := report.Summary{report.ValidationOK: 3, report.ValidationProblem: 1}
-		if !maps.Equal(cmd.report.Summary, expected) {
-			t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+		if !cmd.report.Summary.Equal(&expected) {
+			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 		}
 	})
 }
@@ -402,8 +401,8 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 		errors += len(group.cases)
 	}
 	expected := report.Summary{report.ValidationProblem: errors}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -444,8 +443,8 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 	}
 
 	expected := report.Summary{report.ValidationOK: len(cases)}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -472,8 +471,8 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 	})
 
 	expected := report.Summary{report.ValidationOK: 1}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -529,8 +528,8 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 	}
 
 	expected := report.Summary{report.ValidationProblem: len(progressions)}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -566,8 +565,8 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 	}
 
 	expected := report.Summary{report.ValidationOK: len(cases)}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -609,8 +608,8 @@ func TestValidatedVRGSTateError(t *testing.T) {
 	}
 
 	expected := report.Summary{report.ValidationProblem: len(cases)}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -636,8 +635,8 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 	})
 
 	expected := report.Summary{report.ValidationOK: 1}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -676,8 +675,8 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 	}
 
 	expected := report.Summary{report.ValidationProblem: len(cases)}
-	if !maps.Equal(cmd.report.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, cmd.report.Summary)
+	if !cmd.report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 	}
 }
 
@@ -2126,16 +2125,16 @@ func checkReport(t *testing.T, cmd *Command, status report.Status) {
 	}
 }
 
-func checkApplication(t *testing.T, report *Report, expected *report.Application) {
-	if !reflect.DeepEqual(expected, report.Application) {
-		diff := helpers.UnifiedDiff(t, expected, report.Application)
+func checkApplication(t *testing.T, r *report.Report, expected *report.Application) {
+	if !reflect.DeepEqual(expected, r.Application) {
+		diff := helpers.UnifiedDiff(t, expected, r.Application)
 		t.Fatalf("applications not equal\n%s", diff)
 	}
 }
 
-func checkNamespaces(t *testing.T, report *Report, expected []string) {
-	if !slices.Equal(report.Namespaces, expected) {
-		t.Fatalf("expected namespaces %q, got %q", expected, report.Namespaces)
+func checkNamespaces(t *testing.T, r *report.Report, expected []string) {
+	if !slices.Equal(r.Namespaces, expected) {
+		t.Fatalf("expected namespaces %q, got %q", expected, r.Namespaces)
 	}
 }
 
@@ -2160,39 +2159,39 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 
 func checkApplicationStatus(
 	t *testing.T,
-	report *Report,
+	r *report.Report,
 	expected *report.ApplicationStatus,
 ) {
 	if expected != nil {
-		if !expected.Equal(report.ApplicationStatus) {
-			diff := helpers.UnifiedDiff(t, expected, report.ApplicationStatus)
+		if !expected.Equal(r.ApplicationStatus) {
+			diff := helpers.UnifiedDiff(t, expected, r.ApplicationStatus)
 			t.Fatalf("application statuses not equal\n%s", diff)
 		}
-	} else if report.ApplicationStatus != nil {
+	} else if r.ApplicationStatus != nil {
 		t.Fatalf("application status not nil\n%s",
-			helpers.MarshalYAML(t, report.ApplicationStatus))
+			helpers.MarshalYAML(t, r.ApplicationStatus))
 	}
 }
 
 func checkClusterStatus(
 	t *testing.T,
-	report *Report,
+	r *report.Report,
 	expected *report.ClustersStatus,
 ) {
 	if expected != nil {
-		if !expected.Equal(report.ClustersStatus) {
-			diff := helpers.UnifiedDiff(t, expected, report.ClustersStatus)
+		if !expected.Equal(r.ClustersStatus) {
+			diff := helpers.UnifiedDiff(t, expected, r.ClustersStatus)
 			t.Fatalf("clusters statuses not equal\n%s", diff)
 		}
-	} else if report.ClustersStatus != nil {
+	} else if r.ClustersStatus != nil {
 		t.Fatalf("clusters status not nil\n%s",
-			helpers.MarshalYAML(t, report.ClustersStatus))
+			helpers.MarshalYAML(t, r.ClustersStatus))
 	}
 }
 
-func checkSummary(t *testing.T, r *Report, expected report.Summary) {
-	if !maps.Equal(r.Summary, expected) {
-		t.Fatalf("expected summary %v, got %v", expected, r.Summary)
+func checkSummary(t *testing.T, r *report.Report, expected report.Summary) {
+	if !r.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *r.Summary)
 	}
 }
 
