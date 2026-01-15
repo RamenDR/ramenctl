@@ -49,4 +49,4 @@ Content guidelines:
 - Avoid describing details that are best seen in the diff
 
 Footer:
-- Include `Assisted-by: Cursor/{model-name}` footer
+- Include `Assisted-by: Cursor/{product-name}` footer (e.g., "Claude Opus 4.5", not API model ID)
