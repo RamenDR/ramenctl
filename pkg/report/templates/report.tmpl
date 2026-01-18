@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.HeaderData.Title}}</title>
+    <style>
+        {{ includeCSS "style" . | indent 8 }}
+    </style>
+</head>
+<body>
+<header>
+    <h1>{{.HeaderData.Title}}</h1>
+{{- if .HeaderData.Subtitle}}
+    <p class="subtitle">{{.HeaderData.Subtitle}}</p>
+{{- end}}
+    <p class="status {{.Status}}">Status: {{.Status}}</p>
+</header>
+<main>
+    <section>
+        {{ includeHTML "content" . | indent 8 }}
+    </section>
+
+    <section>
+        <h2>Report Details</h2>
+        <p>Common information for all reports.</p>
+    </section>
+</main>
+</body>
+</html>
