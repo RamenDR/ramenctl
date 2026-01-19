@@ -38,6 +38,14 @@ func TestWriteHTML(t *testing.T) {
 			Name:      "myapp",
 			Namespace: "mynamespace",
 		},
+		ApplicationStatus: report.ApplicationStatus{
+			PrimaryCluster: report.ApplicationStatusCluster{
+				Name: "dr1",
+			},
+			SecondaryCluster: report.ApplicationStatusCluster{
+				Name: "dr2",
+			},
+		},
 	}
 
 	var buf strings.Builder
