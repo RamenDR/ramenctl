@@ -18,14 +18,11 @@ func TestTemplate(t *testing.T) {
 		t.Fatalf("Template() error: %v", err)
 	}
 
-	// Check that command template is defined
-	if tmpl.Lookup("report.tmpl") == nil {
-		t.Error("template 'report.tmpl' not defined")
-	}
-
-	// Check that required templates are available
-	if tmpl.Lookup("content") == nil {
-		t.Error("template 'content' not available")
+	// Check that shared templates and command templates are defined
+	for _, name := range []string{"report.tmpl", "style", "content"} {
+		if tmpl.Lookup(name) == nil {
+			t.Errorf("template %q not defined", name)
+		}
 	}
 }
 
