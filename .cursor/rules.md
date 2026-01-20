@@ -16,8 +16,8 @@
 ## After making code changes
 
 - Run `make fmt` to format code with golangci-lint formatters
-- Run `make test` to verify all tests pass
-- Running specific package tests (e.g., `go test ./pkg/test/...`) is fine for quick local verification
+- Use package tests for quick iteration: `go test ./pkg/foo/...`
+- Before committing, always run `make test` to verify all tests pass
 
 ## File organization
 
