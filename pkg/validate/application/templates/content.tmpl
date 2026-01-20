@@ -39,6 +39,16 @@
                     <p class="description">{{.Progression.Description}}</p>
                 {{- end}}
             </dd>
+            {{- if isProblem .Deleted.State}}
+                <dt>Deleted</dt>
+                <dd>
+                    <span class="value">{{.Deleted.Value}}</span>
+                    <span class="state">{{icon .Deleted.State}}</span>
+                    {{- if .Deleted.Description}}
+                        <p class="description">{{.Deleted.Description}}</p>
+                    {{- end}}
+                </dd>
+            {{- end}}
         </dl>
         <section>
             <h5>Conditions</h5>

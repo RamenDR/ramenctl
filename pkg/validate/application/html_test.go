@@ -59,6 +59,13 @@ func TestWriteHTML(t *testing.T) {
 						},
 						Value: "WaitForReadiness",
 					},
+					Deleted: report.ValidatedBool{
+						Validated: report.Validated{
+							State:       report.Problem,
+							Description: "Resource is marked for deletion",
+						},
+						Value: true,
+					},
 					Conditions: []report.ValidatedCondition{
 						{
 							Validated: report.Validated{State: report.OK},

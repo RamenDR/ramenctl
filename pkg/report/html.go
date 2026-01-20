@@ -20,8 +20,14 @@ func Template() (*template.Template, error) {
 	funcs := template.FuncMap{
 		"formatTime": formatTime,
 		"icon":       icon,
+		"isProblem":  isProblem,
 	}
 	return template.New("").Funcs(funcs).ParseFS(templates, "templates/*.tmpl")
+}
+
+// isProblem returns true if the validation state is Problem.
+func isProblem(s ValidationState) bool {
+	return s == Problem
 }
 
 // icon returns the icon for a validation state.
