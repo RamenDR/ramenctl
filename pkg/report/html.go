@@ -46,6 +46,7 @@ func formatTime(t time.Time) string {
 // FormatHTML formats HTML for readability. Use this to format generated HTML
 // for comparison with golden files in tests.
 func FormatHTML(html string) string {
+	gohtml.Condense = true
 	return gohtml.Format(html) + "\n"
 }
 

@@ -29,6 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	gohtml.Condense = true
 	formatted := gohtml.Format(string(data)) + "\n"
 
 	if err := os.WriteFile(filename, []byte(formatted), 0o640); err != nil {

@@ -2,141 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>
-      Application Validation Report
-    </title>
-    <style>
-      body { font-family: system-ui, sans-serif; }
-    </style>
+    <title>Application Validation Report</title>
+    <style> body { font-family: system-ui, sans-serif; } </style>
   </head>
   <body>
     <header>
-      <h1>
-        Application Validation Report
-      </h1>
-      <p class="subtitle">
-        mynamespace / myapp
-      </p>
-      <p class="status passed">
-        Status: passed
-      </p>
+      <h1>Application Validation Report</h1>
+      <p class="subtitle">mynamespace / myapp</p>
+      <p class="status passed">Status: passed</p>
     </header>
     <main>
       <section>
-        <h2>
-          Application Status
-        </h2>
+        <h2>Application Status</h2>
         <section>
-          <h3>
-            Hub
-          </h3>
+          <h3>Hub</h3>
           <section>
-            <h4>
-              DRPC
-            </h4>
+            <h4>DRPC</h4>
             <dl class="metadata">
-              <dt>
-                Name
-              </dt>
-              <dd>
-                myapp-drpc
-              </dd>
-              <dt>
-                Namespace
-              </dt>
-              <dd>
-                myapp-ns
-              </dd>
-              <dt>
-                DRPolicy
-              </dt>
-              <dd>
-                my-dr-policy
-              </dd>
+              <dt>Name</dt>
+              <dd>myapp-drpc</dd>
+              <dt>Namespace</dt>
+              <dd>myapp-ns</dd>
+              <dt>DRPolicy</dt>
+              <dd>my-dr-policy</dd>
             </dl>
           </section>
         </section>
         <section>
-          <h3>
-            Primary Cluster: dr1
-          </h3>
-          <p>
-            Primary VRG status will be here.
-          </p>
+          <h3>Primary Cluster: dr1</h3>
+          <p>Primary VRG status will be here.</p>
         </section>
         <section>
-          <h3>
-            Secondary Cluster: dr2
-          </h3>
-          <p>
-            Secondary VRG status will be here.
-          </p>
+          <h3>Secondary Cluster: dr2</h3>
+          <p>Secondary VRG status will be here.</p>
         </section>
         <section>
-          <h3>
-            S3 Stores
-          </h3>
+          <h3>S3 Stores</h3>
           <dl class="validation">
-            <dt>
-              Profiles
-            </dt>
-            <dd>
-              <span class="value">
-                2
-              </span>
-              <span class="state">
-                ✅
-              </span>
-            </dd>
+            <dt>Profiles</dt>
+            <dd><span class="value">2</span><span class="state">✅</span></dd>
           </dl>
           <section>
-            <h4>
-              s3-profile-1
-            </h4>
+            <h4>s3-profile-1</h4>
             <dl class="validation">
-              <dt>
-                Gathered
-              </dt>
-              <dd>
-                <span class="value">
-                  true
-                </span>
-                <span class="state">
-                  ✅
-                </span>
-              </dd>
+              <dt>Gathered</dt>
+              <dd><span class="value">true</span><span class="state">✅</span></dd>
             </dl>
           </section>
           <section>
-            <h4>
-              s3-profile-2
-            </h4>
+            <h4>s3-profile-2</h4>
             <dl class="validation">
-              <dt>
-                Gathered
-              </dt>
+              <dt>Gathered</dt>
               <dd>
-                <span class="value">
-                  false
-                </span>
-                <span class="state">
-                  ❌
-                </span>
-                <p class="description">
-                  failed to connect to endpoint
-                </p>
+                <span class="value">false</span><span class="state">❌</span>
+                <p class="description">failed to connect to endpoint</p>
               </dd>
             </dl>
           </section>
         </section>
       </section>
       <section>
-        <h2>
-          Report Details
-        </h2>
-        <p>
-          Common information for all reports.
-        </p>
+        <h2>Report Details</h2>
+        <p>Common information for all reports.</p>
       </section>
     </main>
   </body>
