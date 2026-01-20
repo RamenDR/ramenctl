@@ -44,6 +44,21 @@ func TestWriteHTML(t *testing.T) {
 					Name:      "myapp-drpc",
 					Namespace: "myapp-ns",
 					DRPolicy:  "my-dr-policy",
+					Action: report.ValidatedString{
+						Validated: report.Validated{State: report.OK},
+						Value:     "Failover",
+					},
+					Phase: report.ValidatedString{
+						Validated: report.Validated{State: report.OK},
+						Value:     "FailedOver",
+					},
+					Progression: report.ValidatedString{
+						Validated: report.Validated{
+							State:       report.Problem,
+							Description: "Waiting for progression \"Completed\"",
+						},
+						Value: "WaitForReadiness",
+					},
 				},
 			},
 			PrimaryCluster: report.ApplicationStatusCluster{
