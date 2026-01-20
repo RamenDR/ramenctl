@@ -39,6 +39,13 @@ func TestWriteHTML(t *testing.T) {
 			Namespace: "mynamespace",
 		},
 		ApplicationStatus: report.ApplicationStatus{
+			Hub: report.ApplicationStatusHub{
+				DRPC: report.DRPCSummary{
+					Name:      "myapp-drpc",
+					Namespace: "myapp-ns",
+					DRPolicy:  "my-dr-policy",
+				},
+			},
 			PrimaryCluster: report.ApplicationStatusCluster{
 				Name: "dr1",
 			},

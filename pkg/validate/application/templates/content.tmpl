@@ -3,7 +3,17 @@
 
 <section>
     <h3>Hub</h3>
-    <p>DRPC status will be here</p>
+    <section>
+        <h4>DRPC</h4>
+        <dl class="metadata">
+            <dt>Name</dt>
+            <dd>{{.ApplicationStatus.Hub.DRPC.Name}}</dd>
+            <dt>Namespace</dt>
+            <dd>{{.ApplicationStatus.Hub.DRPC.Namespace}}</dd>
+            <dt>DRPolicy</dt>
+            <dd>{{.ApplicationStatus.Hub.DRPC.DRPolicy}}</dd>
+        </dl>
+    </section>
 </section>
 
 <section>
