@@ -59,6 +59,23 @@ func TestWriteHTML(t *testing.T) {
 						},
 						Value: "WaitForReadiness",
 					},
+					Conditions: []report.ValidatedCondition{
+						{
+							Validated: report.Validated{State: report.OK},
+							Type:      "Available",
+						},
+						{
+							Validated: report.Validated{
+								State:       report.Problem,
+								Description: "Started failover to cluster \"dr2\"",
+							},
+							Type: "PeerReady",
+						},
+						{
+							Validated: report.Validated{State: report.OK},
+							Type:      "Protected",
+						},
+					},
 				},
 			},
 			PrimaryCluster: report.ApplicationStatusCluster{
