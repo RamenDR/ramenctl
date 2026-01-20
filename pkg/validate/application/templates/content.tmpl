@@ -5,14 +5,16 @@
     <h3>Hub</h3>
     <section>
         <h4>DRPC</h4>
+        {{- with .ApplicationStatus.Hub.DRPC}}
         <dl class="metadata">
             <dt>Name</dt>
-            <dd>{{.ApplicationStatus.Hub.DRPC.Name}}</dd>
+            <dd>{{.Name}}</dd>
             <dt>Namespace</dt>
-            <dd>{{.ApplicationStatus.Hub.DRPC.Namespace}}</dd>
+            <dd>{{.Namespace}}</dd>
             <dt>DRPolicy</dt>
-            <dd>{{.ApplicationStatus.Hub.DRPC.DRPolicy}}</dd>
+            <dd>{{.DRPolicy}}</dd>
         </dl>
+        {{- end}}
     </section>
 </section>
 
@@ -28,17 +30,18 @@
 
 <section>
     <h3>S3 Stores</h3>
+    {{- with .ApplicationStatus.S3.Profiles}}
     <dl class="validation">
         <dt>Profiles</dt>
         <dd>
-            <span class="value">{{len .ApplicationStatus.S3.Profiles.Value}}</span>
-            <span class="state">{{icon .ApplicationStatus.S3.Profiles.State}}</span>
-            {{- if .ApplicationStatus.S3.Profiles.Description}}
-                <p class="description">{{.ApplicationStatus.S3.Profiles.Description}}</p>
+            <span class="value">{{len .Value}}</span>
+            <span class="state">{{icon .State}}</span>
+            {{- if .Description}}
+                <p class="description">{{.Description}}</p>
             {{- end}}
         </dd>
     </dl>
-    {{- range .ApplicationStatus.S3.Profiles.Value}}
+    {{- range .Value}}
         <section>
             <h4>{{.Name}}</h4>
             <dl class="validation">
@@ -52,6 +55,7 @@
                 </dd>
             </dl>
         </section>
+    {{- end}}
     {{- end}}
 </section>
 {{- end}}
