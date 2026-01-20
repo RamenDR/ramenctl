@@ -19,8 +19,23 @@ var templates embed.FS
 func Template() (*template.Template, error) {
 	funcs := template.FuncMap{
 		"formatTime": formatTime,
+		"icon":       icon,
 	}
 	return template.New("").Funcs(funcs).ParseFS(templates, "templates/*.tmpl")
+}
+
+// icon returns the icon for a validation state.
+func icon(s ValidationState) string {
+	switch s {
+	case OK:
+		return "✅"
+	case Stale:
+		return "⭕"
+	case Problem:
+		return "❌"
+	default:
+		return ""
+	}
 }
 
 // formatTime formats a time value for display in reports.

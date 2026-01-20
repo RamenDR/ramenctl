@@ -18,6 +18,30 @@
 
 <section>
     <h3>S3 Stores</h3>
-    <p>S3 profiles status will be here.</p>
+    <dl class="validation">
+        <dt>Profiles</dt>
+        <dd>
+            <span class="value">{{len .ApplicationStatus.S3.Profiles.Value}}</span>
+            <span class="state">{{icon .ApplicationStatus.S3.Profiles.State}}</span>
+            {{- if .ApplicationStatus.S3.Profiles.Description}}
+                <p class="description">{{.ApplicationStatus.S3.Profiles.Description}}</p>
+            {{- end}}
+        </dd>
+    </dl>
+    {{- range .ApplicationStatus.S3.Profiles.Value}}
+        <section>
+            <h4>{{.Name}}</h4>
+            <dl class="validation">
+                <dt>Gathered</dt>
+                <dd>
+                    <span class="value">{{.Gathered.Value}}</span>
+                    <span class="state">{{icon .Gathered.State}}</span>
+                    {{- if .Gathered.Description}}
+                        <p class="description">{{.Gathered.Description}}</p>
+                    {{- end}}
+                </dd>
+            </dl>
+        </section>
+    {{- end}}
 </section>
 {{- end}}

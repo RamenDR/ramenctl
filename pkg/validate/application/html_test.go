@@ -45,6 +45,30 @@ func TestWriteHTML(t *testing.T) {
 			SecondaryCluster: report.ApplicationStatusCluster{
 				Name: "dr2",
 			},
+			S3: report.ApplicationS3Status{
+				Profiles: report.ValidatedApplicationS3ProfileStatusList{
+					Validated: report.Validated{State: report.OK},
+					Value: []report.ApplicationS3ProfileStatus{
+						{
+							Name: "s3-profile-1",
+							Gathered: report.ValidatedBool{
+								Validated: report.Validated{State: report.OK},
+								Value:     true,
+							},
+						},
+						{
+							Name: "s3-profile-2",
+							Gathered: report.ValidatedBool{
+								Validated: report.Validated{
+									State:       report.Problem,
+									Description: "failed to connect to endpoint",
+								},
+								Value: false,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
