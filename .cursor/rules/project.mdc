@@ -17,6 +17,7 @@ alwaysApply: true
 - Do the minimal change needed, no extra code that is not needed right now
 - Avoid unrelated changes (spelling, whitespace, etc.)
 - Keep changes small to make human review easy and avoid mistakes
+- Use proper punctuation in comments (end sentences with periods)
 
 ## After making code changes
 
@@ -36,6 +37,14 @@ alwaysApply: true
 ## Testing
 
 - Use `helpers.FakeTime(t)` for time-dependent tests to ensure reproducibility
+
+## Git workflow
+
+- NEVER commit directly to main branch.
+- NEVER push to GitHub without user review.
+- Keep commits small and focused.
+- For unrelated changes, create a new branch from main.
+- Avoid complicated git operations. The user can rebase later.
 
 ## Commit messages
 
