@@ -5,6 +5,7 @@ package testing
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/s3"
@@ -25,6 +26,9 @@ type Testing interface {
 	Failover(types.TestContext) error
 	Relocate(types.TestContext) error
 	Purge(types.TestContext) error
+
+	// S3 secrets.
+	GetS3Secret(ctx types.Context, name, namespace string) (*corev1.Secret, error)
 
 	// Handling failures.
 	Gather(

@@ -96,7 +96,7 @@ func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, bool) {
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		step.Status = report.Failed
@@ -104,6 +104,18 @@ func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, bool) {
 		c.Logger().Errorf("Step %q failed: %s", step.Name, err)
 		c.current.AddStep(step)
 		return nil, false
+	}
+
+	// Convert to s3.Profile by fetching secrets from live hub cluster.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetS3Secret(c, sp.SecretName, sp.SecretNamespace)
+		if err != nil {
+			c.Logger().Warnf("Failed to get S3 secret %s/%s: %s",
+				sp.SecretNamespace, sp.SecretName, err)
+			// Continue with nil secret, profile will have empty credentials.
+		}
+		profiles = append(profiles, sp.ToS3Profile(secret))
 	}
 
 	step.Duration = time.Since(start).Seconds()

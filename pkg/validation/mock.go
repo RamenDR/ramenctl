@@ -5,6 +5,7 @@ package validation
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/s3"
@@ -17,6 +18,7 @@ type ContextFunc func(Context) error
 type Mock struct {
 	ValidateFunc              ContextFunc
 	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
+	GetS3SecretFunc           func(ctx Context, name, namespace string) (*corev1.Secret, error)
 	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
 	GatherS3Func              func(ctx Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
 	CheckS3Func               func(ctx Context, profiles []*s3.Profile) <-chan s3.Result
@@ -37,6 +39,13 @@ func (m *Mock) ApplicationNamespaces(
 ) ([]string, error) {
 	if m.ApplicationNamespacesFunc != nil {
 		return m.ApplicationNamespacesFunc(ctx, drpcName, drpcNamespace)
+	}
+	return nil, nil
+}
+
+func (m *Mock) GetS3Secret(ctx Context, name, namespace string) (*corev1.Secret, error) {
+	if m.GetS3SecretFunc != nil {
+		return m.GetS3SecretFunc(ctx, name, namespace)
 	}
 	return nil, nil
 }

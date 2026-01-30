@@ -24,6 +24,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
@@ -237,10 +238,22 @@ func (c *Command) gatherS3Data() {
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		c.Logger().Warnf("Failed to get S3 profiles: %s", err)
 		return
+	}
+
+	// Convert to s3.Profile by fetching secrets from live hub cluster.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetS3Secret(c, sp.SecretName, sp.SecretNamespace)
+		if err != nil {
+			c.Logger().Warnf("Failed to get S3 secret %s/%s: %s",
+				sp.SecretNamespace, sp.SecretName, err)
+			// Continue with nil secret, profile will have empty credentials.
+		}
+		profiles = append(profiles, sp.ToS3Profile(secret))
 	}
 
 	prefixes := c.s3PrefixesToGather(reader)

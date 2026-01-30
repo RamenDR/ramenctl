@@ -309,6 +309,7 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 }
 
 // applicationS3Info reads S3 profiles and application prefix from gathered hub data.
+// S3 secrets are fetched from the live hub cluster to get credentials.
 func (c *Command) applicationS3Info(
 	drpcName, drpcNamespace string,
 ) ([]*s3.Profile, string, error) {
@@ -319,9 +320,21 @@ func (c *Command) applicationS3Info(
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		return nil, "", err
+	}
+
+	// Convert to s3.Profile by fetching secrets from live hub cluster.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetS3Secret(c, sp.SecretName, sp.SecretNamespace)
+		if err != nil {
+			c.Logger().Warnf("Failed to get S3 secret %s/%s: %s",
+				sp.SecretNamespace, sp.SecretName, err)
+			// Continue with nil secret, profile will have empty credentials.
+		}
+		profiles = append(profiles, sp.ToS3Profile(secret))
 	}
 
 	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)

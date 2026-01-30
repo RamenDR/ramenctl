@@ -11,6 +11,7 @@ import (
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
@@ -81,6 +82,17 @@ var Actions = []string{"", string(ramenapi.ActionFailover), string(ramenapi.Acti
 type Context interface {
 	Env() *e2etypes.Env
 	Context() context.Context
+}
+
+// S3StoreProfile contains S3 profile configuration from the ramen configmap.
+type S3StoreProfile struct {
+	Name            string
+	Bucket          string
+	Region          string
+	Endpoint        string
+	CACertificate   []byte
+	SecretName      string
+	SecretNamespace string
 }
 
 // OperatorDeploymentName returns the deployment name for the given controller type.
@@ -248,11 +260,32 @@ func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	return reader.ListResources("", resource)
 }
 
-// ClusterProfiles extracts S3 profiles with credentials from the ramen configmap.
+// ToS3Profile converts an S3StoreProfile to an s3.Profile using credentials from a secret.
+// If secret is nil, the profile will have empty credentials.
+func (p *S3StoreProfile) ToS3Profile(secret *corev1.Secret) *s3.Profile {
+	var accessKey, secretKey string
+	if secret != nil {
+		accessKey = string(secret.Data["AWS_ACCESS_KEY_ID"])
+		secretKey = string(secret.Data["AWS_SECRET_ACCESS_KEY"])
+	}
+	return &s3.Profile{
+		Name:          p.Name,
+		Bucket:        p.Bucket,
+		Region:        p.Region,
+		Endpoint:      p.Endpoint,
+		CACertificate: p.CACertificate,
+		AccessKey:     accessKey,
+		SecretKey:     secretKey,
+	}
+}
+
+// ClusterProfiles extracts S3 store profiles from the ramen configmap.
+// The profiles include secret references but not credentials.
+// Use ToS3Profile() with a secret to get an s3.Profile with credentials.
 func ClusterProfiles(
 	reader gathering.OutputReader,
 	configMapName, configMapNamespace string,
-) ([]*s3.Profile, error) {
+) ([]*S3StoreProfile, error) {
 	configData, err := getRamenConfigMapData(reader, configMapName, configMapNamespace)
 	if err != nil {
 		return nil, err
@@ -260,22 +293,20 @@ func ClusterProfiles(
 	if len(configData.S3StoreProfiles) == 0 {
 		return nil, fmt.Errorf("no S3 profiles found in ramen config")
 	}
-	profiles := make([]*s3.Profile, 0, len(configData.S3StoreProfiles))
+	profiles := make([]*S3StoreProfile, 0, len(configData.S3StoreProfiles))
 	for _, storeProfile := range configData.S3StoreProfiles {
-		secretName := storeProfile.S3SecretRef.Name
 		secretNamespace := storeProfile.S3SecretRef.Namespace
 		if secretNamespace == "" {
 			secretNamespace = configMapNamespace
 		}
-		accessKeyID, secretAccessKey := getS3SecretKeys(reader, secretName, secretNamespace)
-		profiles = append(profiles, &s3.Profile{
-			Name:          storeProfile.S3ProfileName,
-			Bucket:        storeProfile.S3Bucket,
-			Region:        storeProfile.S3Region,
-			Endpoint:      storeProfile.S3CompatibleEndpoint,
-			CACertificate: storeProfile.CACertificates,
-			AccessKey:     accessKeyID,
-			SecretKey:     secretAccessKey,
+		profiles = append(profiles, &S3StoreProfile{
+			Name:            storeProfile.S3ProfileName,
+			Bucket:          storeProfile.S3Bucket,
+			Region:          storeProfile.S3Region,
+			Endpoint:        storeProfile.S3CompatibleEndpoint,
+			CACertificate:   storeProfile.CACertificates,
+			SecretName:      storeProfile.S3SecretRef.Name,
+			SecretNamespace: secretNamespace,
 		})
 	}
 	return profiles, nil
@@ -315,20 +346,6 @@ func getRamenConfigMapData(
 		return nil, fmt.Errorf("failed to unmarshal ramen configmap data: %w\n%s", err, data)
 	}
 	return configData, nil
-}
-
-// getS3SecretKeys reads S3 credentials from a ramen s3 profile secret.
-func getS3SecretKeys(
-	reader gathering.OutputReader,
-	name, namespace string,
-) (string, string) {
-	secret, err := core.ReadSecret(reader, name, namespace)
-	if err != nil {
-		return "", ""
-	}
-	accessKeyID := string(secret.Data["AWS_ACCESS_KEY_ID"])
-	secretAccessKey := string(secret.Data["AWS_SECRET_ACCESS_KEY"])
-	return accessKeyID, secretAccessKey
 }
 
 func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {

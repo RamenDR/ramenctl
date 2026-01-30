@@ -5,6 +5,8 @@ package validation
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
@@ -38,6 +40,16 @@ func (b Backend) ApplicationNamespaces(
 		return nil, err
 	}
 	return ramen.ApplicationNamespaces(drpc), nil
+}
+
+// GetS3Secret fetches an S3 secret from the hub cluster.
+func (b Backend) GetS3Secret(ctx Context, name, namespace string) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	key := k8stypes.NamespacedName{Namespace: namespace, Name: name}
+	if err := ctx.Env().Hub.Client.Get(ctx.Context(), key, secret); err != nil {
+		return nil, err
+	}
+	return secret, nil
 }
 
 func (b Backend) Gather(

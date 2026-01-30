@@ -5,6 +5,7 @@ package testing
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/s3"
@@ -29,6 +30,9 @@ type Mock struct {
 	FailoverFunc  TestContextFunc
 	RelocateFunc  TestContextFunc
 	PurgeFunc     TestContextFunc
+
+	// S3 secrets.
+	GetS3SecretFunc func(ctx types.Context, name, namespace string) (*corev1.Secret, error)
 
 	// Handling failures.
 	GatherFunc   func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
@@ -105,6 +109,13 @@ func (m *Mock) Purge(ctx types.TestContext) error {
 		return m.PurgeFunc(ctx)
 	}
 	return nil
+}
+
+func (m *Mock) GetS3Secret(ctx types.Context, name, namespace string) (*corev1.Secret, error) {
+	if m.GetS3SecretFunc != nil {
+		return m.GetS3SecretFunc(ctx, name, namespace)
+	}
+	return nil, nil
 }
 
 func (m *Mock) Gather(

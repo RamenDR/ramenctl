@@ -8,6 +8,8 @@ import (
 	"github.com/ramendr/ramen/e2e/types"
 	"github.com/ramendr/ramen/e2e/util"
 	"github.com/ramendr/ramen/e2e/validate"
+	corev1 "k8s.io/api/core/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/s3"
@@ -55,6 +57,16 @@ func (Backend) Relocate(ctx types.TestContext) error {
 
 func (Backend) Purge(ctx types.TestContext) error {
 	return dractions.Purge(ctx)
+}
+
+// GetS3Secret fetches an S3 secret from the hub cluster.
+func (Backend) GetS3Secret(ctx types.Context, name, namespace string) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	key := k8stypes.NamespacedName{Namespace: namespace, Name: name}
+	if err := ctx.Env().Hub.Client.Get(ctx.Context(), key, secret); err != nil {
+		return nil, err
+	}
+	return secret, nil
 }
 
 func (b Backend) Gather(

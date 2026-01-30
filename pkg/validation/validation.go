@@ -8,6 +8,7 @@ import (
 
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
@@ -26,6 +27,7 @@ type Context interface {
 type Validation interface {
 	Validate(ctx Context) error
 	ApplicationNamespaces(ctx Context, drpcName, drpcNamespace string) ([]string, error)
+	GetS3Secret(ctx Context, name, namespace string) (*corev1.Secret, error)
 	Gather(
 		ctx Context,
 		clusters []*types.Cluster,
