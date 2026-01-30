@@ -218,8 +218,13 @@ func (c *Command) inspectS3Profiles(
 	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
-		step.Status = report.Failed
-		console.Error("Failed to %s", step.Name)
+		if errors.Is(err, context.Canceled) {
+			step.Status = report.Canceled
+			console.Error("Canceled %s", step.Name)
+		} else {
+			step.Status = report.Failed
+			console.Error("Failed to %s", step.Name)
+		}
 		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
 		c.current.AddStep(step)
 		return nil, "", false
@@ -314,14 +319,30 @@ func (c *Command) applicationS3Info(
 ) ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
-	reader := c.outputReader(c.Env().Hub.Name)
-
+	hub := c.Env().Hub
+	reader := c.outputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		return nil, "", err
+	}
+
+	// Get S3 secrets from live hub cluster since gathered data may contain
+	// sanitized secrets. On cancellation, return immediately. On other failures,
+	// empty credentials will cause S3 operations to fail during gatherS3.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil, "", err
+			}
+			c.Logger().Warnf("Failed to get S3 secret \"%s/%s\" from cluster %q: %s",
+				sp.S3SecretRef.Namespace, sp.S3SecretRef.Name, hub.Name, err)
+		}
+		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
 	}
 
 	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)

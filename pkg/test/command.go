@@ -24,6 +24,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/logging"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/testing"
 	"github.com/ramendr/ramenctl/pkg/time"
 )
@@ -236,11 +237,12 @@ func (c *Command) gatherS3Data() {
 
 	// Read S3 profiles and prefixes from gathered hub data. The hub configmap
 	// is the source of truth, synced to managed clusters.
-	reader := c.outputReader(c.Env().Hub.Name)
+	hub := c.Env().Hub
+	reader := c.outputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		msg := "Failed to get S3 profiles from gathered hub data"
 		console.Error(msg)
@@ -254,6 +256,25 @@ func (c *Command) gatherS3Data() {
 		console.Error(msg)
 		c.Logger().Error(msg)
 		return
+	}
+
+	// Get S3 secrets from live hub cluster since gathered data may contain
+	// sanitized secrets. On cancellation, return immediately. On other failures,
+	// empty credentials will cause S3 operations to fail during gatherS3.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				msg := fmt.Sprintf("Canceled gather S3 profile %q", sp.S3ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, err)
+				return
+			}
+			c.Logger().Warnf("Failed to get S3 secret \"%s/%s\" from cluster %q: %s",
+				sp.S3SecretRef.Namespace, sp.S3SecretRef.Name, hub.Name, err)
+		}
+		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
 	}
 
 	c.Logger().Infof("Gathering S3 data from profiles %q with prefixes %q",

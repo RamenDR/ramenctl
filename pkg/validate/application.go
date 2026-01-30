@@ -60,12 +60,8 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 		return c.finishStep()
 	}
 
-	// If inspectS3Profiles fails, skip S3 data gathering but continue validation.
-	// Missing S3 data will be reported as a problem during validation.
-	if profiles, prefix, ok := c.inspectApplicationS3Profiles(drpcName, drpcNamespace); ok {
-		if !c.gatherApplicationS3Data(profiles, prefix) {
-			return c.finishStep()
-		}
+	if !c.gatherApplicationS3Data(drpcName, drpcNamespace) {
+		return c.finishStep()
 	}
 
 	if !c.validateGatheredApplicationData(drpcName, drpcNamespace) {
@@ -107,9 +103,20 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
+// gatherApplicationS3Data inspection application S3 profile and gathers it. It returns false only
+// if the user cancelled, otherwise true if there were errors during inspection, as those will be
+// reported in the validation results.
+func (c *Command) gatherApplicationS3Data(drpcName, drpcNamespace string) bool {
+	profiles, prefix, err := c.inspectApplicationS3Profiles(drpcName, drpcNamespace)
+	if err != nil {
+		return !errors.Is(err, context.Canceled)
+	}
+	return c.gatherApplicationS3Profiles(profiles, prefix)
+}
+
 func (c *Command) inspectApplicationS3Profiles(
 	drpcName, drpcNamespace string,
-) ([]*s3.Profile, string, bool) {
+) ([]*s3.Profile, string, error) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect S3 profiles"}
 
@@ -118,11 +125,16 @@ func (c *Command) inspectApplicationS3Profiles(
 	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
-		step.Status = report.Failed
-		console.Error("Failed to %s", step.Name)
+		if errors.Is(err, context.Canceled) {
+			step.Status = report.Canceled
+			console.Error("Canceled %s", step.Name)
+		} else {
+			step.Status = report.Failed
+			console.Error("Failed to %s", step.Name)
+		}
 		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
 		c.current.AddStep(step)
-		return nil, "", false
+		return nil, "", err
 	}
 
 	step.Duration = time.Since(start).Seconds()
@@ -132,10 +144,10 @@ func (c *Command) inspectApplicationS3Profiles(
 	console.Pass("Inspected S3 profiles")
 	c.Logger().Infof("Step %q passed", step.Name)
 
-	return profiles, prefix, true
+	return profiles, prefix, nil
 }
 
-func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string) bool {
+func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	start := time.Now()
 	outputDir := c.dataDir()
 
@@ -201,13 +213,30 @@ func (c *Command) applicationS3Info(
 ) ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
-	reader := c.outputReader(c.Env().Hub.Name)
+	hub := c.Env().Hub
+	reader := c.outputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
 		return nil, "", err
+	}
+
+	// Get S3 secrets from live hub cluster since gathered data may contain
+	// sanitized secrets. On cancellation, return immediately. On other failures,
+	// empty credentials will cause S3 operations to fail during gatherS3.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil, "", err
+			}
+			c.Logger().Warnf("Failed to get S3 secret \"%s/%s\" from cluster %q: %s",
+				sp.S3SecretRef.Namespace, sp.S3SecretRef.Name, hub.Name, err)
+		}
+		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
 	}
 
 	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)
