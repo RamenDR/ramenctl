@@ -153,6 +153,19 @@ var (
 		},
 	}
 
+	inspectApplicationS3ProfilesCanceled = &validation.Mock{
+		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return nil, context.Canceled
+		},
+	}
+
+	inspectClustersS3ProfilesCanceled = &validation.Mock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return nil, context.Canceled
+		},
+	}
+
 	gatherS3Failed = &validation.Mock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherS3Func: func(
@@ -1930,6 +1943,35 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 	checkSummary(t, validate.report, report.Summary{Problem: 9})
 }
 
+func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
+	validate := testCommand(t, validateClusters, inspectClustersS3ProfilesCanceled, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	if err := validate.Clusters(); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Canceled)
+	checkApplication(t, validate.report, nil)
+	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate clusters", report.Canceled)
+
+	// Inspect S3 profiles is canceled, checkS3 and validation are skipped.
+	items := []*report.Step{
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Canceled},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	checkClusterStatus(t, validate.report, nil)
+	checkSummary(t, validate.report, report.Summary{})
+}
+
 func TestValidateClustersCheckS3Failed(t *testing.T) {
 	validate := testCommand(t, validateClusters, checkS3Failed, testK8s)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
@@ -2354,6 +2396,34 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Failed},
 		{Name: "validate data", Status: report.Failed},
+	}
+	checkItems(t, validate.report.Steps[1], items)
+	checkSummary(t, validate.report, report.Summary{})
+}
+
+func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
+	validate := testCommand(t, validateApplication, inspectApplicationS3ProfilesCanceled, testK8s)
+	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+		dumpCommandLog(t, validate)
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, validate, report.Canceled)
+	checkApplication(t, validate.report, testApplication)
+	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	if len(validate.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	}
+	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+
+	// Inspect S3 profiles is canceled, gatherS3 and validation are skipped.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Canceled},
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkSummary(t, validate.report, report.Summary{})
