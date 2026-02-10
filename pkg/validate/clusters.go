@@ -969,6 +969,9 @@ func (c *Command) validatedDeploymentConditions(
 	return conditions
 }
 
+// checkS3 checks S3 access for the given profiles by verifying bucket connectivity.
+// Returns false only if the user cancelled, otherwise true even if there were errors,
+// as those will be reported during validation.
 func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	start := time.Now()
 
@@ -1003,8 +1006,6 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 
 	c.Logger().Infof("Checked S3 profiles in %.2f seconds", time.Since(start).Seconds())
 
-	// We want to stop only if the user cancelled. Errors will be
-	// reported during validation.
 	return c.current.Status != report.Canceled
 }
 

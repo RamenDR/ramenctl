@@ -147,6 +147,9 @@ func (c *Command) inspectApplicationS3Profiles(
 	return profiles, prefix, nil
 }
 
+// gatherApplicationS3Profiles gathers S3 data from the given profiles using the specified prefix.
+// Returns false only if the user cancelled, otherwise true even if there were errors, as those
+// will be reported during validation.
 func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	start := time.Now()
 	outputDir := c.dataDir()
@@ -183,8 +186,6 @@ func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix str
 
 	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
 
-	// We want to stop only if the user cancelled. Errors will be
-	// reported during validation.
 	return c.current.Status != report.Canceled
 }
 

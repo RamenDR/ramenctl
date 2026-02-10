@@ -240,6 +240,8 @@ func (c *Command) inspectS3Profiles(
 	return profiles, prefix, true
 }
 
+// gatherApplicationS3Data gathers S3 data from the given profiles using the specified prefix.
+// Returns true only if all profiles were gathered successfully, false on failure or cancellation.
 func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string) bool {
 	start := time.Now()
 	outputDir := c.dataDir()
