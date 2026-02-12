@@ -100,6 +100,23 @@ var (
 		},
 	}
 
+	getSecretFailed = &validation.Mock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return nil, errors.New("secret not found")
+		},
+	}
+
+	getSecretEmpty = &validation.Mock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return &corev1.Secret{
+				Data: map[string][]byte{
+					"AWS_ACCESS_KEY_ID":     []byte(helpers.WrongAccessKey),
+					"AWS_SECRET_ACCESS_KEY": []byte(helpers.WrongSecretKey),
+				},
+			}, nil
+		},
+	}
+
 	gatherS3Failed = &validation.Mock{
 		GatherS3Func: func(
 			ctx validation.Context,
@@ -307,6 +324,64 @@ func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Canceled},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationGetSecretFailed(t *testing.T) {
+	cmd := testCommand(t, getSecretFailed)
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Failed)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+
+	// When GetSecret returns an error. The profile will have empty credentials
+	// causing S3 gather to fail.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
+	}
+	checkItems(t, cmd.report.Steps[1], items)
+}
+
+func TestGatherApplicationGetSecretEmpty(t *testing.T) {
+	cmd := testCommand(t, getSecretEmpty)
+	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+		t.Fatal("command did not fail")
+	}
+	checkReport(t, cmd.report, report.Failed)
+	checkApplication(t, cmd.report, testApplication)
+
+	if len(cmd.report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
+	}
+	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
+	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+
+	// When GetSecret returns a secret with no data. The profile will have empty
+	// credentials causing S3 gather to fail.
+	items := []*report.Step{
+		{Name: "inspect application", Status: report.Passed},
+		{Name: "gather \"hub\"", Status: report.Passed},
+		{Name: "gather \"dr1\"", Status: report.Passed},
+		{Name: "gather \"dr2\"", Status: report.Passed},
+		{Name: "inspect S3 profiles", Status: report.Passed},
+		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }

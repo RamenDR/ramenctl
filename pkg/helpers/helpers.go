@@ -25,6 +25,10 @@ const (
 	//nolint:gosec
 	SecretKey = "this is not a real key"
 
+	// Invalid credentials for testing GetSecret failure scenarios.
+	WrongAccessKey = "wrong-access-key"
+	WrongSecretKey = "wrong-secret-key"
+
 	// Secret key fingerprints (SHA-256 hashes) for testdata.
 	// Both K8s and OCP testdata secrets have the same data values.
 	AccessKeyFingerprint = "F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23"
