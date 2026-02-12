@@ -230,6 +230,9 @@ func (c *Command) gatherData() {
 
 func (c *Command) gatherS3Data() {
 	start := time.Now()
+	console.Step("Gather S3 data")
+
+	c.Logger().Info("Inspecting S3 profiles for failed tests")
 
 	// Read S3 profiles and prefixes from gathered hub data. The hub configmap
 	// is the source of truth, synced to managed clusters.
@@ -239,17 +242,19 @@ func (c *Command) gatherS3Data() {
 
 	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
-		c.Logger().Warnf("Failed to get S3 profiles: %s", err)
+		msg := "Failed to get S3 profiles from gathered hub data"
+		console.Error(msg)
+		c.Logger().Errorf("%s: %s", msg, err)
 		return
 	}
 
 	prefixes := c.s3PrefixesToGather(reader)
 	if len(prefixes) == 0 {
-		c.Logger().Warn("No application S3 prefixes found to gather S3 data")
+		msg := "No application S3 prefixes found to gather S3 data"
+		console.Error(msg)
+		c.Logger().Error(msg)
 		return
 	}
-
-	console.Step("Gather S3 data")
 
 	c.Logger().Infof("Gathering S3 data from profiles %q with prefixes %q",
 		logging.ProfileNames(profiles), prefixes)
