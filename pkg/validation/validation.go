@@ -8,6 +8,7 @@ import (
 
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
@@ -31,6 +32,7 @@ type Validation interface {
 		clusters []*types.Cluster,
 		options gathering.Options,
 	) <-chan gathering.Result
+	GetSecret(ctx Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
 	GatherS3(
 		ctx Context,
 		profiles []*s3.Profile,

@@ -4,9 +4,13 @@
 package testing
 
 import (
+	"errors"
+
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
@@ -31,8 +35,9 @@ type Mock struct {
 	PurgeFunc     TestContextFunc
 
 	// Handling failures.
-	GatherFunc   func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
-	GatherS3Func func(ctx types.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
+	GatherFunc    func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GetSecretFunc func(ctx types.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
+	GatherS3Func  func(ctx types.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
 }
 
 var _ Testing = &Mock{}
@@ -124,6 +129,22 @@ func (m *Mock) Gather(
 	return results
 }
 
+func (m *Mock) GetSecret(
+	ctx types.Context,
+	cluster *types.Cluster,
+	name, namespace string,
+) (*corev1.Secret, error) {
+	if m.GetSecretFunc != nil {
+		return m.GetSecretFunc(ctx, cluster, name, namespace)
+	}
+	return &corev1.Secret{
+		Data: map[string][]byte{
+			"AWS_ACCESS_KEY_ID":     []byte(helpers.AccessKey),
+			"AWS_SECRET_ACCESS_KEY": []byte(helpers.SecretKey),
+		},
+	}, nil
+}
+
 func (m *Mock) GatherS3(
 	ctx types.Context,
 	profiles []*s3.Profile,
@@ -135,7 +156,12 @@ func (m *Mock) GatherS3(
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
-		results <- s3.Result{ProfileName: profile.Name, Err: nil}
+		// Fail if s3 secret credentials don't match expected testdata values.
+		if profile.AccessKey != helpers.AccessKey || profile.SecretKey != helpers.SecretKey {
+			results <- s3.Result{ProfileName: profile.Name, Err: errors.New("invalid credentials")}
+		} else {
+			results <- s3.Result{ProfileName: profile.Name, Err: nil}
+		}
 	}
 	close(results)
 	return results

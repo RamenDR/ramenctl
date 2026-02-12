@@ -5,6 +5,8 @@ package validation
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/ramen"
@@ -46,6 +48,19 @@ func (b Backend) Gather(
 	options gathering.Options,
 ) <-chan gathering.Result {
 	return gathering.Namespaces(ctx, clusters, options)
+}
+
+func (b Backend) GetSecret(
+	ctx Context,
+	cluster *types.Cluster,
+	name, namespace string,
+) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	key := k8stypes.NamespacedName{Namespace: namespace, Name: name}
+	if err := cluster.Client.Get(ctx.Context(), key, secret); err != nil {
+		return nil, err
+	}
+	return secret, nil
 }
 
 func (b Backend) GatherS3(
