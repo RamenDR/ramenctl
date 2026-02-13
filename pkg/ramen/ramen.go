@@ -11,6 +11,7 @@ import (
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
@@ -248,11 +249,11 @@ func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	return reader.ListResources("", resource)
 }
 
-// ClusterProfiles extracts S3 profiles with credentials from the ramen configmap.
+// ClusterProfiles extracts S3 store profiles from the ramen configmap.
 func ClusterProfiles(
 	reader gathering.OutputReader,
 	configMapName, configMapNamespace string,
-) ([]*s3.Profile, error) {
+) ([]*ramenapi.S3StoreProfile, error) {
 	configData, err := getRamenConfigMapData(reader, configMapName, configMapNamespace)
 	if err != nil {
 		return nil, err
@@ -260,25 +261,35 @@ func ClusterProfiles(
 	if len(configData.S3StoreProfiles) == 0 {
 		return nil, fmt.Errorf("no S3 profiles found in ramen config")
 	}
-	profiles := make([]*s3.Profile, 0, len(configData.S3StoreProfiles))
-	for _, storeProfile := range configData.S3StoreProfiles {
-		secretName := storeProfile.S3SecretRef.Name
-		secretNamespace := storeProfile.S3SecretRef.Namespace
-		if secretNamespace == "" {
-			secretNamespace = configMapNamespace
+	profiles := make([]*ramenapi.S3StoreProfile, 0, len(configData.S3StoreProfiles))
+	for i := range configData.S3StoreProfiles {
+		profile := &configData.S3StoreProfiles[i]
+		// Default empty namespace to configmap namespace.
+		if profile.S3SecretRef.Namespace == "" {
+			profile.S3SecretRef.Namespace = configMapNamespace
 		}
-		accessKeyID, secretAccessKey := getS3SecretKeys(reader, secretName, secretNamespace)
-		profiles = append(profiles, &s3.Profile{
-			Name:          storeProfile.S3ProfileName,
-			Bucket:        storeProfile.S3Bucket,
-			Region:        storeProfile.S3Region,
-			Endpoint:      storeProfile.S3CompatibleEndpoint,
-			CACertificate: storeProfile.CACertificates,
-			AccessKey:     accessKeyID,
-			SecretKey:     secretAccessKey,
-		})
+		profiles = append(profiles, profile)
 	}
 	return profiles, nil
+}
+
+// S3ProfileFromStore creates an s3.Profile from a ramen S3StoreProfile and secret.
+// If secret is nil, the profile will have empty credentials.
+func S3ProfileFromStore(storeProfile *ramenapi.S3StoreProfile, secret *corev1.Secret) *s3.Profile {
+	var accessKey, secretKey string
+	if secret != nil {
+		accessKey = string(secret.Data["AWS_ACCESS_KEY_ID"])
+		secretKey = string(secret.Data["AWS_SECRET_ACCESS_KEY"])
+	}
+	return &s3.Profile{
+		Name:          storeProfile.S3ProfileName,
+		Bucket:        storeProfile.S3Bucket,
+		Region:        storeProfile.S3Region,
+		Endpoint:      storeProfile.S3CompatibleEndpoint,
+		CACertificate: storeProfile.CACertificates,
+		AccessKey:     accessKey,
+		SecretKey:     secretKey,
+	}
 }
 
 // ApplicationS3Prefix returns the s3 object prefix for an application's s3 data.
@@ -315,20 +326,6 @@ func getRamenConfigMapData(
 		return nil, fmt.Errorf("failed to unmarshal ramen configmap data: %w\n%s", err, data)
 	}
 	return configData, nil
-}
-
-// getS3SecretKeys reads S3 credentials from a ramen s3 profile secret.
-func getS3SecretKeys(
-	reader gathering.OutputReader,
-	name, namespace string,
-) (string, string) {
-	secret, err := core.ReadSecret(reader, name, namespace)
-	if err != nil {
-		return "", ""
-	}
-	accessKeyID := string(secret.Data["AWS_ACCESS_KEY_ID"])
-	secretAccessKey := string(secret.Data["AWS_SECRET_ACCESS_KEY"])
-	return accessKeyID, secretAccessKey
 }
 
 func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {

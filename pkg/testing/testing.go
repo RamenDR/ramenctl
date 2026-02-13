@@ -5,6 +5,7 @@ package testing
 
 import (
 	"github.com/ramendr/ramen/e2e/types"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/s3"
@@ -32,6 +33,11 @@ type Testing interface {
 		clusters []*types.Cluster,
 		options gathering.Options,
 	) <-chan gathering.Result
+	GetSecret(
+		ctx types.Context,
+		cluster *types.Cluster,
+		name, namespace string,
+	) (*corev1.Secret, error)
 	GatherS3(
 		ctx types.Context,
 		profiles []*s3.Profile,

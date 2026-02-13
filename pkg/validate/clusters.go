@@ -61,12 +61,8 @@ func (c *Command) validateClusters() bool {
 		return c.finishStep()
 	}
 
-	// If inspectClustersS3Profiles fails, skip S3 check but continue validation.
-	// Missing S3 status will be reported as a problem during validation.
-	if profiles, ok := c.inspectClustersS3Profiles(); ok {
-		if !c.checkS3(profiles) {
-			return c.finishStep()
-		}
+	if !c.checkClustersS3() {
+		return c.finishStep()
 	}
 
 	if !c.validateGatheredClustersData() {
@@ -84,26 +80,36 @@ func (c *Command) clustersNamespacesToGather() []string {
 	})
 }
 
-func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, bool) {
+// checkClustersS3 inspects S3 profiles and checks access. It returns false only if
+// the user cancelled, otherwise true even if there were errors during inspection, as those
+// will be reported in the validation results.
+func (c *Command) checkClustersS3() bool {
+	profiles, err := c.inspectClustersS3Profiles()
+	if err != nil {
+		return !errors.Is(err, context.Canceled)
+	}
+	return c.checkS3(profiles)
+}
+
+func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, error) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect S3 profiles"}
 
 	c.Logger().Infof("Step %q started", step.Name)
 
-	// Read S3 profiles from the ramen hub configmap, the source of truth
-	// synced to managed clusters.
-	reader := c.outputReader(c.Env().Hub.Name)
-	configMapName := ramen.HubOperatorConfigMapName
-	configMapNamespace := c.config.Namespaces.RamenHubNamespace
-
-	profiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	profiles, err := c.clustersS3Info()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
-		step.Status = report.Failed
-		console.Error("Failed to %s", step.Name)
-		c.Logger().Errorf("Step %q failed: %s", step.Name, err)
+		if errors.Is(err, context.Canceled) {
+			step.Status = report.Canceled
+			console.Error("Canceled %s", step.Name)
+		} else {
+			step.Status = report.Failed
+			console.Error("Failed to %s", step.Name)
+		}
+		c.Logger().Errorf("Step %q %s: %s", step.Name, step.Status, err)
 		c.current.AddStep(step)
-		return nil, false
+		return nil, err
 	}
 
 	step.Duration = time.Since(start).Seconds()
@@ -113,7 +119,40 @@ func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, bool) {
 	console.Pass("Inspected S3 profiles")
 	c.Logger().Infof("Step %q passed", step.Name)
 
-	return profiles, true
+	return profiles, nil
+}
+
+// clustersS3Info reads S3 profiles and fetches secrets from the hub cluster.
+func (c *Command) clustersS3Info() ([]*s3.Profile, error) {
+	// Read S3 profiles from the ramen hub configmap, the source of truth
+	// synced to managed clusters.
+	hub := c.Env().Hub
+	reader := c.outputReader(hub.Name)
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get S3 secrets from live hub cluster since gathered data may contain
+	// sanitized secrets. On cancellation, return immediately. On other failures,
+	// empty credentials will cause S3 operations to fail during checkS3.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil, err
+			}
+			c.Logger().Warnf("Failed to get S3 secret \"%s/%s\" from cluster %q: %s",
+				sp.S3SecretRef.Namespace, sp.S3SecretRef.Name, hub.Name, err)
+		}
+		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
+	}
+
+	return profiles, nil
 }
 
 func (c *Command) validateGatheredClustersData() bool {
@@ -930,6 +969,9 @@ func (c *Command) validatedDeploymentConditions(
 	return conditions
 }
 
+// checkS3 checks S3 access for the given profiles by verifying bucket connectivity.
+// Returns false only if the user cancelled, otherwise true even if there were errors,
+// as those will be reported during validation.
 func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	start := time.Now()
 
@@ -964,8 +1006,6 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 
 	c.Logger().Infof("Checked S3 profiles in %.2f seconds", time.Since(start).Seconds())
 
-	// We want to stop only if the user cancelled. Errors will be
-	// reported during validation.
 	return c.current.Status != report.Canceled
 }
 
