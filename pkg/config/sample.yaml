@@ -56,6 +56,26 @@ deployers:
 - name: disapp
   type: disapp
   description: Discovered Application deployer for discovered applications
+- name: disapp-recipe
+  type: disapp
+  recipe:
+    type: generate
+- name: disapp-recipe-check
+  type: disapp
+  recipe:
+    type: generate
+    checkHook: true
+- name: disapp-recipe-exec
+  type: disapp
+  recipe:
+    type: generate
+    execHook: true
+- name: disapp-recipe-check-exec
+  type: disapp
+  recipe:
+    type: generate
+    checkHook: true
+    execHook: true
 
 ## Tests cases for test command.
 # - Modify the test for your preferred workload or deployment type.
