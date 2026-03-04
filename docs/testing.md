@@ -126,7 +126,15 @@ The available options are:
 - deployers
   - `appset`: OCM managed application deployed using *ApplicationSet*.
   - `subscr`: OCM managed application deployed using *Subscription*.
-  - `disapp`: OCM discovered application deployed by the test command.`
+  - `disapp`: OCM discovered application deployed by the test command.
+  - `disapp-recipe`: OCM discovered application deployed using recipe without
+   any hooks by the test command.
+  - `disapp-recipe-check`: OCM discovered application deployed using recipe
+   with check hooks by the test command.
+  - `disapp-recipe-exec`: OCM discovered application deployed using recipe
+   with exec hooks by the test command.
+  - `disapp-recipe-check-exec`: OCM discovered application deployed using
+   recipe with check and exec hooks by the test command.
 - pvcSpecs:
   - `rbd`: *Ceph* *RBD* storage
   - `cephfs`: *CephFS* storage

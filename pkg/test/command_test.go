@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -34,6 +35,22 @@ var (
 			{Name: "appset", Type: "appset"},
 			{Name: "subscr", Type: "subscr"},
 			{Name: "disapp", Type: "disapp"},
+			{Name: "disapp-recipe", Type: "disapp", Recipe: &e2econfig.Recipe{Type: "generate"}},
+			{
+				Name:   "disapp-recipe-check",
+				Type:   "disapp",
+				Recipe: &e2econfig.Recipe{Type: "generate", CheckHook: true},
+			},
+			{
+				Name:   "disapp-recipe-exec",
+				Type:   "disapp",
+				Recipe: &e2econfig.Recipe{Type: "generate", ExecHook: true},
+			},
+			{
+				Name:   "disapp-recipe-check-exec",
+				Type:   "disapp",
+				Recipe: &e2econfig.Recipe{Type: "generate", CheckHook: true, ExecHook: true},
+			},
 		},
 		Tests: []e2econfig.Test{
 			{Workload: "deploy", Deployer: "appset", PVCSpec: "rbd"},
@@ -42,6 +59,14 @@ var (
 			{Workload: "deploy", Deployer: "subscr", PVCSpec: "cephfs"},
 			{Workload: "deploy", Deployer: "disapp", PVCSpec: "rbd"},
 			{Workload: "deploy", Deployer: "disapp", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "disapp-recipe", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "disapp-recipe", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "disapp-recipe-check", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "disapp-recipe-check", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "disapp-recipe-exec", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "disapp-recipe-exec", PVCSpec: "cephfs"},
+			{Workload: "deploy", Deployer: "disapp-recipe-check-exec", PVCSpec: "rbd"},
+			{Workload: "deploy", Deployer: "disapp-recipe-check-exec", PVCSpec: "cephfs"},
 		},
 	}
 
@@ -254,7 +279,7 @@ func TestRunDisappFailed(t *testing.T) {
 		t,
 		test.report,
 		report.Failed,
-		report.Summary{Passed: 4, Failed: 2},
+		report.Summary{Passed: 4, Failed: 10},
 	)
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
@@ -267,7 +292,7 @@ func TestRunDisappFailed(t *testing.T) {
 	checkStep(t, tests, TestsStep, report.Failed)
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
-		if tc.Deployer == "disapp" {
+		if strings.HasPrefix(tc.Deployer, "disapp") {
 			checkTest(t, result, tc, report.Failed, "deploy", "protect", "failover")
 		} else {
 			checkTest(t, result, tc, report.Passed, runFlow...)
@@ -310,7 +335,7 @@ func TestCleanPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkReport(t, test.report, report.Passed, report.Summary{Passed: 6})
+	checkReport(t, test.report, report.Passed, report.Summary{Passed: 14})
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}

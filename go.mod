@@ -15,8 +15,8 @@ require (
 	github.com/aymanbagabas/go-udiff v0.3.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.10.1
-	github.com/ramendr/ramen/api v0.0.0-20250710152106-9a4f493138c5
-	github.com/ramendr/ramen/e2e v0.0.0-20250925105626-1e3bf8dbc4d1
+	github.com/ramendr/ramen/api v0.0.0-20260302102746-0080ff0b2f30
+	github.com/ramendr/ramen/e2e v0.0.0-20260303090636-b77204c8e780
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
