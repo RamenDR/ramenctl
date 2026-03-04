@@ -19,8 +19,20 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      # G705 (XSS) not relevant for CLI tools writing to stderr.
+      - path: tools/
+        text: "G705"
   settings:
     gosec:
+      excludes:
+        # G602 (slice bounds) has high false positive rate and Go has runtime
+        # bounds checking, so out of bounds access causes a panic instead of
+        # silent memory corruption.
+        - G602
+        # G703 (path traversal) not relevant for CLI tools. The user can
+        # specify any path, including paths with "..".
+        - G703
       config:
         # Maximum allowed permissions mode for os.WriteFile (default 0600)
         G306: "0640"
