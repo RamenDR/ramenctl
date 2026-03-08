@@ -33,6 +33,10 @@ linters:
         # G703 (path traversal) not relevant for CLI tools. The user can
         # specify any path, including paths with "..".
         - G703
+        # G118 (context cancellation) flags functions that return cancel to the
+        # caller instead of calling it directly. This is a valid pattern for
+        # helper functions like withTimeout().
+        - G118
       config:
         # Maximum allowed permissions mode for os.WriteFile (default 0600)
         G306: "0640"
