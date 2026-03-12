@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-//go:embed sample.yaml
+//go:embed sample.yaml.tmpl
 var sampleConfig string
 
 type Sample struct {
