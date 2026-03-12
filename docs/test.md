@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: The RamenDR authors -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # ramenctl test
 
 The test command tests disaster recovery flow to validate that an application

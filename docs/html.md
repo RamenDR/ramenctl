@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: The RamenDR authors -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # HTML Report Generation
 
 This document describes the design for generating HTML reports from command

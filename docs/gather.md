@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: The RamenDR authors -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # ramenctl gather
 
 The gather command helps to troubleshoot disaster recovery issues by gathering
