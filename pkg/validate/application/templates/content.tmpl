@@ -23,26 +23,6 @@
 
 <section>
     <h3>S3 Stores</h3>
-    {{- with .ApplicationStatus.S3.Profiles}}
-    <dl class="validation">
-        <dt>Profiles</dt>
-        <dd>
-            <span class="value">{{len .Value}}</span>
-            <span class="state">{{icon .State}}</span>
-            {{- if .Description}}
-                <p class="description">{{.Description}}</p>
-            {{- end}}
-        </dd>
-    </dl>
-    {{- range .Value}}
-        <section>
-            <h4>{{.Name}}</h4>
-            <dl class="validation">
-                <dt>Gathered</dt>
-                <dd>{{template "validated" .Gathered}}</dd>
-            </dl>
-        </section>
-    {{- end}}
-    {{- end}}
+    {{template "s3" .ApplicationStatus.S3}}
 </section>
 {{- end}}
