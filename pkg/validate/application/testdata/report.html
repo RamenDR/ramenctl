@@ -8,7 +8,7 @@
   <body>
     <header>
       <h1>Application Validation Report</h1>
-      <p class="subtitle">mynamespace / myapp</p>
+      <p class="subtitle">argocd / appset-deploy-rbd</p>
       <p class="status passed">Status: passed</p>
     </header>
     <main>
@@ -20,27 +20,19 @@
             <h4>DRPC</h4>
             <dl class="metadata">
               <dt>Name</dt>
-              <dd>myapp-drpc</dd>
+              <dd>appset-deploy-rbd</dd>
               <dt>Namespace</dt>
-              <dd>myapp-ns</dd>
+              <dd>argocd</dd>
               <dt>DRPolicy</dt>
-              <dd>my-dr-policy</dd>
+              <dd>dr-policy</dd>
             </dl>
             <dl class="validation">
               <dt>Action</dt>
-              <dd><span class="value">Failover</span><span class="state">✅</span></dd>
+              <dd><span class="value"></span><span class="state">✅</span></dd>
               <dt>Phase</dt>
-              <dd><span class="value">FailedOver</span><span class="state">✅</span></dd>
+              <dd><span class="value">Deployed</span><span class="state">✅</span></dd>
               <dt>Progression</dt>
-              <dd>
-                <span class="value">WaitForReadiness</span><span class="state">❌</span>
-                <p class="description">Waiting for progression &#34;Completed&#34;</p>
-              </dd>
-              <dt>Deleted</dt>
-              <dd>
-                <span class="value">true</span><span class="state">❌</span>
-                <p class="description">Resource is marked for deletion</p>
-              </dd>
+              <dd><span class="value">Completed</span><span class="state">✅</span></dd>
             </dl>
             <section>
               <h5>Conditions</h5>
@@ -48,10 +40,7 @@
                 <dt>Available</dt>
                 <dd><span class="state">✅</span></dd>
                 <dt>PeerReady</dt>
-                <dd>
-                  <span class="state">❌</span>
-                  <p class="description">Started failover to cluster &#34;dr2&#34;</p>
-                </dd>
+                <dd><span class="state">✅</span></dd>
                 <dt>Protected</dt>
                 <dd><span class="state">✅</span></dd>
               </dl>
@@ -64,9 +53,9 @@
             <h4>VRG</h4>
             <dl class="metadata">
               <dt>Name</dt>
-              <dd>myapp-drpc</dd>
+              <dd>appset-deploy-rbd</dd>
               <dt>Namespace</dt>
-              <dd>myapp-ns</dd>
+              <dd>test-appset-deploy-rbd</dd>
             </dl>
             <dl class="validation">
               <dt>State</dt>
@@ -93,7 +82,7 @@
                 <dt>Name</dt>
                 <dd>busybox-pvc</dd>
                 <dt>Namespace</dt>
-                <dd>myapp-ns</dd>
+                <dd>test-appset-deploy-rbd</dd>
                 <dt>Replication</dt>
                 <dd>volrep</dd>
               </dl>
@@ -119,9 +108,9 @@
             <h4>VRG</h4>
             <dl class="metadata">
               <dt>Name</dt>
-              <dd>myapp-drpc</dd>
+              <dd>appset-deploy-rbd</dd>
               <dt>Namespace</dt>
-              <dd>myapp-ns</dd>
+              <dd>test-appset-deploy-rbd</dd>
             </dl>
             <dl class="validation">
               <dt>State</dt>
@@ -153,10 +142,7 @@
             <h4>s3-profile-2</h4>
             <dl class="validation">
               <dt>Gathered</dt>
-              <dd>
-                <span class="value">false</span><span class="state">❌</span>
-                <p class="description">failed to connect to endpoint</p>
-              </dd>
+              <dd><span class="value">true</span><span class="state">✅</span></dd>
             </dl>
           </section>
         </section>

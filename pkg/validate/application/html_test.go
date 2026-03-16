@@ -35,61 +35,41 @@ func TestWriteHTML(t *testing.T) {
 			},
 		},
 		Application: report.Application{
-			Name:      "myapp",
-			Namespace: "mynamespace",
+			Name:      "appset-deploy-rbd",
+			Namespace: "argocd",
 		},
 		ApplicationStatus: report.ApplicationStatus{
 			Hub: report.ApplicationStatusHub{
 				DRPC: report.DRPCSummary{
-					Name:      "myapp-drpc",
-					Namespace: "myapp-ns",
-					DRPolicy:  "my-dr-policy",
+					Name:      "appset-deploy-rbd",
+					Namespace: "argocd",
+					DRPolicy:  "dr-policy",
 					Action: report.ValidatedString{
 						Validated: report.Validated{State: report.OK},
-						Value:     "Failover",
 					},
 					Phase: report.ValidatedString{
 						Validated: report.Validated{State: report.OK},
-						Value:     "FailedOver",
+						Value:     "Deployed",
 					},
 					Progression: report.ValidatedString{
-						Validated: report.Validated{
-							State:       report.Problem,
-							Description: "Waiting for progression \"Completed\"",
-						},
-						Value: "WaitForReadiness",
+						Validated: report.Validated{State: report.OK},
+						Value:     "Completed",
 					},
 					Deleted: report.ValidatedBool{
-						Validated: report.Validated{
-							State:       report.Problem,
-							Description: "Resource is marked for deletion",
-						},
-						Value: true,
+						Validated: report.Validated{State: report.OK},
 					},
 					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{State: report.OK},
-							Type:      "Available",
-						},
-						{
-							Validated: report.Validated{
-								State:       report.Problem,
-								Description: "Started failover to cluster \"dr2\"",
-							},
-							Type: "PeerReady",
-						},
-						{
-							Validated: report.Validated{State: report.OK},
-							Type:      "Protected",
-						},
+						{Validated: report.Validated{State: report.OK}, Type: "Available"},
+						{Validated: report.Validated{State: report.OK}, Type: "PeerReady"},
+						{Validated: report.Validated{State: report.OK}, Type: "Protected"},
 					},
 				},
 			},
 			PrimaryCluster: report.ApplicationStatusCluster{
 				Name: "dr1",
 				VRG: report.VRGSummary{
-					Name:      "myapp-drpc",
-					Namespace: "myapp-ns",
+					Name:      "appset-deploy-rbd",
+					Namespace: "test-appset-deploy-rbd",
 					State: report.ValidatedString{
 						Validated: report.Validated{State: report.OK},
 						Value:     "Primary",
@@ -113,7 +93,7 @@ func TestWriteHTML(t *testing.T) {
 					ProtectedPVCs: []report.ProtectedPVCSummary{
 						{
 							Name:        "busybox-pvc",
-							Namespace:   "myapp-ns",
+							Namespace:   "test-appset-deploy-rbd",
 							Replication: report.Volrep,
 							Phase: report.ValidatedString{
 								Validated: report.Validated{State: report.OK},
@@ -136,8 +116,8 @@ func TestWriteHTML(t *testing.T) {
 			SecondaryCluster: report.ApplicationStatusCluster{
 				Name: "dr2",
 				VRG: report.VRGSummary{
-					Name:      "myapp-drpc",
-					Namespace: "myapp-ns",
+					Name:      "appset-deploy-rbd",
+					Namespace: "test-appset-deploy-rbd",
 					State: report.ValidatedString{
 						Validated: report.Validated{State: report.OK},
 						Value:     "Secondary",
@@ -167,11 +147,8 @@ func TestWriteHTML(t *testing.T) {
 						{
 							Name: "s3-profile-2",
 							Gathered: report.ValidatedBool{
-								Validated: report.Validated{
-									State:       report.Problem,
-									Description: "failed to connect to endpoint",
-								},
-								Value: false,
+								Validated: report.Validated{State: report.OK},
+								Value:     true,
 							},
 						},
 					},
@@ -206,8 +183,8 @@ func TestHeaderData(t *testing.T) {
 			},
 		},
 		Application: report.Application{
-			Name:      "testapp",
-			Namespace: "testns",
+			Name:      "appset-deploy-rbd",
+			Namespace: "argocd",
 		},
 	}
 
@@ -216,7 +193,7 @@ func TestHeaderData(t *testing.T) {
 
 	expected := report.HeaderData{
 		Title:    "Application Validation Report",
-		Subtitle: "testns / testapp",
+		Subtitle: "argocd / appset-deploy-rbd",
 	}
 
 	if actual != expected {
