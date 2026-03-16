@@ -18,38 +18,14 @@
         </dl>
         <dl class="validation">
             <dt>Action</dt>
-            <dd>
-                <span class="value">{{.Action.Value}}</span>
-                <span class="state">{{icon .Action.State}}</span>
-                {{- if .Action.Description}}
-                    <p class="description">{{.Action.Description}}</p>
-                {{- end}}
-            </dd>
+            <dd>{{template "validated" .Action}}</dd>
             <dt>Phase</dt>
-            <dd>
-                <span class="value">{{.Phase.Value}}</span>
-                <span class="state">{{icon .Phase.State}}</span>
-                {{- if .Phase.Description}}
-                    <p class="description">{{.Phase.Description}}</p>
-                {{- end}}
-            </dd>
+            <dd>{{template "validated" .Phase}}</dd>
             <dt>Progression</dt>
-            <dd>
-                <span class="value">{{.Progression.Value}}</span>
-                <span class="state">{{icon .Progression.State}}</span>
-                {{- if .Progression.Description}}
-                    <p class="description">{{.Progression.Description}}</p>
-                {{- end}}
-            </dd>
+            <dd>{{template "validated" .Progression}}</dd>
             {{- if isProblem .Deleted.State}}
                 <dt>Deleted</dt>
-                <dd>
-                    <span class="value">{{.Deleted.Value}}</span>
-                    <span class="state">{{icon .Deleted.State}}</span>
-                    {{- if .Deleted.Description}}
-                        <p class="description">{{.Deleted.Description}}</p>
-                    {{- end}}
-                </dd>
+                <dd>{{template "validated" .Deleted}}</dd>
             {{- end}}
         </dl>
         <section>
@@ -98,13 +74,7 @@
             <h4>{{.Name}}</h4>
             <dl class="validation">
                 <dt>Gathered</dt>
-                <dd>
-                    <span class="value">{{.Gathered.Value}}</span>
-                    <span class="state">{{icon .Gathered.State}}</span>
-                    {{- if .Gathered.Description}}
-                        <p class="description">{{.Gathered.Description}}</p>
-                    {{- end}}
-                </dd>
+                <dd>{{template "validated" .Gathered}}</dd>
             </dl>
         </section>
     {{- end}}

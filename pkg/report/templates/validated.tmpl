@@ -1,0 +1,9 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "validated" -}}
+<span class="value">{{.Value}}</span>
+<span class="state">{{icon .State}}</span>
+{{- if .Description}}
+<p class="description">{{.Description}}</p>
+{{- end}}
+{{- end}}
