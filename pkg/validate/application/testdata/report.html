@@ -60,11 +60,81 @@
         </section>
         <section>
           <h3>Primary Cluster: dr1</h3>
-          <p>Primary VRG status will be here.</p>
+          <section>
+            <h4>VRG</h4>
+            <dl class="metadata">
+              <dt>Name</dt>
+              <dd>myapp-drpc</dd>
+              <dt>Namespace</dt>
+              <dd>myapp-ns</dd>
+            </dl>
+            <dl class="validation">
+              <dt>State</dt>
+              <dd><span class="value">Primary</span><span class="state">✅</span></dd>
+            </dl>
+            <section>
+              <h5>Conditions</h5>
+              <dl class="validation">
+                <dt>DataReady</dt>
+                <dd><span class="state">✅</span></dd>
+                <dt>ClusterDataReady</dt>
+                <dd><span class="state">✅</span></dd>
+                <dt>ClusterDataProtected</dt>
+                <dd><span class="state">✅</span></dd>
+                <dt>KubeObjectsReady</dt>
+                <dd><span class="state">✅</span></dd>
+                <dt>NoClusterDataConflict</dt>
+                <dd><span class="state">✅</span></dd>
+              </dl>
+            </section>
+            <section>
+              <h5>PVC: busybox-pvc</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>busybox-pvc</dd>
+                <dt>Namespace</dt>
+                <dd>myapp-ns</dd>
+                <dt>Replication</dt>
+                <dd>volrep</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Phase</dt>
+                <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>DataReady</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>ClusterDataProtected</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+          </section>
         </section>
         <section>
           <h3>Secondary Cluster: dr2</h3>
-          <p>Secondary VRG status will be here.</p>
+          <section>
+            <h4>VRG</h4>
+            <dl class="metadata">
+              <dt>Name</dt>
+              <dd>myapp-drpc</dd>
+              <dt>Namespace</dt>
+              <dd>myapp-ns</dd>
+            </dl>
+            <dl class="validation">
+              <dt>State</dt>
+              <dd><span class="value">Secondary</span><span class="state">✅</span></dd>
+            </dl>
+            <section>
+              <h5>Conditions</h5>
+              <dl class="validation">
+                <dt>NoClusterDataConflict</dt>
+                <dd><span class="state">✅</span></dd>
+              </dl>
+            </section>
+          </section>
         </section>
         <section>
           <h3>S3 Stores</h3>

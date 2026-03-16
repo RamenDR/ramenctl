@@ -19,7 +19,7 @@ func TestTemplate(t *testing.T) {
 	}
 
 	// Check that shared templates and command templates are defined
-	for _, name := range []string{"report.tmpl", "style", "validated", "content", "drpc", "s3"} {
+	for _, name := range []string{"report.tmpl", "style", "validated", "content", "drpc", "vrg", "pvc", "s3"} {
 		if tmpl.Lookup(name) == nil {
 			t.Errorf("template %q not defined", name)
 		}
@@ -87,9 +87,71 @@ func TestWriteHTML(t *testing.T) {
 			},
 			PrimaryCluster: report.ApplicationStatusCluster{
 				Name: "dr1",
+				VRG: report.VRGSummary{
+					Name:      "myapp-drpc",
+					Namespace: "myapp-ns",
+					State: report.ValidatedString{
+						Validated: report.Validated{State: report.OK},
+						Value:     "Primary",
+					},
+					Deleted: report.ValidatedBool{
+						Validated: report.Validated{State: report.OK},
+					},
+					Conditions: []report.ValidatedCondition{
+						{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
+						{Validated: report.Validated{State: report.OK}, Type: "ClusterDataReady"},
+						{
+							Validated: report.Validated{State: report.OK},
+							Type:      "ClusterDataProtected",
+						},
+						{Validated: report.Validated{State: report.OK}, Type: "KubeObjectsReady"},
+						{
+							Validated: report.Validated{State: report.OK},
+							Type:      "NoClusterDataConflict",
+						},
+					},
+					ProtectedPVCs: []report.ProtectedPVCSummary{
+						{
+							Name:        "busybox-pvc",
+							Namespace:   "myapp-ns",
+							Replication: report.Volrep,
+							Phase: report.ValidatedString{
+								Validated: report.Validated{State: report.OK},
+								Value:     "Bound",
+							},
+							Deleted: report.ValidatedBool{
+								Validated: report.Validated{State: report.OK},
+							},
+							Conditions: []report.ValidatedCondition{
+								{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
+								{
+									Validated: report.Validated{State: report.OK},
+									Type:      "ClusterDataProtected",
+								},
+							},
+						},
+					},
+				},
 			},
 			SecondaryCluster: report.ApplicationStatusCluster{
 				Name: "dr2",
+				VRG: report.VRGSummary{
+					Name:      "myapp-drpc",
+					Namespace: "myapp-ns",
+					State: report.ValidatedString{
+						Validated: report.Validated{State: report.OK},
+						Value:     "Secondary",
+					},
+					Deleted: report.ValidatedBool{
+						Validated: report.Validated{State: report.OK},
+					},
+					Conditions: []report.ValidatedCondition{
+						{
+							Validated: report.Validated{State: report.OK},
+							Type:      "NoClusterDataConflict",
+						},
+					},
+				},
 			},
 			S3: report.ApplicationS3Status{
 				Profiles: report.ValidatedApplicationS3ProfileStatusList{
