@@ -7,42 +7,7 @@
     <h3>Hub</h3>
     <section>
         <h4>DRPC</h4>
-        {{- with .ApplicationStatus.Hub.DRPC}}
-        <dl class="metadata">
-            <dt>Name</dt>
-            <dd>{{.Name}}</dd>
-            <dt>Namespace</dt>
-            <dd>{{.Namespace}}</dd>
-            <dt>DRPolicy</dt>
-            <dd>{{.DRPolicy}}</dd>
-        </dl>
-        <dl class="validation">
-            <dt>Action</dt>
-            <dd>{{template "validated" .Action}}</dd>
-            <dt>Phase</dt>
-            <dd>{{template "validated" .Phase}}</dd>
-            <dt>Progression</dt>
-            <dd>{{template "validated" .Progression}}</dd>
-            {{- if isProblem .Deleted.State}}
-                <dt>Deleted</dt>
-                <dd>{{template "validated" .Deleted}}</dd>
-            {{- end}}
-        </dl>
-        <section>
-            <h5>Conditions</h5>
-            <dl class="validation">
-                {{- range .Conditions}}
-                <dt>{{.Type}}</dt>
-                <dd>
-                    <span class="state">{{icon .State}}</span>
-                    {{- if .Description}}
-                        <p class="description">{{.Description}}</p>
-                    {{- end}}
-                </dd>
-                {{- end}}
-            </dl>
-        </section>
-        {{- end}}
+        {{template "drpc" .ApplicationStatus.Hub.DRPC}}
     </section>
 </section>
 
