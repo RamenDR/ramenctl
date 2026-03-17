@@ -5,6 +5,7 @@ package report
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 
 	"github.com/yosssi/gohtml"
@@ -18,9 +19,10 @@ var templates embed.FS
 // Template returns a new template set with shared definitions.
 func Template() (*template.Template, error) {
 	funcs := template.FuncMap{
-		"formatTime": formatTime,
-		"icon":       icon,
-		"isProblem":  isProblem,
+		"formatTime":     formatTime,
+		"formatDuration": formatDuration,
+		"icon":           icon,
+		"isProblem":      isProblem,
 	}
 	return template.New("").Funcs(funcs).ParseFS(templates, "templates/*.tmpl")
 }
@@ -47,6 +49,16 @@ func icon(s ValidationState) string {
 // formatTime formats a time value for display in reports.
 func formatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05 MST")
+}
+
+// formatDuration formats a duration in seconds for display.
+func formatDuration(seconds float64) string {
+	if seconds < 60 {
+		return fmt.Sprintf("%.2fs", seconds)
+	}
+	m := int(seconds) / 60
+	s := seconds - float64(m*60)
+	return fmt.Sprintf("%dm %.2fs", m, s)
 }
 
 // FormatHTML formats HTML for readability. Use this to format generated HTML
