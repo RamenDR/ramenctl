@@ -21,6 +21,12 @@
             <span class="summary">{{.SummaryString}}</span>
         {{- end}}
     </p>
+    <dl class="timing">
+        <dt>Created</dt>
+        <dd>{{formatTime .Created}}</dd>
+        <dt>Duration</dt>
+        <dd>{{formatDuration .Duration}}</dd>
+    </dl>
 </header>
 <main>
     <section>

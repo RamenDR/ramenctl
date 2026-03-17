@@ -48,7 +48,7 @@ func icon(s ValidationState) string {
 
 // formatTime formats a time value for display in reports.
 func formatTime(t time.Time) string {
-	return t.Format("2006-01-02 15:04:05 MST")
+	return t.Format("2006-01-02 15:04:05 -0700")
 }
 
 // formatDuration formats a duration in seconds for display.
