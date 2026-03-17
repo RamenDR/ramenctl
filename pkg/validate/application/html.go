@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/validate"
 )
 
 //go:embed templates/*.tmpl
@@ -25,6 +26,11 @@ func (d *templateData) HeaderData() report.HeaderData {
 		Title:    "Application Validation Report",
 		Subtitle: d.Application.Namespace + " / " + d.Application.Name,
 	}
+}
+
+// SummaryString returns a formatted summary for display.
+func (d *templateData) SummaryString() string {
+	return validate.SummaryString(d.Summary)
 }
 
 // Template returns the HTML template for this report.

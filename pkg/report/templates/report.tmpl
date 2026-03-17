@@ -15,7 +15,12 @@
 {{- if .HeaderData.Subtitle}}
     <p class="subtitle">{{.HeaderData.Subtitle}}</p>
 {{- end}}
-    <p class="status {{.Status}}">Status: {{.Status}}</p>
+    <p class="result">
+        <span class="status {{.Status}}">{{.Status}}</span>
+        {{- if .Summary}}
+            <span class="summary">{{.SummaryString}}</span>
+        {{- end}}
+    </p>
 </header>
 <main>
     <section>
