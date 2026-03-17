@@ -57,6 +57,16 @@
                 <dd>{{.Host.Cpus}}</dd>
             </dl>
         </section>
+        {{- with .Namespaces}}
+        <section>
+            <h3>Namespaces</h3>
+            <ul>
+                {{- range .}}
+                <li>{{.}}</li>
+                {{- end}}
+            </ul>
+        </section>
+        {{- end}}
         {{- with .Config}}
         <section>
             <h3>Config</h3>
