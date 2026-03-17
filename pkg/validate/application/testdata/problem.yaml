@@ -1,0 +1,182 @@
+application:
+  name: appset-deploy-rbd
+  namespace: argocd
+applicationStatus:
+  hub:
+    drpc:
+      action:
+        state: ok ✅
+        value: Failover
+      conditions:
+      - state: ok ✅
+        type: Available
+      - description: Started failover to cluster "dr2"
+        state: problem ❌
+        type: PeerReady
+      - description: VolumeReplicationGroup (test-appset-deploy-rbd/appset-deploy-rbd)
+          on cluster dr2 is not reporting any lastGroupSyncTime as primary, retrying
+          till status is met
+        state: problem ❌
+        type: Protected
+      deleted:
+        state: ok ✅
+      drPolicy: dr-policy-1m
+      name: appset-deploy-rbd
+      namespace: argocd
+      phase:
+        state: ok ✅
+        value: FailedOver
+      progression:
+        description: Waiting for progression "Completed"
+        state: problem ❌
+        value: Cleaning Up
+  primaryCluster:
+    name: dr2
+    vrg:
+      conditions:
+      - state: ok ✅
+        type: DataReady
+      - state: ok ✅
+        type: ClusterDataReady
+      - state: ok ✅
+        type: ClusterDataProtected
+      - state: ok ✅
+        type: KubeObjectsReady
+      - state: ok ✅
+        type: NoClusterDataConflict
+      deleted:
+        state: ok ✅
+      name: appset-deploy-rbd
+      namespace: test-appset-deploy-rbd
+      protectedPVCs:
+      - conditions:
+        - state: ok ✅
+          type: DataReady
+        - state: ok ✅
+          type: ClusterDataProtected
+        deleted:
+          state: ok ✅
+        name: busybox-pvc
+        namespace: test-appset-deploy-rbd
+        phase:
+          state: ok ✅
+          value: Bound
+        replication: volrep
+      state:
+        state: ok ✅
+        value: Primary
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr2
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr1
+  secondaryCluster:
+    name: dr1
+    vrg:
+      conditions:
+      - description: All PVCs of the VolumeReplicationGroup are not ready
+        state: problem ❌
+        type: DataReady
+      - state: ok ✅
+        type: NoClusterDataConflict
+      deleted:
+        state: ok ✅
+      name: appset-deploy-rbd
+      namespace: test-appset-deploy-rbd
+      protectedPVCs:
+      - conditions:
+        - description: failed to demote volume
+          state: problem ❌
+          type: DataReady
+        - description: Observed generation 1 does not match object generation 2
+          state: stale ⭕
+          type: ClusterDataProtected
+        deleted:
+          description: Resource was deleted
+          state: problem ❌
+          value: true
+        name: busybox-pvc
+        namespace: test-appset-deploy-rbd
+        phase:
+          state: ok ✅
+          value: Bound
+        replication: volrep
+      state:
+        description: Waiting to become "Secondary"
+        state: problem ❌
+        value: Unknown
+build:
+  commit: c5cc831b601f99c3a83a297da6840c3f21376b39
+  version: v0.17.0-2-gc5cc831
+config:
+  clusterSet: default
+  clusters:
+    c1:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+    c2:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+    hub:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+    passive-hub:
+      kubeconfig: ""
+  distro: k8s
+  namespaces:
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
+created: "2026-03-16T20:19:49.01232+02:00"
+duration: 2.3034769579999996
+host:
+  arch: arm64
+  cpus: 12
+  os: darwin
+name: validate-application
+namespaces:
+- argocd
+- ramen-system
+- test-appset-deploy-rbd
+status: failed
+steps:
+- duration: 0.01079925
+  name: validate config
+  status: passed
+- duration: 2.292677708
+  items:
+  - duration: 0.002038166
+    name: inspect application
+    status: passed
+  - duration: 1.248512584
+    name: gather "hub"
+    status: passed
+  - duration: 2.188137708
+    name: gather "dr1"
+    status: passed
+  - duration: 2.269373042
+    name: gather "dr2"
+    status: passed
+  - duration: 0.005172875
+    name: inspect S3 profiles
+    status: passed
+  - duration: 0.013081083
+    name: gather S3 profile "minio-on-dr2"
+    status: passed
+  - duration: 0.013132875
+    name: gather S3 profile "minio-on-dr1"
+    status: passed
+  - duration: 0.00258225
+    name: validate data
+    status: failed
+  name: validate application
+  status: failed
+summary:
+  ok: 21
+  problem: 7
+  stale: 1
