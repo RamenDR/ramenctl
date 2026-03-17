@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
@@ -27,138 +29,18 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestWriteHTML(t *testing.T) {
-	r := &Report{
-		Report: &report.Report{
-			Base: &report.Base{
-				Name:   "validate-application",
-				Status: report.Passed,
-			},
-		},
-		Application: report.Application{
-			Name:      "appset-deploy-rbd",
-			Namespace: "argocd",
-		},
-		ApplicationStatus: report.ApplicationStatus{
-			Hub: report.ApplicationStatusHub{
-				DRPC: report.DRPCSummary{
-					Name:      "appset-deploy-rbd",
-					Namespace: "argocd",
-					DRPolicy:  "dr-policy",
-					Action: report.ValidatedString{
-						Validated: report.Validated{State: report.OK},
-					},
-					Phase: report.ValidatedString{
-						Validated: report.Validated{State: report.OK},
-						Value:     "Deployed",
-					},
-					Progression: report.ValidatedString{
-						Validated: report.Validated{State: report.OK},
-						Value:     "Completed",
-					},
-					Deleted: report.ValidatedBool{
-						Validated: report.Validated{State: report.OK},
-					},
-					Conditions: []report.ValidatedCondition{
-						{Validated: report.Validated{State: report.OK}, Type: "Available"},
-						{Validated: report.Validated{State: report.OK}, Type: "PeerReady"},
-						{Validated: report.Validated{State: report.OK}, Type: "Protected"},
-					},
-				},
-			},
-			PrimaryCluster: report.ApplicationStatusCluster{
-				Name: "dr1",
-				VRG: report.VRGSummary{
-					Name:      "appset-deploy-rbd",
-					Namespace: "test-appset-deploy-rbd",
-					State: report.ValidatedString{
-						Validated: report.Validated{State: report.OK},
-						Value:     "Primary",
-					},
-					Deleted: report.ValidatedBool{
-						Validated: report.Validated{State: report.OK},
-					},
-					Conditions: []report.ValidatedCondition{
-						{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
-						{Validated: report.Validated{State: report.OK}, Type: "ClusterDataReady"},
-						{
-							Validated: report.Validated{State: report.OK},
-							Type:      "ClusterDataProtected",
-						},
-						{Validated: report.Validated{State: report.OK}, Type: "KubeObjectsReady"},
-						{
-							Validated: report.Validated{State: report.OK},
-							Type:      "NoClusterDataConflict",
-						},
-					},
-					ProtectedPVCs: []report.ProtectedPVCSummary{
-						{
-							Name:        "busybox-pvc",
-							Namespace:   "test-appset-deploy-rbd",
-							Replication: report.Volrep,
-							Phase: report.ValidatedString{
-								Validated: report.Validated{State: report.OK},
-								Value:     "Bound",
-							},
-							Deleted: report.ValidatedBool{
-								Validated: report.Validated{State: report.OK},
-							},
-							Conditions: []report.ValidatedCondition{
-								{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
-								{
-									Validated: report.Validated{State: report.OK},
-									Type:      "ClusterDataProtected",
-								},
-							},
-						},
-					},
-				},
-			},
-			SecondaryCluster: report.ApplicationStatusCluster{
-				Name: "dr2",
-				VRG: report.VRGSummary{
-					Name:      "appset-deploy-rbd",
-					Namespace: "test-appset-deploy-rbd",
-					State: report.ValidatedString{
-						Validated: report.Validated{State: report.OK},
-						Value:     "Secondary",
-					},
-					Deleted: report.ValidatedBool{
-						Validated: report.Validated{State: report.OK},
-					},
-					Conditions: []report.ValidatedCondition{
-						{
-							Validated: report.Validated{State: report.OK},
-							Type:      "NoClusterDataConflict",
-						},
-					},
-				},
-			},
-			S3: report.ApplicationS3Status{
-				Profiles: report.ValidatedApplicationS3ProfileStatusList{
-					Validated: report.Validated{State: report.OK},
-					Value: []report.ApplicationS3ProfileStatus{
-						{
-							Name: "s3-profile-1",
-							Gathered: report.ValidatedBool{
-								Validated: report.Validated{State: report.OK},
-								Value:     true,
-							},
-						},
-						{
-							Name: "s3-profile-2",
-							Gathered: report.ValidatedBool{
-								Validated: report.Validated{State: report.OK},
-								Value:     true,
-							},
-						},
-					},
-				},
-			},
-		},
+	data, err := os.ReadFile("testdata/report.yaml")
+	if err != nil {
+		t.Fatalf("ReadFile() error: %v", err)
+	}
+
+	r := &Report{}
+	if err := yaml.Unmarshal(data, r); err != nil {
+		t.Fatalf("Unmarshal() error: %v", err)
 	}
 
 	var buf strings.Builder
-	err := r.WriteHTML(&buf)
+	err = r.WriteHTML(&buf)
 	if err != nil {
 		t.Fatalf("WriteHTML() error: %v", err)
 	}

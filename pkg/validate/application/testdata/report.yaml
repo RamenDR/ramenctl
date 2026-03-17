@@ -1,0 +1,152 @@
+application:
+  name: appset-deploy-rbd
+  namespace: argocd
+applicationStatus:
+  hub:
+    drpc:
+      action:
+        state: ok ✅
+      conditions:
+      - state: ok ✅
+        type: Available
+      - state: ok ✅
+        type: PeerReady
+      - state: ok ✅
+        type: Protected
+      deleted:
+        state: ok ✅
+      drPolicy: dr-policy-1m
+      name: appset-deploy-rbd
+      namespace: argocd
+      phase:
+        state: ok ✅
+        value: Deployed
+      progression:
+        state: ok ✅
+        value: Completed
+  primaryCluster:
+    name: dr1
+    vrg:
+      conditions:
+      - state: ok ✅
+        type: DataReady
+      - state: ok ✅
+        type: ClusterDataReady
+      - state: ok ✅
+        type: ClusterDataProtected
+      - state: ok ✅
+        type: KubeObjectsReady
+      - state: ok ✅
+        type: NoClusterDataConflict
+      deleted:
+        state: ok ✅
+      name: appset-deploy-rbd
+      namespace: test-appset-deploy-rbd
+      protectedPVCs:
+      - conditions:
+        - state: ok ✅
+          type: DataReady
+        - state: ok ✅
+          type: ClusterDataProtected
+        deleted:
+          state: ok ✅
+        name: busybox-pvc
+        namespace: test-appset-deploy-rbd
+        phase:
+          state: ok ✅
+          value: Bound
+        replication: volrep
+      state:
+        state: ok ✅
+        value: Primary
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr2
+      - gathered:
+          state: ok ✅
+          value: true
+        name: minio-on-dr1
+  secondaryCluster:
+    name: dr2
+    vrg:
+      conditions:
+      - state: ok ✅
+        type: NoClusterDataConflict
+      deleted:
+        state: ok ✅
+      name: appset-deploy-rbd
+      namespace: test-appset-deploy-rbd
+      state:
+        state: ok ✅
+        value: Secondary
+build:
+  commit: c5cc831b601f99c3a83a297da6840c3f21376b39
+  version: v0.17.0-2-gc5cc831
+config:
+  clusterSet: default
+  clusters:
+    c1:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+    c2:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+    hub:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+    passive-hub:
+      kubeconfig: ""
+  distro: k8s
+  namespaces:
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
+created: "2026-03-16T20:16:31.019224+02:00"
+duration: 2.207900458
+host:
+  arch: arm64
+  cpus: 12
+  os: darwin
+name: validate-application
+namespaces:
+- argocd
+- ramen-system
+- test-appset-deploy-rbd
+status: passed
+steps:
+- duration: 0.010142333
+  name: validate config
+  status: passed
+- duration: 2.197758125
+  items:
+  - duration: 0.001692791
+    name: inspect application
+    status: passed
+  - duration: 1.223257
+    name: gather "hub"
+    status: passed
+  - duration: 2.143304625
+    name: gather "dr2"
+    status: passed
+  - duration: 2.18300875
+    name: gather "dr1"
+    status: passed
+  - duration: 0.0031285
+    name: inspect S3 profiles
+    status: passed
+  - duration: 0.0079595
+    name: gather S3 profile "minio-on-dr2"
+    status: passed
+  - duration: 0.008158
+    name: gather S3 profile "minio-on-dr1"
+    status: passed
+  - duration: 0.001566542
+    name: validate data
+    status: passed
+  name: validate application
+  status: passed
+summary:
+  ok: 24
