@@ -32,6 +32,11 @@ func TestWriteHTML(t *testing.T) {
 			Base: &report.Base{
 				Name:   "validate-clusters",
 				Status: report.Passed,
+				Host: report.Host{
+					OS:   "linux",
+					Arch: "amd64",
+					Cpus: 8,
+				},
 			},
 		},
 	}

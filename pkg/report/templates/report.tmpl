@@ -35,7 +35,28 @@
 
     <section>
         <h2>Report Details</h2>
-        <p>Common information for all reports.</p>
+        {{- with .Build}}
+        <section>
+            <h3>Build</h3>
+            <dl class="metadata">
+                <dt>Version</dt>
+                <dd>{{.Version}}</dd>
+                <dt>Commit</dt>
+                <dd>{{.Commit}}</dd>
+            </dl>
+        </section>
+        {{- end}}
+        <section>
+            <h3>Host</h3>
+            <dl class="metadata">
+                <dt>OS</dt>
+                <dd>{{.Host.OS}}</dd>
+                <dt>Arch</dt>
+                <dd>{{.Host.Arch}}</dd>
+                <dt>CPUs</dt>
+                <dd>{{.Host.Cpus}}</dd>
+            </dl>
+        </section>
     </section>
 </main>
 </body>
