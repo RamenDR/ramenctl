@@ -9,6 +9,7 @@ import (
 	"html/template"
 
 	"github.com/yosssi/gohtml"
+	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/time"
 )
@@ -21,6 +22,7 @@ func Template() (*template.Template, error) {
 	funcs := template.FuncMap{
 		"formatTime":     formatTime,
 		"formatDuration": formatDuration,
+		"formatYAML":     formatYAML,
 		"icon":           icon,
 		"isProblem":      isProblem,
 	}
@@ -59,6 +61,15 @@ func formatDuration(seconds float64) string {
 	m := int(seconds) / 60
 	s := seconds - float64(m*60)
 	return fmt.Sprintf("%dm %.2fs", m, s)
+}
+
+// formatYAML marshals a value to YAML for display in a <pre> block.
+func formatYAML(v any) (string, error) {
+	data, err := yaml.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
 
 // FormatHTML formats HTML for readability. Use this to format generated HTML

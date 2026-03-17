@@ -57,6 +57,12 @@
                 <dd>{{.Host.Cpus}}</dd>
             </dl>
         </section>
+        {{- with .Config}}
+        <section>
+            <h3>Config</h3>
+            <pre>{{formatYAML .}}</pre>
+        </section>
+        {{- end}}
     </section>
 </main>
 </body>
