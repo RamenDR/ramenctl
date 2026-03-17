@@ -23,7 +23,7 @@ alwaysApply: true
 
 - Run `make fmt` to format code with golangci-lint formatters
 - Use package tests for quick iteration: `go test ./pkg/foo/...`
-- Before committing, always run `make test` to verify all tests pass
+- Before committing, run `make lint` and `make test` to catch issues early
 
 ## File organization
 
