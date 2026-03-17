@@ -73,6 +73,14 @@
             <pre>{{formatYAML .}}</pre>
         </section>
         {{- end}}
+        {{- with .Steps}}
+        <section>
+            <h3>Steps</h3>
+            <ul class="steps">
+                {{- template "steps" .}}
+            </ul>
+        </section>
+        {{- end}}
     </section>
 </main>
 </body>

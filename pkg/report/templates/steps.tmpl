@@ -1,0 +1,15 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "steps" -}}
+{{- range .}}
+<li class="step {{.Status}}">
+    <span>{{.Name}}</span>
+    <span>{{formatDuration .Duration}}</span>
+    {{- with .Items}}
+    <ul>
+        {{- template "steps" .}}
+    </ul>
+    {{- end}}
+</li>
+{{- end}}
+{{- end}}
