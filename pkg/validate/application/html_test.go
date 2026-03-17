@@ -29,31 +29,35 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestWriteHTML(t *testing.T) {
-	data, err := os.ReadFile("testdata/report.yaml")
-	if err != nil {
-		t.Fatalf("ReadFile() error: %v", err)
-	}
+	for _, name := range []string{"ok"} {
+		t.Run(name, func(t *testing.T) {
+			data, err := os.ReadFile("testdata/" + name + ".yaml")
+			if err != nil {
+				t.Fatalf("ReadFile() error: %v", err)
+			}
 
-	r := &Report{}
-	if err := yaml.Unmarshal(data, r); err != nil {
-		t.Fatalf("Unmarshal() error: %v", err)
-	}
+			r := &Report{}
+			if err := yaml.Unmarshal(data, r); err != nil {
+				t.Fatalf("Unmarshal() error: %v", err)
+			}
 
-	var buf strings.Builder
-	err = r.WriteHTML(&buf)
-	if err != nil {
-		t.Fatalf("WriteHTML() error: %v", err)
-	}
+			var buf strings.Builder
+			err = r.WriteHTML(&buf)
+			if err != nil {
+				t.Fatalf("WriteHTML() error: %v", err)
+			}
 
-	actual := report.FormatHTML(buf.String())
+			actual := report.FormatHTML(buf.String())
 
-	expected, err := os.ReadFile("testdata/report.html")
-	if err != nil {
-		t.Fatalf("ReadFile() error: %v", err)
-	}
+			expected, err := os.ReadFile("testdata/" + name + ".html")
+			if err != nil {
+				t.Fatalf("ReadFile() error: %v", err)
+			}
 
-	if actual != string(expected) {
-		t.Fatalf("output mismatch.\n%s", helpers.UnifiedDiff(t, string(expected), actual))
+			if actual != string(expected) {
+				t.Fatalf("output mismatch.\n%s", helpers.UnifiedDiff(t, string(expected), actual))
+			}
+		})
 	}
 }
 
