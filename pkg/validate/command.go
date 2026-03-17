@@ -185,12 +185,12 @@ func (c *Command) dataDir() string {
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("validation %s (%s)", c.report.Status, summaryString(c.report.Summary))
+	return fmt.Errorf("validation %s (%s)", c.report.Status, SummaryString(c.report.Summary))
 }
 
 func (c *Command) passed() {
 	c.command.WriteYAMLReport(c.report)
-	console.Completed("Validation completed (%s)", summaryString(c.report.Summary))
+	console.Completed("Validation completed (%s)", SummaryString(c.report.Summary))
 }
 
 // Managing steps.

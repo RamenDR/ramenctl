@@ -292,7 +292,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, summaryString(c.report.Summary))
+		log.Errorf("%s: %s", msg, SummaryString(c.report.Summary))
 		return false
 	}
 

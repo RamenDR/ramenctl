@@ -33,8 +33,8 @@ func hasIssues(s *report.Summary) bool {
 	return s.Get(Stale) > 0 || s.Get(Problem) > 0
 }
 
-// summaryString returns a string representation.
-func summaryString(s *report.Summary) string {
+// SummaryString returns a string representation of a validation summary.
+func SummaryString(s *report.Summary) string {
 	return fmt.Sprintf("%d ok, %d stale, %d problem",
 		s.Get(OK), s.Get(Stale), s.Get(Problem))
 }

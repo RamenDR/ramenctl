@@ -62,8 +62,8 @@ func TestSummaryString(t *testing.T) {
 		Problem: 2,
 	}
 	expected := "1 ok, 0 stale, 2 problem"
-	if summaryString(s) != expected {
-		t.Fatalf("expected %q, got %q", expected, summaryString(s))
+	if SummaryString(s) != expected {
+		t.Fatalf("expected %q, got %q", expected, SummaryString(s))
 	}
 }
 
