@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Clusters Validation Report</title>
+    <style> body { font-family: system-ui, sans-serif; } </style>
+  </head>
+  <body>
+    <header>
+      <h1>Clusters Validation Report</h1>
+      <p class="result"><span class="status passed">passed</span><span class="summary">90 ok, 0 stale, 0 problem</span></p>
+      <dl class="timing">
+        <dt>Created</dt>
+        <dd>2026-03-23 18:18:13 &#43;0200</dd>
+        <dt>Duration</dt>
+        <dd>1.13s</dd>
+      </dl>
+    </header>
+    <main>
+      <section>
+        <h2>Clusters Status</h2>
+        <p>Hub, managed clusters, and S3 storage status details here.</p>
+      </section>
+      <section>
+        <h2>Report Details</h2>
+        <section>
+          <h3>Build</h3>
+          <dl class="metadata">
+            <dt>Version</dt>
+            <dd>v0.17.0-15-gc306e20</dd>
+            <dt>Commit</dt>
+            <dd>c306e20340a666f0124ad7e1c50cf0cd0531b094</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Host</h3>
+          <dl class="metadata">
+            <dt>OS</dt>
+            <dd>darwin</dd>
+            <dt>Arch</dt>
+            <dd>arm64</dd>
+            <dt>CPUs</dt>
+            <dd>12</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Namespaces</h3>
+          <ul>
+            <li>ramen-system</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Config</h3>
+          <pre>clusterSet: default
+clusters:
+  c1:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+  c2:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+  hub:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+  passive-hub:
+    kubeconfig: &#34;&#34;
+distro: k8s
+namespaces:
+  argocdNamespace: argocd
+  ramenDRClusterNamespace: ramen-system
+  ramenHubNamespace: ramen-system
+  ramenOpsNamespace: ramen-ops
+</pre>
+        </section>
+        <section>
+          <h3>Steps</h3>
+          <ul class="steps">
+            <li class="step passed"><span>validate config</span><span>0.01s</span></li>
+            <li class="step passed">
+              <span>validate clusters</span><span>1.12s</span>
+              <ul>
+                <li class="step passed"><span>gather &#34;hub&#34;</span><span>0.59s</span></li>
+                <li class="step passed"><span>gather &#34;dr1&#34;</span><span>1.06s</span></li>
+                <li class="step passed"><span>gather &#34;dr2&#34;</span><span>1.06s</span></li>
+                <li class="step passed"><span>inspect S3 profiles</span><span>0.02s</span></li>
+                <li class="step passed"><span>check S3 profile &#34;minio-on-dr2&#34;</span><span>0.02s</span></li>
+                <li class="step passed"><span>check S3 profile &#34;minio-on-dr1&#34;</span><span>0.02s</span></li>
+                <li class="step passed"><span>validate clusters data</span><span>0.01s</span></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

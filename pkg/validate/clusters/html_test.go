@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
@@ -27,35 +29,35 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestWriteHTML(t *testing.T) {
-	r := &Report{
-		Report: &report.Report{
-			Base: &report.Base{
-				Name:   "validate-clusters",
-				Status: report.Passed,
-				Host: report.Host{
-					OS:   "linux",
-					Arch: "amd64",
-					Cpus: 8,
-				},
-			},
-		},
-	}
+	for _, name := range []string{"ok"} {
+		t.Run(name, func(t *testing.T) {
+			data, err := os.ReadFile("testdata/" + name + ".yaml")
+			if err != nil {
+				t.Fatalf("ReadFile() error: %v", err)
+			}
 
-	var buf strings.Builder
-	err := r.WriteHTML(&buf)
-	if err != nil {
-		t.Fatalf("WriteHTML() error: %v", err)
-	}
+			r := &Report{}
+			if err := yaml.Unmarshal(data, r); err != nil {
+				t.Fatalf("Unmarshal() error: %v", err)
+			}
 
-	actual := report.FormatHTML(buf.String())
+			var buf strings.Builder
+			err = r.WriteHTML(&buf)
+			if err != nil {
+				t.Fatalf("WriteHTML() error: %v", err)
+			}
 
-	expected, err := os.ReadFile("testdata/report.html")
-	if err != nil {
-		t.Fatalf("ReadFile() error: %v", err)
-	}
+			actual := report.FormatHTML(buf.String())
 
-	if actual != string(expected) {
-		t.Fatalf("output mismatch.\n%s", helpers.UnifiedDiff(t, string(expected), actual))
+			expected, err := os.ReadFile("testdata/" + name + ".html")
+			if err != nil {
+				t.Fatalf("ReadFile() error: %v", err)
+			}
+
+			if actual != string(expected) {
+				t.Fatalf("output mismatch.\n%s", helpers.UnifiedDiff(t, string(expected), actual))
+			}
+		})
 	}
 }
 

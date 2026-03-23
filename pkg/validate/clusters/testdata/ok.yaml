@@ -1,0 +1,367 @@
+build:
+  commit: c306e20340a666f0124ad7e1c50cf0cd0531b094
+  version: v0.17.0-15-gc306e20
+clustersStatus:
+  clusters:
+  - name: dr1
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.6:30000
+            profileName: minio-on-dr1
+            region:
+              state: ok ✅
+              value: us-west-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr1
+              namespace:
+                state: ok ✅
+                value: ramen-system
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.5:30000
+            profileName: minio-on-dr2
+            region:
+              state: ok ✅
+              value: us-east-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr2
+              namespace:
+                state: ok ✅
+                value: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  - name: dr2
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.6:30000
+            profileName: minio-on-dr1
+            region:
+              state: ok ✅
+              value: us-west-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr1
+              namespace:
+                state: ok ✅
+                value: ramen-system
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.5:30000
+            profileName: minio-on-dr2
+            region:
+              state: ok ✅
+              value: us-east-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr2
+              namespace:
+                state: ok ✅
+                value: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  hub:
+    drClusters:
+      state: ok ✅
+      value:
+      - conditions:
+        - state: ok ✅
+          type: Validated
+        - state: ok ✅
+          type: Fenced
+        - state: ok ✅
+          type: Clean
+        name: dr1
+        phase: Available
+      - conditions:
+        - state: ok ✅
+          type: Validated
+        - state: ok ✅
+          type: Fenced
+        - state: ok ✅
+          type: Clean
+        name: dr2
+        phase: Available
+    drPolicies:
+      state: ok ✅
+      value:
+      - conditions:
+        - state: ok ✅
+          type: Validated
+        drClusters:
+        - dr1
+        - dr2
+        name: dr-policy-1m
+        peerClasses:
+          state: ok ✅
+          value:
+          - replicationID: rook-ceph-replication-1
+            storageClassName: rook-ceph-block
+          - storageClassName: rook-cephfs-fs1
+        schedulingInterval: 1m
+      - conditions:
+        - state: ok ✅
+          type: Validated
+        drClusters:
+        - dr1
+        - dr2
+        name: dr-policy-5m
+        peerClasses:
+          state: ok ✅
+          value:
+          - replicationID: rook-ceph-replication-1
+            storageClassName: rook-ceph-block
+          - storageClassName: rook-cephfs-fs1
+        schedulingInterval: 5m
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-hub
+        s3StoreProfiles:
+          state: ok ✅
+          value:
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.6:30000
+            profileName: minio-on-dr1
+            region:
+              state: ok ✅
+              value: us-west-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr1
+              namespace:
+                state: ok ✅
+                value: ramen-system
+          - bucket:
+              state: ok ✅
+              value: bucket
+            caCertificate:
+              state: ok ✅
+            endpoint:
+              state: ok ✅
+              value: http://192.168.105.5:30000
+            profileName: minio-on-dr2
+            region:
+              state: ok ✅
+              value: us-east-1
+            secret:
+              awsAccessKeyID:
+                state: ok ✅
+                value: 57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3
+              awsSecretAccessKey:
+                state: ok ✅
+                value: 17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1
+              deleted:
+                state: ok ✅
+              name:
+                state: ok ✅
+                value: ramen-s3-secret-dr2
+              namespace:
+                state: ok ✅
+                value: ramen-system
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - accessible:
+          state: ok ✅
+          value: true
+        name: minio-on-dr2
+      - accessible:
+          state: ok ✅
+          value: true
+        name: minio-on-dr1
+config:
+  clusterSet: default
+  clusters:
+    c1:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+    c2:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+    hub:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+    passive-hub:
+      kubeconfig: ""
+  distro: k8s
+  namespaces:
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
+created: "2026-03-23T18:18:13.95158+02:00"
+duration: 1.130041167
+host:
+  arch: arm64
+  cpus: 12
+  os: darwin
+name: validate-clusters
+namespaces:
+- ramen-system
+status: passed
+steps:
+- duration: 0.013437
+  name: validate config
+  status: passed
+- duration: 1.116604167
+  items:
+  - duration: 0.593304458
+    name: gather "hub"
+    status: passed
+  - duration: 1.062110416
+    name: gather "dr1"
+    status: passed
+  - duration: 1.063671834
+    name: gather "dr2"
+    status: passed
+  - duration: 0.021980833
+    name: inspect S3 profiles
+    status: passed
+  - duration: 0.021990333
+    name: check S3 profile "minio-on-dr2"
+    status: passed
+  - duration: 0.024792541
+    name: check S3 profile "minio-on-dr1"
+    status: passed
+  - duration: 0.005934167
+    name: validate clusters data
+    status: passed
+  name: validate clusters
+  status: passed
+summary:
+  ok: 90
