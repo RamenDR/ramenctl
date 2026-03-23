@@ -67,20 +67,16 @@
             </ul>
         </section>
         {{- end}}
-        {{- with .Config}}
         <section>
             <h3>Config</h3>
-            <pre>{{formatYAML .}}</pre>
+            <pre>{{formatYAML .Config}}</pre>
         </section>
-        {{- end}}
-        {{- with .Steps}}
         <section>
             <h3>Steps</h3>
             <ul class="steps">
-                {{- template "steps" .}}
+                {{- template "steps" .Steps}}
             </ul>
         </section>
-        {{- end}}
     </section>
 </main>
 </body>
