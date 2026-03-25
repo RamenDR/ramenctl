@@ -1,5 +1,34 @@
 {{/* SPDX-FileCopyrightText: The RamenDR authors */}}
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "s3profile" -}}
-<p>S3 profile details here.</p>
+<section>
+    <h6>{{.S3ProfileName}}</h6>
+    <dl class="validation">
+        <dt>Bucket</dt>
+        <dd>{{template "validated" .S3Bucket}}</dd>
+        <dt>Endpoint</dt>
+        <dd>{{template "validated" .S3CompatibleEndpoint}}</dd>
+        <dt>Region</dt>
+        <dd>{{template "validated" .S3Region}}</dd>
+        <dt>CA Certificate</dt>
+        <dd>{{template "validated" .CACertificate}}</dd>
+        <dt>Secret</dt>
+        <dd>
+            <dl class="validation">
+                <dt>Name</dt>
+                <dd>{{template "validated" .S3SecretRef.Name}}</dd>
+                <dt>Namespace</dt>
+                <dd>{{template "validated" .S3SecretRef.Namespace}}</dd>
+                {{- if isProblem .S3SecretRef.Deleted.State}}
+                    <dt>Deleted</dt>
+                    <dd>{{template "validated" .S3SecretRef.Deleted}}</dd>
+                {{- end}}
+                <dt>AWS Access Key ID</dt>
+                <dd>{{template "validated" .S3SecretRef.AWSAccessKeyID}}</dd>
+                <dt>AWS Secret Access Key</dt>
+                <dd>{{template "validated" .S3SecretRef.AWSSecretAccessKey}}</dd>
+            </dl>
+        </dd>
+    </dl>
+</section>
 {{- end}}
