@@ -20,8 +20,19 @@ func TestTemplate(t *testing.T) {
 		t.Fatalf("Template() error: %v", err)
 	}
 
-	// Check that shared templates and command templates are defined
-	for _, name := range []string{"report.tmpl", "style", "validated", "content", "drpc", "vrg", "pvc", "s3"} {
+	expected := []string{
+		// Shared templates from pkg/report.
+		"report.tmpl",
+		"style",
+		"validated",
+		// Command templates.
+		"content",
+		"drpc",
+		"pvc",
+		"s3",
+		"vrg",
+	}
+	for _, name := range expected {
 		if tmpl.Lookup(name) == nil {
 			t.Errorf("template %q not defined", name)
 		}
