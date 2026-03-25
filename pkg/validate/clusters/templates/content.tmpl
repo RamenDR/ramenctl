@@ -1,6 +1,42 @@
 {{/* SPDX-FileCopyrightText: The RamenDR authors */}}
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "content" -}}
+{{- with .ClustersStatus}}
 <h2>Clusters Status</h2>
-<p>Hub, managed clusters, and S3 storage status details here.</p>
+
+{{- with .Hub}}
+<section>
+    <h3>Hub</h3>
+    <section>
+        <h4>Ramen</h4>
+        {{template "ramen" .Ramen}}
+    </section>
+    <section>
+        <h4>DRPolicies</h4>
+        {{template "drpolicies" .DRPolicies}}
+    </section>
+    <section>
+        <h4>DRClusters</h4>
+        {{template "drclusters" .DRClusters}}
+    </section>
+</section>
+{{- end}}
+
+{{- range .Clusters}}
+<section>
+    <h3>Managed Cluster: {{.Name}}</h3>
+    <section>
+        <h4>Ramen</h4>
+        {{template "ramen" .Ramen}}
+    </section>
+</section>
+{{- end}}
+
+{{- with .S3}}
+<section>
+    <h3>S3 Stores</h3>
+    {{template "s3" .Profiles}}
+</section>
+{{- end}}
+{{- end}}
 {{- end}}
