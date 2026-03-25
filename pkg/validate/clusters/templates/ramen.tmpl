@@ -1,5 +1,62 @@
 {{/* SPDX-FileCopyrightText: The RamenDR authors */}}
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "ramen" -}}
-<p>Ramen operator details here.</p>
+{{- with .Deployment}}
+<section>
+    <h5>Deployment</h5>
+    <dl class="metadata">
+        <dt>Name</dt>
+        <dd>{{.Name}}</dd>
+        <dt>Namespace</dt>
+        <dd>{{.Namespace}}</dd>
+    </dl>
+    <dl class="validation">
+        <dt>Replicas</dt>
+        <dd>{{template "validated" .Replicas}}</dd>
+        {{- if isProblem .Deleted.State}}
+            <dt>Deleted</dt>
+            <dd>{{template "validated" .Deleted}}</dd>
+        {{- end}}
+    </dl>
+    <section>
+        <h6>Conditions</h6>
+        {{template "conditions" .Conditions}}
+    </section>
+</section>
+{{- end}}
+{{- with .ConfigMap}}
+<section>
+    <h5>ConfigMap</h5>
+    <dl class="metadata">
+        <dt>Name</dt>
+        <dd>{{.Name}}</dd>
+        <dt>Namespace</dt>
+        <dd>{{.Namespace}}</dd>
+    </dl>
+    <dl class="validation">
+        <dt>Controller Type</dt>
+        <dd>{{template "validated" .RamenControllerType}}</dd>
+        {{- if isProblem .Deleted.State}}
+            <dt>Deleted</dt>
+            <dd>{{template "validated" .Deleted}}</dd>
+        {{- end}}
+    </dl>
+    <section>
+        <h6>S3 Store Profiles</h6>
+        <dl class="validation">
+            <dt>Profiles</dt>
+            <dd>
+                <span class="value">{{len .S3StoreProfiles.Value}}</span>
+                <span class="state">{{icon .S3StoreProfiles.State}}</span>
+                {{- if .S3StoreProfiles.Description}}
+                    <p class="description">{{.S3StoreProfiles.Description}}</p>
+                {{- end}}
+            </dd>
+        </dl>
+        {{- range .S3StoreProfiles.Value}}
+            {{template "s3profile" .}}
+        {{- end}}
+    </section>
+</section>
+{{- end}}
 {{- end}}

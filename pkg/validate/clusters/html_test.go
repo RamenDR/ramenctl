@@ -32,6 +32,7 @@ func TestTemplate(t *testing.T) {
 		"drpolicies",
 		"ramen",
 		"s3",
+		"s3profile",
 	}
 	for _, name := range expected {
 		if tmpl.Lookup(name) == nil {
