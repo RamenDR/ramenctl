@@ -1,7 +1,6 @@
 {{/* SPDX-FileCopyrightText: The RamenDR authors */}}
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "s3" -}}
-{{- with .Profiles}}
 <dl class="validation">
     <dt>Profiles</dt>
     <dd>
@@ -20,6 +19,5 @@
             <dd>{{template "validated" .Gathered}}</dd>
         </dl>
     </section>
-{{- end}}
 {{- end}}
 {{- end}}

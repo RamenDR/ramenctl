@@ -1,34 +1,44 @@
 {{/* SPDX-FileCopyrightText: The RamenDR authors */}}
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "content" -}}
+{{- with .ApplicationStatus}}
 <h2>Application Status</h2>
 
+{{- with .Hub}}
 <section>
     <h3>Hub</h3>
     <section>
         <h4>DRPC</h4>
-        {{template "drpc" .ApplicationStatus.Hub.DRPC}}
+        {{template "drpc" .DRPC}}
     </section>
 </section>
+{{- end}}
 
+{{- with .PrimaryCluster}}
 <section>
-    <h3>Primary Cluster: {{.ApplicationStatus.PrimaryCluster.Name}}</h3>
+    <h3>Primary Cluster: {{.Name}}</h3>
     <section>
         <h4>VRG</h4>
-        {{template "vrg" .ApplicationStatus.PrimaryCluster.VRG}}
+        {{template "vrg" .VRG}}
     </section>
 </section>
+{{- end}}
 
+{{- with .SecondaryCluster}}
 <section>
-    <h3>Secondary Cluster: {{.ApplicationStatus.SecondaryCluster.Name}}</h3>
+    <h3>Secondary Cluster: {{.Name}}</h3>
     <section>
         <h4>VRG</h4>
-        {{template "vrg" .ApplicationStatus.SecondaryCluster.VRG}}
+        {{template "vrg" .VRG}}
     </section>
 </section>
+{{- end}}
 
+{{- with .S3}}
 <section>
     <h3>S3 Stores</h3>
-    {{template "s3" .ApplicationStatus.S3}}
+    {{template "s3" .Profiles}}
 </section>
+{{- end}}
+{{- end}}
 {{- end}}
