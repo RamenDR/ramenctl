@@ -120,7 +120,86 @@
           </section>
           <section>
             <h4>DRPolicies</h4>
-            <p>DRPolicies details here.</p>
+            <dl class="validation">
+              <dt>Policies</dt>
+              <dd><span class="value">2</span><span class="state">✅</span></dd>
+            </dl>
+            <section>
+              <h5>dr-policy-1m</h5>
+              <dl class="metadata">
+                <dt>Scheduling Interval</dt>
+                <dd>1m</dd>
+                <dt>DRClusters</dt>
+                <dd>dr1, dr2</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Peer Classes</dt>
+                <dd>
+                  <span class="value">2</span><span class="state">✅</span>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Storage Class</dt>
+                        <dd>rook-ceph-block</dd>
+                        <dt>Replication ID</dt>
+                        <dd>rook-ceph-replication-1</dd>
+                      </dl>
+                    </li>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Storage Class</dt>
+                        <dd>rook-cephfs-fs1</dd>
+                      </dl>
+                    </li>
+                  </ul>
+                </dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>Validated</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+            <section>
+              <h5>dr-policy-5m</h5>
+              <dl class="metadata">
+                <dt>Scheduling Interval</dt>
+                <dd>5m</dd>
+                <dt>DRClusters</dt>
+                <dd>dr1, dr2</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Peer Classes</dt>
+                <dd>
+                  <span class="value">2</span><span class="state">✅</span>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Storage Class</dt>
+                        <dd>rook-ceph-block</dd>
+                        <dt>Replication ID</dt>
+                        <dd>rook-ceph-replication-1</dd>
+                      </dl>
+                    </li>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Storage Class</dt>
+                        <dd>rook-cephfs-fs1</dd>
+                      </dl>
+                    </li>
+                  </ul>
+                </dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>Validated</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
           </section>
           <section>
             <h4>DRClusters</h4>
