@@ -19,16 +19,6 @@
 </dl>
 <section>
     <h6>Conditions</h6>
-    <dl class="validation">
-        {{- range .Conditions}}
-        <dt>{{.Type}}</dt>
-        <dd>
-            <span class="state">{{icon .State}}</span>
-            {{- if .Description}}
-                <p class="description">{{.Description}}</p>
-            {{- end}}
-        </dd>
-        {{- end}}
-    </dl>
+    {{template "conditions" .Conditions}}
 </section>
 {{- end}}

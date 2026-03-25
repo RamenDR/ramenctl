@@ -17,17 +17,7 @@
 </dl>
 <section>
     <h5>Conditions</h5>
-    <dl class="validation">
-        {{- range .Conditions}}
-        <dt>{{.Type}}</dt>
-        <dd>
-            <span class="state">{{icon .State}}</span>
-            {{- if .Description}}
-                <p class="description">{{.Description}}</p>
-            {{- end}}
-        </dd>
-        {{- end}}
-    </dl>
+    {{template "conditions" .Conditions}}
 </section>
 {{- range .ProtectedPVCs}}
 <section>

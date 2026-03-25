@@ -1,0 +1,15 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "conditions" -}}
+<dl class="validation">
+    {{- range .}}
+    <dt>{{.Type}}</dt>
+    <dd>
+        <span class="state">{{icon .State}}</span>
+        {{- if .Description}}
+            <p class="description">{{.Description}}</p>
+        {{- end}}
+    </dd>
+    {{- end}}
+</dl>
+{{- end}}

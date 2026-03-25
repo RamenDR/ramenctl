@@ -22,6 +22,7 @@ func TestTemplate(t *testing.T) {
 
 	expected := []string{
 		// Shared templates from pkg/report.
+		"conditions",
 		"report.tmpl",
 		"style",
 		"validated",
