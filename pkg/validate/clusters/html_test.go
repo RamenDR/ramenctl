@@ -42,7 +42,7 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestWriteHTML(t *testing.T) {
-	for _, name := range []string{"ok"} {
+	for _, name := range []string{"ok", "problem"} {
 		t.Run(name, func(t *testing.T) {
 			data, err := os.ReadFile("testdata/" + name + ".yaml")
 			if err != nil {

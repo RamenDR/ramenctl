@@ -1,0 +1,146 @@
+build:
+  commit: c306e20340a666f0124ad7e1c50cf0cd0531b094
+  version: v0.17.0-15-gc306e20
+clustersStatus:
+  clusters:
+  - name: dr1
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          description: Found 0 S3 profile(s), expected at least 2
+          state: problem ❌
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  - name: dr2
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        s3StoreProfiles:
+          description: Found 0 S3 profile(s), expected at least 2
+          state: problem ❌
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  hub:
+    drClusters:
+      description: 2 DRClusters required, 0 found
+      state: problem ❌
+    drPolicies:
+      description: No DRPolicies found
+      state: problem ❌
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator-config
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-hub
+        s3StoreProfiles:
+          description: Found 0 S3 profile(s), expected at least 2
+          state: problem ❌
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator
+        namespace: ramen-system
+        replicas:
+          state: ok ✅
+          value: 1
+  s3:
+    profiles:
+      description: No s3 profiles found
+      state: problem ❌
+config:
+  clusterSet: default
+  clusters:
+    c1:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+    c2:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+    hub:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+    passive-hub:
+      kubeconfig: ""
+  distro: k8s
+  namespaces:
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
+created: "2026-03-23T18:20:41.492824+02:00"
+duration: 1.0514195
+host:
+  arch: arm64
+  cpus: 12
+  os: darwin
+name: validate-clusters
+namespaces:
+- ramen-system
+status: failed
+steps:
+- duration: 0.01470725
+  name: validate config
+  status: passed
+- duration: 1.03671225
+  items:
+  - duration: 0.400634917
+    name: gather "hub"
+    status: passed
+  - duration: 1.031236542
+    name: gather "dr1"
+    status: passed
+  - duration: 1.031572667
+    name: gather "dr2"
+    status: passed
+  - duration: 0.000656625
+    name: inspect S3 profiles
+    status: failed
+  - duration: 0.003252208
+    name: validate clusters data
+    status: failed
+  name: validate clusters
+  status: failed
+summary:
+  ok: 18
+  problem: 6

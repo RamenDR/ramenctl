@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Clusters Validation Report</title>
+    <style> body { font-family: system-ui, sans-serif; } </style>
+  </head>
+  <body>
+    <header>
+      <h1>Clusters Validation Report</h1>
+      <p class="result"><span class="status failed">failed</span><span class="summary">18 ok, 0 stale, 6 problem</span></p>
+      <dl class="timing">
+        <dt>Created</dt>
+        <dd>2026-03-23 18:20:41 &#43;0200</dd>
+        <dt>Duration</dt>
+        <dd>1.05s</dd>
+      </dl>
+    </header>
+    <main>
+      <section>
+        <h2>Clusters Status</h2>
+        <section>
+          <h3>Hub</h3>
+          <section>
+            <h4>Ramen</h4>
+            <section>
+              <h5>Deployment</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-hub-operator</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Replicas</dt>
+                <dd><span class="value">1</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>Available</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>Progressing</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+            <section>
+              <h5>ConfigMap</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-hub-operator-config</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Controller Type</dt>
+                <dd><span class="value">dr-hub</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>S3 Store Profiles</h6>
+                <dl class="validation">
+                  <dt>Profiles</dt>
+                  <dd>
+                    <span class="value">0</span><span class="state">❌</span>
+                    <p class="description">Found 0 S3 profile(s), expected at least 2</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h4>DRPolicies</h4>
+            <dl class="validation">
+              <dt>Policies</dt>
+              <dd>
+                <span class="value">0</span><span class="state">❌</span>
+                <p class="description">No DRPolicies found</p>
+              </dd>
+            </dl>
+          </section>
+          <section>
+            <h4>DRClusters</h4>
+            <dl class="validation">
+              <dt>Clusters</dt>
+              <dd>
+                <span class="value">0</span><span class="state">❌</span>
+                <p class="description">2 DRClusters required, 0 found</p>
+              </dd>
+            </dl>
+          </section>
+        </section>
+        <section>
+          <h3>Managed Cluster: dr1</h3>
+          <section>
+            <h4>Ramen</h4>
+            <section>
+              <h5>Deployment</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-dr-cluster-operator</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Replicas</dt>
+                <dd><span class="value">1</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>Available</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>Progressing</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+            <section>
+              <h5>ConfigMap</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-dr-cluster-operator-config</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Controller Type</dt>
+                <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>S3 Store Profiles</h6>
+                <dl class="validation">
+                  <dt>Profiles</dt>
+                  <dd>
+                    <span class="value">0</span><span class="state">❌</span>
+                    <p class="description">Found 0 S3 profile(s), expected at least 2</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+        </section>
+        <section>
+          <h3>Managed Cluster: dr2</h3>
+          <section>
+            <h4>Ramen</h4>
+            <section>
+              <h5>Deployment</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-dr-cluster-operator</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Replicas</dt>
+                <dd><span class="value">1</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>Conditions</h6>
+                <dl class="validation">
+                  <dt>Available</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>Progressing</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+            <section>
+              <h5>ConfigMap</h5>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>ramen-dr-cluster-operator-config</dd>
+                <dt>Namespace</dt>
+                <dd>ramen-system</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Controller Type</dt>
+                <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h6>S3 Store Profiles</h6>
+                <dl class="validation">
+                  <dt>Profiles</dt>
+                  <dd>
+                    <span class="value">0</span><span class="state">❌</span>
+                    <p class="description">Found 0 S3 profile(s), expected at least 2</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+        </section>
+        <section>
+          <h3>S3 Stores</h3>
+          <dl class="validation">
+            <dt>Profiles</dt>
+            <dd>
+              <span class="value">0</span><span class="state">❌</span>
+              <p class="description">No s3 profiles found</p>
+            </dd>
+          </dl>
+        </section>
+      </section>
+      <section>
+        <h2>Report Details</h2>
+        <section>
+          <h3>Build</h3>
+          <dl class="metadata">
+            <dt>Version</dt>
+            <dd>v0.17.0-15-gc306e20</dd>
+            <dt>Commit</dt>
+            <dd>c306e20340a666f0124ad7e1c50cf0cd0531b094</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Host</h3>
+          <dl class="metadata">
+            <dt>OS</dt>
+            <dd>darwin</dd>
+            <dt>Arch</dt>
+            <dd>arm64</dd>
+            <dt>CPUs</dt>
+            <dd>12</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Namespaces</h3>
+          <ul>
+            <li>ramen-system</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Config</h3>
+          <pre>clusterSet: default
+clusters:
+  c1:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+  c2:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+  hub:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+  passive-hub:
+    kubeconfig: &#34;&#34;
+distro: k8s
+namespaces:
+  argocdNamespace: argocd
+  ramenDRClusterNamespace: ramen-system
+  ramenHubNamespace: ramen-system
+  ramenOpsNamespace: ramen-ops
+</pre>
+        </section>
+        <section>
+          <h3>Steps</h3>
+          <ul class="steps">
+            <li class="step passed"><span>validate config</span><span>0.01s</span></li>
+            <li class="step failed">
+              <span>validate clusters</span><span>1.04s</span>
+              <ul>
+                <li class="step passed"><span>gather &#34;hub&#34;</span><span>0.40s</span></li>
+                <li class="step passed"><span>gather &#34;dr1&#34;</span><span>1.03s</span></li>
+                <li class="step passed"><span>gather &#34;dr2&#34;</span><span>1.03s</span></li>
+                <li class="step failed"><span>inspect S3 profiles</span><span>0.00s</span></li>
+                <li class="step failed"><span>validate clusters data</span><span>0.00s</span></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
