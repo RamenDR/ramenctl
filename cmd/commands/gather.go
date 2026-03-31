@@ -4,10 +4,11 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ramendr/ramenctl/pkg/command"
-	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gather"
 )
 
@@ -28,7 +29,7 @@ var GatherApplicationCmd = &cobra.Command{
 			DRPCName:      drpcName,
 			DRPCNamespace: drpcNamespace,
 		}); err != nil {
-			console.Fatal(err)
+			os.Exit(1)
 		}
 	},
 }

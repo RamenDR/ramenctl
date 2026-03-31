@@ -4,10 +4,11 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ramendr/ramenctl/pkg/command"
-	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/validate"
 )
 
@@ -24,7 +25,7 @@ var ValidateClustersCmd = &cobra.Command{
 			ConfigFile: configFile,
 			OutputDir:  outputDir,
 		}); err != nil {
-			console.Fatal(err)
+			os.Exit(1)
 		}
 	},
 }
@@ -41,7 +42,7 @@ var ValidateApplicationCmd = &cobra.Command{
 			DRPCName:      drpcName,
 			DRPCNamespace: drpcNamespace,
 		}); err != nil {
-			console.Fatal(err)
+			os.Exit(1)
 		}
 	},
 }

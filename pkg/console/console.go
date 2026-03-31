@@ -4,9 +4,13 @@
 package console
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
+
+// errReported is returned by Failed to signal that the error was already reported to the user.
+var errReported = errors.New("command failed")
 
 func Info(format string, args ...any) {
 	fmt.Printf("⭐ "+format+"\n", args...)
@@ -37,8 +41,9 @@ func Hint(format string, args ...any) {
 	fmt.Printf("   "+format+"\n", args...)
 }
 
-// Fatal logs command failure and exit.
-func Fatal(err error) {
+// Failed logs command failure and returns a generic error to signal failure without duplicating
+// the error message.
+func Failed(err error) error {
 	fmt.Fprintf(os.Stderr, "\n❌ %s\n", err)
-	os.Exit(1)
+	return errReported
 }

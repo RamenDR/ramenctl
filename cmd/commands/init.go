@@ -4,6 +4,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -21,7 +23,8 @@ var InitCmd = &cobra.Command{
 			RootCmd.DisplayName(),
 			envFile,
 		); err != nil {
-			console.Fatal(err)
+			_ = console.Failed(err)
+			os.Exit(1)
 		}
 		console.Completed("Created config file %q - please modify for your clusters", configFile)
 	},
