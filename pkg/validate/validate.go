@@ -25,11 +25,17 @@ func Clusters(opts command.Options) error {
 	defer cmd.Close()
 
 	validate := clusters.NewCommand(cmd, cfg, validation.Backend{})
+
+	var failed error
 	if err := validate.Run(); err != nil {
-		return console.Failed(err)
+		failed = console.Failed(err)
 	}
 
-	return nil
+	if opts.Interactive {
+		cmd.BrowseReport()
+	}
+
+	return failed
 }
 
 func Application(opts command.ApplicationOptions) error {
@@ -45,9 +51,15 @@ func Application(opts command.ApplicationOptions) error {
 	defer cmd.Close()
 
 	validate := application.NewCommand(cmd, cfg, validation.Backend{}, opts)
+
+	var failed error
 	if err := validate.Run(); err != nil {
-		return console.Failed(err)
+		failed = console.Failed(err)
 	}
 
-	return nil
+	if opts.Interactive {
+		cmd.BrowseReport()
+	}
+
+	return failed
 }
