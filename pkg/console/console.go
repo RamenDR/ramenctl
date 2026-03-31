@@ -32,6 +32,11 @@ func Completed(format string, args ...any) {
 	fmt.Printf("\n✅ "+format+"\n", args...)
 }
 
+// Hint logs a suggestion to the user, indented under the previous message.
+func Hint(format string, args ...any) {
+	fmt.Printf("   "+format+"\n", args...)
+}
+
 // Fatal logs command failure and exit.
 func Fatal(err error) {
 	fmt.Fprintf(os.Stderr, "\n❌ %s\n", err)
