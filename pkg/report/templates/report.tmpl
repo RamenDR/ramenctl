@@ -40,7 +40,7 @@
                 <dt>Version</dt>
                 <dd>{{.Version}}</dd>
                 <dt>Commit</dt>
-                <dd>{{.Commit}}</dd>
+                <dd title="{{.Commit}}">{{truncate .Commit 10}}</dd>
             </dl>
         </section>
         {{- end}}

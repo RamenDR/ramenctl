@@ -36,6 +36,8 @@ func Template() (*template.Template, error) {
 		"formatYAML":     formatYAML,
 		"icon":           icon,
 		"isProblem":      isProblem,
+		"truncate":       truncate,
+		"isTruncated":    isTruncated,
 	}
 	return template.New("").Funcs(funcs).ParseFS(templates, "templates/*.tmpl")
 }
@@ -57,6 +59,20 @@ func icon(s ValidationState) string {
 	default:
 		return ""
 	}
+}
+
+// truncate shortens a value to n characters, appending ".." if truncated.
+func truncate(v any, n int) string {
+	s := fmt.Sprint(v)
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "..."
+}
+
+// isTruncated returns true if the value would be truncated by truncate().
+func isTruncated(v any, n int) bool {
+	return len(fmt.Sprint(v)) > n
 }
 
 // formatTime formats a time value for display in reports.
