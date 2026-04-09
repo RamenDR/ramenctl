@@ -149,7 +149,7 @@
           </section>
         </div>
       </section>
-      <section>
+      <div class="details-grid">
         <h2>Report Details</h2>
         <section>
           <h3>Build</h3>
@@ -159,8 +159,6 @@
             <dt>Commit</dt>
             <dd title="c5cc831b601f99c3a83a297da6840c3f21376b39">c5cc831b60...</dd>
           </dl>
-        </section>
-        <section>
           <h3>Host</h3>
           <dl class="metadata">
             <dt>OS</dt>
@@ -170,10 +168,8 @@
             <dt>CPUs</dt>
             <dd>12</dd>
           </dl>
-        </section>
-        <section>
           <h3>Namespaces</h3>
-          <ul>
+          <ul class="namespaces">
             <li>argocd</li>
             <li>ramen-system</li>
             <li>test-appset-deploy-rbd</li>
@@ -202,23 +198,23 @@ namespaces:
         <section>
           <h3>Steps</h3>
           <ul class="steps">
-            <li class="step passed"><span>validate config</span><span>0.01s</span></li>
+            <li class="step passed"><span class="step-name">validate config</span><span class="step-duration">0.01s</span></li>
             <li class="step passed">
-              <span>validate application</span><span>2.20s</span>
+              <span class="step-name">validate application</span><span class="step-duration">2.20s</span>
               <ul>
-                <li class="step passed"><span>inspect application</span><span>0.00s</span></li>
-                <li class="step passed"><span>gather &#34;hub&#34;</span><span>1.22s</span></li>
-                <li class="step passed"><span>gather &#34;dr2&#34;</span><span>2.14s</span></li>
-                <li class="step passed"><span>gather &#34;dr1&#34;</span><span>2.18s</span></li>
-                <li class="step passed"><span>inspect S3 profiles</span><span>0.00s</span></li>
-                <li class="step passed"><span>gather S3 profile &#34;minio-on-dr2&#34;</span><span>0.01s</span></li>
-                <li class="step passed"><span>gather S3 profile &#34;minio-on-dr1&#34;</span><span>0.01s</span></li>
-                <li class="step passed"><span>validate data</span><span>0.00s</span></li>
+                <li class="step passed"><span class="step-name">inspect application</span><span class="step-duration">0.00s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;hub&#34;</span><span class="step-duration">1.22s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr2&#34;</span><span class="step-duration">2.14s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr1&#34;</span><span class="step-duration">2.18s</span></li>
+                <li class="step passed"><span class="step-name">inspect S3 profiles</span><span class="step-duration">0.00s</span></li>
+                <li class="step passed"><span class="step-name">gather S3 profile &#34;minio-on-dr2&#34;</span><span class="step-duration">0.01s</span></li>
+                <li class="step passed"><span class="step-name">gather S3 profile &#34;minio-on-dr1&#34;</span><span class="step-duration">0.01s</span></li>
+                <li class="step passed"><span class="step-name">validate data</span><span class="step-duration">0.00s</span></li>
               </ul>
             </li>
           </ul>
         </section>
-      </section>
+      </div>
     </main>
   </body>
 </html>

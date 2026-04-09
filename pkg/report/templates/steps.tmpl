@@ -3,8 +3,8 @@
 {{define "steps" -}}
 {{- range .}}
 <li class="step {{.Status}}">
-    <span>{{.Name}}</span>
-    <span>{{formatDuration .Duration}}</span>
+    <span class="step-name">{{.Name}}</span>
+    <span class="step-duration">{{formatDuration .Duration}}</span>
     {{- with .Items}}
     <ul>
         {{- template "steps" .}}

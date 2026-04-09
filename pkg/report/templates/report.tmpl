@@ -26,10 +26,10 @@
         {{template "content" .}}
     </section>
 
-    <section>
+    <div class="details-grid">
         <h2>Report Details</h2>
-        {{- with .Build}}
         <section>
+            {{- with .Build}}
             <h3>Build</h3>
             <dl class="metadata">
                 <dt>Version</dt>
@@ -37,9 +37,7 @@
                 <dt>Commit</dt>
                 <dd title="{{.Commit}}">{{truncate .Commit 10}}</dd>
             </dl>
-        </section>
-        {{- end}}
-        <section>
+            {{- end}}
             <h3>Host</h3>
             <dl class="metadata">
                 <dt>OS</dt>
@@ -49,17 +47,15 @@
                 <dt>CPUs</dt>
                 <dd>{{.Host.Cpus}}</dd>
             </dl>
-        </section>
-        {{- with .Namespaces}}
-        <section>
+            {{- with .Namespaces}}
             <h3>Namespaces</h3>
-            <ul>
+            <ul class="namespaces">
                 {{- range .}}
                 <li>{{.}}</li>
                 {{- end}}
             </ul>
+            {{- end}}
         </section>
-        {{- end}}
         <section>
             <h3>Config</h3>
             <pre>{{formatYAML .Config}}</pre>
@@ -70,7 +66,7 @@
                 {{- template "steps" .Steps}}
             </ul>
         </section>
-    </section>
+    </div>
 </main>
 </body>
 </html>

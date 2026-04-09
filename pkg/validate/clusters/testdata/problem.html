@@ -200,7 +200,7 @@
           </section>
         </div>
       </section>
-      <section>
+      <div class="details-grid">
         <h2>Report Details</h2>
         <section>
           <h3>Build</h3>
@@ -210,8 +210,6 @@
             <dt>Commit</dt>
             <dd title="c306e20340a666f0124ad7e1c50cf0cd0531b094">c306e20340...</dd>
           </dl>
-        </section>
-        <section>
           <h3>Host</h3>
           <dl class="metadata">
             <dt>OS</dt>
@@ -221,10 +219,8 @@
             <dt>CPUs</dt>
             <dd>12</dd>
           </dl>
-        </section>
-        <section>
           <h3>Namespaces</h3>
-          <ul>
+          <ul class="namespaces">
             <li>ramen-system</li>
           </ul>
         </section>
@@ -251,20 +247,20 @@ namespaces:
         <section>
           <h3>Steps</h3>
           <ul class="steps">
-            <li class="step passed"><span>validate config</span><span>0.01s</span></li>
+            <li class="step passed"><span class="step-name">validate config</span><span class="step-duration">0.01s</span></li>
             <li class="step failed">
-              <span>validate clusters</span><span>1.04s</span>
+              <span class="step-name">validate clusters</span><span class="step-duration">1.04s</span>
               <ul>
-                <li class="step passed"><span>gather &#34;hub&#34;</span><span>0.40s</span></li>
-                <li class="step passed"><span>gather &#34;dr1&#34;</span><span>1.03s</span></li>
-                <li class="step passed"><span>gather &#34;dr2&#34;</span><span>1.03s</span></li>
-                <li class="step failed"><span>inspect S3 profiles</span><span>0.00s</span></li>
-                <li class="step failed"><span>validate clusters data</span><span>0.00s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;hub&#34;</span><span class="step-duration">0.40s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr1&#34;</span><span class="step-duration">1.03s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr2&#34;</span><span class="step-duration">1.03s</span></li>
+                <li class="step failed"><span class="step-name">inspect S3 profiles</span><span class="step-duration">0.00s</span></li>
+                <li class="step failed"><span class="step-name">validate clusters data</span><span class="step-duration">0.00s</span></li>
               </ul>
             </li>
           </ul>
         </section>
-      </section>
+      </div>
     </main>
   </body>
 </html>
