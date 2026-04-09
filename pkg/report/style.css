@@ -16,3 +16,76 @@ h5,
 h6 {
     font-size: 1.1em;
 }
+
+section {
+    max-width: 40em;
+}
+
+/*
+ * dl.metadata - key/value pairs:
+ *
+ *   key ... value
+ *   key ... value
+ *
+ * dl.validation - key/value pairs with state icon,
+ * optional description, and optional nested dl:
+ *
+ *   key ... value text .............................. icon
+ *           optional description
+ *
+ *   key ... nested key ... value .................... icon
+ *
+ *       ... nested key ... value .................... icon
+ *                          optional description
+ */
+
+dl.metadata,
+dl.validation {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    align-items: baseline;
+    margin: 0;
+    width: 100%;
+}
+
+dl.metadata+dl.validation,
+dl.validation+dl.metadata {
+    margin-top: 4px;
+}
+
+dl.metadata dt,
+dl.validation dt {
+    color: gray;
+}
+
+dl.metadata dd,
+dl.validation dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    min-width: 0;
+}
+
+.value {
+    flex: 1;
+}
+
+.state {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.description {
+    flex-basis: 100%;
+    font-size: 0.85em;
+    margin: 0;
+}
+
+dd>ul {
+    flex-basis: 100%;
+    list-style: none;
+    padding: 0;
+}
