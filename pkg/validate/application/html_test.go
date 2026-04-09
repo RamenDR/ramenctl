@@ -89,7 +89,7 @@ func TestHeaderData(t *testing.T) {
 	actual := d.HeaderData()
 
 	expected := report.HeaderData{
-		Title:    "Application Validation Report",
+		Title:    "Validate Application",
 		Subtitle: "argocd / appset-deploy-rbd",
 	}
 

@@ -23,7 +23,7 @@ type templateData struct {
 // HeaderData returns data for the report template.
 func (d *templateData) HeaderData() report.HeaderData {
 	return report.HeaderData{
-		Title:    "Application Validation Report",
+		Title:    "Validate Application",
 		Subtitle: d.Application.Namespace + " / " + d.Application.Name,
 	}
 }

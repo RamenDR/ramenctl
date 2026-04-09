@@ -86,7 +86,7 @@ func TestHeaderData(t *testing.T) {
 	actual := d.HeaderData()
 
 	expected := report.HeaderData{
-		Title: "Clusters Validation Report",
+		Title: "Validate Clusters",
 	}
 
 	if actual != expected {

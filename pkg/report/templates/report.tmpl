@@ -9,22 +9,17 @@
 </head>
 <body>
 <header>
-    <h1>{{.HeaderData.Title}}</h1>
-{{- if .HeaderData.Subtitle}}
-    <p class="subtitle">{{.HeaderData.Subtitle}}</p>
-{{- end}}
-    <p class="result">
+    <h1>{{.HeaderData.Title}}{{- if .HeaderData.Subtitle}} <span class="subtitle">{{.HeaderData.Subtitle}}</span>{{- end}}</h1>
+    <div class="result">
         <span class="status {{.Status}}">{{.Status}}</span>
         {{- if .Summary}}
-            <span class="summary">{{.SummaryString}}</span>
+        <span class="summary">{{.SummaryString}}</span>
         {{- end}}
-    </p>
-    <dl class="timing">
-        <dt>Created</dt>
-        <dd>{{formatTime .Created}}</dd>
-        <dt>Duration</dt>
-        <dd>{{formatDuration .Duration}}</dd>
-    </dl>
+    </div>
+    <footer>
+        <span>Created {{formatTime .Created}}</span>
+        <span>Duration {{formatDuration .Duration}}</span>
+    </footer>
 </header>
 <main>
     <section>
