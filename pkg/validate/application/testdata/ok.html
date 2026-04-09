@@ -13,139 +13,141 @@
     </header>
     <main>
       <section>
-        <h2>Application Status</h2>
-        <section>
-          <h3>Hub</h3>
+        <div class="main-grid">
+          <h2>Application Status</h2>
           <section>
-            <h4>DRPC</h4>
-            <dl class="metadata">
-              <dt>Name</dt>
-              <dd>appset-deploy-rbd</dd>
-              <dt>Namespace</dt>
-              <dd>argocd</dd>
-              <dt>DRPolicy</dt>
-              <dd>dr-policy-1m</dd>
-            </dl>
-            <dl class="validation">
-              <dt>Action</dt>
-              <dd><span class="value"></span><span class="state">✅</span></dd>
-              <dt>Phase</dt>
-              <dd><span class="value">Deployed</span><span class="state">✅</span></dd>
-              <dt>Progression</dt>
-              <dd><span class="value">Completed</span><span class="state">✅</span></dd>
-            </dl>
+            <h3>Hub</h3>
             <section>
-              <h5>Conditions</h5>
-              <dl class="validation">
-                <dt>Available</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>PeerReady</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>Protected</dt>
-                <dd><span class="state">✅</span></dd>
-              </dl>
-            </section>
-          </section>
-        </section>
-        <section>
-          <h3>Primary Cluster: dr1</h3>
-          <section>
-            <h4>VRG</h4>
-            <dl class="metadata">
-              <dt>Name</dt>
-              <dd>appset-deploy-rbd</dd>
-              <dt>Namespace</dt>
-              <dd>test-appset-deploy-rbd</dd>
-            </dl>
-            <dl class="validation">
-              <dt>State</dt>
-              <dd><span class="value">Primary</span><span class="state">✅</span></dd>
-            </dl>
-            <section>
-              <h5>Conditions</h5>
-              <dl class="validation">
-                <dt>DataReady</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>ClusterDataReady</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>ClusterDataProtected</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>KubeObjectsReady</dt>
-                <dd><span class="state">✅</span></dd>
-                <dt>NoClusterDataConflict</dt>
-                <dd><span class="state">✅</span></dd>
-              </dl>
-            </section>
-            <section>
-              <h5>PVC: busybox-pvc</h5>
+              <h4>DRPC</h4>
               <dl class="metadata">
                 <dt>Name</dt>
-                <dd>busybox-pvc</dd>
+                <dd>appset-deploy-rbd</dd>
                 <dt>Namespace</dt>
-                <dd>test-appset-deploy-rbd</dd>
-                <dt>Replication</dt>
-                <dd>volrep</dd>
+                <dd>argocd</dd>
+                <dt>DRPolicy</dt>
+                <dd>dr-policy-1m</dd>
               </dl>
               <dl class="validation">
+                <dt>Action</dt>
+                <dd><span class="value"></span><span class="state">✅</span></dd>
                 <dt>Phase</dt>
-                <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                <dd><span class="value">Deployed</span><span class="state">✅</span></dd>
+                <dt>Progression</dt>
+                <dd><span class="value">Completed</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h6>Conditions</h6>
+                <h5>Conditions</h5>
                 <dl class="validation">
-                  <dt>DataReady</dt>
+                  <dt>Available</dt>
                   <dd><span class="state">✅</span></dd>
-                  <dt>ClusterDataProtected</dt>
+                  <dt>PeerReady</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>Protected</dt>
                   <dd><span class="state">✅</span></dd>
                 </dl>
               </section>
             </section>
           </section>
-        </section>
-        <section>
-          <h3>Secondary Cluster: dr2</h3>
           <section>
-            <h4>VRG</h4>
-            <dl class="metadata">
-              <dt>Name</dt>
-              <dd>appset-deploy-rbd</dd>
-              <dt>Namespace</dt>
-              <dd>test-appset-deploy-rbd</dd>
-            </dl>
+            <h3>Primary Cluster: dr1</h3>
+            <section>
+              <h4>VRG</h4>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>appset-deploy-rbd</dd>
+                <dt>Namespace</dt>
+                <dd>test-appset-deploy-rbd</dd>
+              </dl>
+              <dl class="validation">
+                <dt>State</dt>
+                <dd><span class="value">Primary</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h5>Conditions</h5>
+                <dl class="validation">
+                  <dt>DataReady</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>ClusterDataReady</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>ClusterDataProtected</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>KubeObjectsReady</dt>
+                  <dd><span class="state">✅</span></dd>
+                  <dt>NoClusterDataConflict</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+              <section>
+                <h5>PVC: busybox-pvc</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>busybox-pvc</dd>
+                  <dt>Namespace</dt>
+                  <dd>test-appset-deploy-rbd</dd>
+                  <dt>Replication</dt>
+                  <dd>volrep</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Phase</dt>
+                  <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>DataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataProtected</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Secondary Cluster: dr2</h3>
+            <section>
+              <h4>VRG</h4>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>appset-deploy-rbd</dd>
+                <dt>Namespace</dt>
+                <dd>test-appset-deploy-rbd</dd>
+              </dl>
+              <dl class="validation">
+                <dt>State</dt>
+                <dd><span class="value">Secondary</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h5>Conditions</h5>
+                <dl class="validation">
+                  <dt>NoClusterDataConflict</dt>
+                  <dd><span class="state">✅</span></dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>S3 Stores</h3>
             <dl class="validation">
-              <dt>State</dt>
-              <dd><span class="value">Secondary</span><span class="state">✅</span></dd>
+              <dt>Profiles</dt>
+              <dd><span class="value">2</span><span class="state">✅</span></dd>
             </dl>
             <section>
-              <h5>Conditions</h5>
+              <h4>minio-on-dr2</h4>
               <dl class="validation">
-                <dt>NoClusterDataConflict</dt>
-                <dd><span class="state">✅</span></dd>
+                <dt>Gathered</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
+              </dl>
+            </section>
+            <section>
+              <h4>minio-on-dr1</h4>
+              <dl class="validation">
+                <dt>Gathered</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
               </dl>
             </section>
           </section>
-        </section>
-        <section>
-          <h3>S3 Stores</h3>
-          <dl class="validation">
-            <dt>Profiles</dt>
-            <dd><span class="value">2</span><span class="state">✅</span></dd>
-          </dl>
-          <section>
-            <h4>minio-on-dr2</h4>
-            <dl class="validation">
-              <dt>Gathered</dt>
-              <dd><span class="value">true</span><span class="state">✅</span></dd>
-            </dl>
-          </section>
-          <section>
-            <h4>minio-on-dr1</h4>
-            <dl class="validation">
-              <dt>Gathered</dt>
-              <dd><span class="value">true</span><span class="state">✅</span></dd>
-            </dl>
-          </section>
-        </section>
+        </div>
       </section>
       <section>
         <h2>Report Details</h2>

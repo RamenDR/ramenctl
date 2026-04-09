@@ -13,490 +13,492 @@
     </header>
     <main>
       <section>
-        <h2>Clusters Status</h2>
-        <section>
-          <h3>Hub</h3>
+        <div class="main-grid">
+          <h2>Clusters Status</h2>
           <section>
-            <h4>Ramen</h4>
+            <h3>Hub</h3>
             <section>
-              <h5>Deployment</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-hub-operator</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
-              <dl class="validation">
-                <dt>Replicas</dt>
-                <dd><span class="value">1</span><span class="state">✅</span></dd>
-              </dl>
+              <h4>Ramen</h4>
               <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Available</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Progressing</dt>
-                  <dd><span class="state">✅</span></dd>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-hub-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
                 </dl>
+                <dl class="validation">
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-hub-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-hub</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>S3 Store Profiles</h6>
+                  <dl class="validation">
+                    <dt>Profiles</dt>
+                    <dd><span class="value">2</span><span class="state">✅</span></dd>
+                  </dl>
+                  <section>
+                    <h6>minio-on-dr1</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section>
+                    <h6>minio-on-dr2</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                </section>
               </section>
             </section>
             <section>
-              <h5>ConfigMap</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-hub-operator-config</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
+              <h4>DRPolicies</h4>
               <dl class="validation">
-                <dt>Controller Type</dt>
-                <dd><span class="value">dr-hub</span><span class="state">✅</span></dd>
+                <dt>Policies</dt>
+                <dd><span class="value">2</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h6>S3 Store Profiles</h6>
+                <h5>dr-policy-1m</h5>
+                <dl class="metadata">
+                  <dt>Scheduling Interval</dt>
+                  <dd>1m</dd>
+                  <dt>DRClusters</dt>
+                  <dd>dr1, dr2</dd>
+                </dl>
                 <dl class="validation">
-                  <dt>Profiles</dt>
-                  <dd><span class="value">2</span><span class="state">✅</span></dd>
+                  <dt>Peer Classes</dt>
+                  <dd>
+                    <span class="value">2</span><span class="state">✅</span>
+                    <ul>
+                      <li>
+                        <dl class="metadata">
+                          <dt>Storage Class</dt>
+                          <dd>rook-ceph-block</dd>
+                          <dt>Replication ID</dt>
+                          <dd>rook-ceph-replication-1</dd>
+                        </dl>
+                      </li>
+                      <li>
+                        <dl class="metadata">
+                          <dt>Storage Class</dt>
+                          <dd>rook-cephfs-fs1</dd>
+                        </dl>
+                      </li>
+                    </ul>
+                  </dd>
                 </dl>
                 <section>
-                  <h6>minio-on-dr1</h6>
+                  <h6>Conditions</h6>
                   <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
+                    <dt>Validated</dt>
+                    <dd><span class="state">✅</span></dd>
                   </dl>
                 </section>
+              </section>
+              <section>
+                <h5>dr-policy-5m</h5>
+                <dl class="metadata">
+                  <dt>Scheduling Interval</dt>
+                  <dd>5m</dd>
+                  <dt>DRClusters</dt>
+                  <dd>dr1, dr2</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Peer Classes</dt>
+                  <dd>
+                    <span class="value">2</span><span class="state">✅</span>
+                    <ul>
+                      <li>
+                        <dl class="metadata">
+                          <dt>Storage Class</dt>
+                          <dd>rook-ceph-block</dd>
+                          <dt>Replication ID</dt>
+                          <dd>rook-ceph-replication-1</dd>
+                        </dl>
+                      </li>
+                      <li>
+                        <dl class="metadata">
+                          <dt>Storage Class</dt>
+                          <dd>rook-cephfs-fs1</dd>
+                        </dl>
+                      </li>
+                    </ul>
+                  </dd>
+                </dl>
                 <section>
-                  <h6>minio-on-dr2</h6>
+                  <h6>Conditions</h6>
                   <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
+                    <dt>Validated</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+            </section>
+            <section>
+              <h4>DRClusters</h4>
+              <dl class="validation">
+                <dt>Clusters</dt>
+                <dd><span class="value">2</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h5>dr1</h5>
+                <dl class="metadata">
+                  <dt>Phase</dt>
+                  <dd>Available</dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Validated</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Fenced</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Clean</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>dr2</h5>
+                <dl class="metadata">
+                  <dt>Phase</dt>
+                  <dd>Available</dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Validated</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Fenced</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Clean</dt>
+                    <dd><span class="state">✅</span></dd>
                   </dl>
                 </section>
               </section>
             </section>
           </section>
           <section>
-            <h4>DRPolicies</h4>
+            <h3>Managed Cluster: dr1</h3>
+            <section>
+              <h4>Ramen</h4>
+              <section>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>S3 Store Profiles</h6>
+                  <dl class="validation">
+                    <dt>Profiles</dt>
+                    <dd><span class="value">2</span><span class="state">✅</span></dd>
+                  </dl>
+                  <section>
+                    <h6>minio-on-dr1</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section>
+                    <h6>minio-on-dr2</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Managed Cluster: dr2</h3>
+            <section>
+              <h4>Ramen</h4>
+              <section>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>S3 Store Profiles</h6>
+                  <dl class="validation">
+                    <dt>Profiles</dt>
+                    <dd><span class="value">2</span><span class="state">✅</span></dd>
+                  </dl>
+                  <section>
+                    <h6>minio-on-dr1</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section>
+                    <h6>minio-on-dr2</h6>
+                    <dl class="validation">
+                      <dt>Bucket</dt>
+                      <dd><span class="value">bucket</span><span class="state">✅</span></dd>
+                      <dt>Endpoint</dt>
+                      <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
+                      <dt>Region</dt>
+                      <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
+                      <dt>CA Certificate</dt>
+                      <dd><span class="value"></span><span class="state">✅</span></dd>
+                      <dt>Secret</dt>
+                      <dd>
+                        <dl class="validation">
+                          <dt>Name</dt>
+                          <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
+                          <dt>Namespace</dt>
+                          <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
+                          <dt>AWS Access Key ID</dt>
+                          <dd>
+                            <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                          <dt>AWS Secret Access Key</dt>
+                          <dd>
+                            <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
+                            <span class="state">✅</span>
+                          </dd>
+                        </dl>
+                      </dd>
+                    </dl>
+                  </section>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>S3 Stores</h3>
             <dl class="validation">
-              <dt>Policies</dt>
+              <dt>Profiles</dt>
               <dd><span class="value">2</span><span class="state">✅</span></dd>
             </dl>
             <section>
-              <h5>dr-policy-1m</h5>
-              <dl class="metadata">
-                <dt>Scheduling Interval</dt>
-                <dd>1m</dd>
-                <dt>DRClusters</dt>
-                <dd>dr1, dr2</dd>
-              </dl>
+              <h4>minio-on-dr2</h4>
               <dl class="validation">
-                <dt>Peer Classes</dt>
-                <dd>
-                  <span class="value">2</span><span class="state">✅</span>
-                  <ul>
-                    <li>
-                      <dl class="metadata">
-                        <dt>Storage Class</dt>
-                        <dd>rook-ceph-block</dd>
-                        <dt>Replication ID</dt>
-                        <dd>rook-ceph-replication-1</dd>
-                      </dl>
-                    </li>
-                    <li>
-                      <dl class="metadata">
-                        <dt>Storage Class</dt>
-                        <dd>rook-cephfs-fs1</dd>
-                      </dl>
-                    </li>
-                  </ul>
-                </dd>
+                <dt>Accessible</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
               </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Validated</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
             </section>
             <section>
-              <h5>dr-policy-5m</h5>
-              <dl class="metadata">
-                <dt>Scheduling Interval</dt>
-                <dd>5m</dd>
-                <dt>DRClusters</dt>
-                <dd>dr1, dr2</dd>
-              </dl>
+              <h4>minio-on-dr1</h4>
               <dl class="validation">
-                <dt>Peer Classes</dt>
-                <dd>
-                  <span class="value">2</span><span class="state">✅</span>
-                  <ul>
-                    <li>
-                      <dl class="metadata">
-                        <dt>Storage Class</dt>
-                        <dd>rook-ceph-block</dd>
-                        <dt>Replication ID</dt>
-                        <dd>rook-ceph-replication-1</dd>
-                      </dl>
-                    </li>
-                    <li>
-                      <dl class="metadata">
-                        <dt>Storage Class</dt>
-                        <dd>rook-cephfs-fs1</dd>
-                      </dl>
-                    </li>
-                  </ul>
-                </dd>
+                <dt>Accessible</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
               </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Validated</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
             </section>
           </section>
-          <section>
-            <h4>DRClusters</h4>
-            <dl class="validation">
-              <dt>Clusters</dt>
-              <dd><span class="value">2</span><span class="state">✅</span></dd>
-            </dl>
-            <section>
-              <h5>dr1</h5>
-              <dl class="metadata">
-                <dt>Phase</dt>
-                <dd>Available</dd>
-              </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Validated</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Fenced</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Clean</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
-            </section>
-            <section>
-              <h5>dr2</h5>
-              <dl class="metadata">
-                <dt>Phase</dt>
-                <dd>Available</dd>
-              </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Validated</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Fenced</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Clean</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
-            </section>
-          </section>
-        </section>
-        <section>
-          <h3>Managed Cluster: dr1</h3>
-          <section>
-            <h4>Ramen</h4>
-            <section>
-              <h5>Deployment</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-dr-cluster-operator</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
-              <dl class="validation">
-                <dt>Replicas</dt>
-                <dd><span class="value">1</span><span class="state">✅</span></dd>
-              </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Available</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Progressing</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
-            </section>
-            <section>
-              <h5>ConfigMap</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-dr-cluster-operator-config</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
-              <dl class="validation">
-                <dt>Controller Type</dt>
-                <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
-              </dl>
-              <section>
-                <h6>S3 Store Profiles</h6>
-                <dl class="validation">
-                  <dt>Profiles</dt>
-                  <dd><span class="value">2</span><span class="state">✅</span></dd>
-                </dl>
-                <section>
-                  <h6>minio-on-dr1</h6>
-                  <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
-                  </dl>
-                </section>
-                <section>
-                  <h6>minio-on-dr2</h6>
-                  <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
-                  </dl>
-                </section>
-              </section>
-            </section>
-          </section>
-        </section>
-        <section>
-          <h3>Managed Cluster: dr2</h3>
-          <section>
-            <h4>Ramen</h4>
-            <section>
-              <h5>Deployment</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-dr-cluster-operator</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
-              <dl class="validation">
-                <dt>Replicas</dt>
-                <dd><span class="value">1</span><span class="state">✅</span></dd>
-              </dl>
-              <section>
-                <h6>Conditions</h6>
-                <dl class="validation">
-                  <dt>Available</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Progressing</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
-              </section>
-            </section>
-            <section>
-              <h5>ConfigMap</h5>
-              <dl class="metadata">
-                <dt>Name</dt>
-                <dd>ramen-dr-cluster-operator-config</dd>
-                <dt>Namespace</dt>
-                <dd>ramen-system</dd>
-              </dl>
-              <dl class="validation">
-                <dt>Controller Type</dt>
-                <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
-              </dl>
-              <section>
-                <h6>S3 Store Profiles</h6>
-                <dl class="validation">
-                  <dt>Profiles</dt>
-                  <dd><span class="value">2</span><span class="state">✅</span></dd>
-                </dl>
-                <section>
-                  <h6>minio-on-dr1</h6>
-                  <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.6:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-west-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr1</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
-                  </dl>
-                </section>
-                <section>
-                  <h6>minio-on-dr2</h6>
-                  <dl class="validation">
-                    <dt>Bucket</dt>
-                    <dd><span class="value">bucket</span><span class="state">✅</span></dd>
-                    <dt>Endpoint</dt>
-                    <dd><span class="value">http://192.168.105.5:30000</span><span class="state">✅</span></dd>
-                    <dt>Region</dt>
-                    <dd><span class="value">us-east-1</span><span class="state">✅</span></dd>
-                    <dt>CA Certificate</dt>
-                    <dd><span class="value"></span><span class="state">✅</span></dd>
-                    <dt>Secret</dt>
-                    <dd>
-                      <dl class="validation">
-                        <dt>Name</dt>
-                        <dd><span class="value">ramen-s3-secret-dr2</span><span class="state">✅</span></dd>
-                        <dt>Namespace</dt>
-                        <dd><span class="value">ramen-system</span><span class="state">✅</span></dd>
-                        <dt>AWS Access Key ID</dt>
-                        <dd>
-                          <span class="value" title="57:91:B6:22:67:43:C5:6F:44:F8:27:4C:C6:7B:8B:EB:97:51:B6:40:3E:69:72:43:AD:00:FD:37:AF:56:35:E3">57:91:B6:22:67:4...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                        <dt>AWS Secret Access Key</dt>
-                        <dd>
-                          <span class="value" title="17:9C:07:6A:C5:22:15:9D:BB:D5:0D:4F:1D:84:FA:F0:55:51:FE:5B:59:D7:E5:82:4A:80:0D:46:55:9F:B1:D1">17:9C:07:6A:C5:2...</span>
-                          <span class="state">✅</span>
-                        </dd>
-                      </dl>
-                    </dd>
-                  </dl>
-                </section>
-              </section>
-            </section>
-          </section>
-        </section>
-        <section>
-          <h3>S3 Stores</h3>
-          <dl class="validation">
-            <dt>Profiles</dt>
-            <dd><span class="value">2</span><span class="state">✅</span></dd>
-          </dl>
-          <section>
-            <h4>minio-on-dr2</h4>
-            <dl class="validation">
-              <dt>Accessible</dt>
-              <dd><span class="value">true</span><span class="state">✅</span></dd>
-            </dl>
-          </section>
-          <section>
-            <h4>minio-on-dr1</h4>
-            <dl class="validation">
-              <dt>Accessible</dt>
-              <dd><span class="value">true</span><span class="state">✅</span></dd>
-            </dl>
-          </section>
-        </section>
+        </div>
       </section>
       <section>
         <h2>Report Details</h2>

@@ -2,8 +2,8 @@
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 {{define "content" -}}
 {{- with .ClustersStatus}}
+<div class="main-grid">
 <h2>Clusters Status</h2>
-
 {{- with .Hub}}
 <section>
     <h3>Hub</h3>
@@ -38,5 +38,6 @@
     {{template "s3" .Profiles}}
 </section>
 {{- end}}
+</div>
 {{- end}}
 {{- end}}
