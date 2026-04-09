@@ -24,7 +24,6 @@ func TestTemplate(t *testing.T) {
 		// Shared templates from pkg/report.
 		"conditions",
 		"report.tmpl",
-		"style",
 		"validated",
 		// Command templates.
 		"content",

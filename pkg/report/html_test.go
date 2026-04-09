@@ -14,7 +14,7 @@ func TestTemplate(t *testing.T) {
 	}
 
 	// Check that shared templates are defined
-	for _, name := range []string{"report.tmpl", "style", "validated"} {
+	for _, name := range []string{"report.tmpl", "validated"} {
 		if tmpl.Lookup(name) == nil {
 			t.Errorf("template %q not defined", name)
 		}

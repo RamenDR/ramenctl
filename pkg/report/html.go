@@ -7,6 +7,8 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"os"
+	"path/filepath"
 
 	"github.com/yosssi/gohtml"
 	"sigs.k8s.io/yaml"
@@ -16,6 +18,15 @@ import (
 
 //go:embed templates/*.tmpl
 var templates embed.FS
+
+//go:embed style.css
+var styleCSS []byte
+
+// WriteCSS writes the shared stylesheet to the output directory.
+func WriteCSS(dir string) error {
+	path := filepath.Join(dir, "style.css")
+	return os.WriteFile(path, styleCSS, 0o640)
+}
 
 // Template returns a new template set with shared definitions.
 func Template() (*template.Template, error) {
