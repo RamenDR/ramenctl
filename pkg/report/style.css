@@ -271,6 +271,13 @@ dl.validation dd {
     font-size: 0.85em;
 }
 
+.pvc {
+    background: #f9fafb;
+    border-left: 3px solid #d1d5db;
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
 .description {
     flex-basis: 100%;
     font-size: 0.85em;

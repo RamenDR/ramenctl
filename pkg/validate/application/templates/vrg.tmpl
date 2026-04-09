@@ -19,10 +19,14 @@
     <h5>Conditions</h5>
     {{template "conditions" .Conditions}}
 </section>
-{{- range .ProtectedPVCs}}
+{{- with .ProtectedPVCs}}
 <section>
-    <h5>PVC: {{.Name}}</h5>
-    {{template "pvc" .}}
+    <h5>Protected PVCs</h5>
+    {{- range .}}
+    <section class="pvc">
+        {{template "pvc" .}}
+    </section>
+    {{- end}}
 </section>
 {{- end}}
 {{- end}}

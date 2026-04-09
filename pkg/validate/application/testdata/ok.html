@@ -78,27 +78,29 @@
                 </dl>
               </section>
               <section>
-                <h5>PVC: busybox-pvc</h5>
-                <dl class="metadata">
-                  <dt>Name</dt>
-                  <dd>busybox-pvc</dd>
-                  <dt>Namespace</dt>
-                  <dd>test-appset-deploy-rbd</dd>
-                  <dt>Replication</dt>
-                  <dd>volrep</dd>
-                </dl>
-                <dl class="validation">
-                  <dt>Phase</dt>
-                  <dd><span class="value">Bound</span><span class="state">✅</span></dd>
-                </dl>
-                <section>
-                  <h6>Conditions</h6>
-                  <dl class="validation">
-                    <dt>DataReady</dt>
-                    <dd><span class="state">✅</span></dd>
-                    <dt>ClusterDataProtected</dt>
-                    <dd><span class="state">✅</span></dd>
+                <h5>Protected PVCs</h5>
+                <section class="pvc">
+                  <dl class="metadata">
+                    <dt>Name</dt>
+                    <dd>busybox-pvc</dd>
+                    <dt>Namespace</dt>
+                    <dd>test-appset-deploy-rbd</dd>
+                    <dt>Replication</dt>
+                    <dd>volrep</dd>
                   </dl>
+                  <dl class="validation">
+                    <dt>Phase</dt>
+                    <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                  </dl>
+                  <section>
+                    <h6>Conditions</h6>
+                    <dl class="validation">
+                      <dt>DataReady</dt>
+                      <dd><span class="state">✅</span></dd>
+                      <dt>ClusterDataProtected</dt>
+                      <dd><span class="state">✅</span></dd>
+                    </dl>
+                  </section>
                 </section>
               </section>
             </section>
