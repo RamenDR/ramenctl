@@ -20,8 +20,12 @@ h3 {
 h4,
 h5,
 h6 {
-    font-size: 1em;
-    margin: 4px 0;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin: 12px 0 4px 0;
 }
 
 
@@ -57,6 +61,12 @@ section section + section {
 
 section section {
     padding-left: 12px;
+}
+
+section section > h4,
+section section > h5,
+section section > h6 {
+    margin-left: -12px;
 }
 
 .details-grid {
@@ -130,7 +140,7 @@ section section {
 
 .step-duration {
     margin-left: auto;
-    color: gray;
+    color: #666;
 }
 
 .step.passed {
@@ -248,7 +258,9 @@ dl.validation+dl.metadata {
 
 dl.metadata dt,
 dl.validation dt {
-    color: gray;
+    color: #666;
+    font-weight: normal;
+    min-width: 8em;
 }
 
 dl.metadata dd,
@@ -259,6 +271,7 @@ dl.validation dd {
     gap: 8px;
     margin: 0;
     min-width: 0;
+    font-weight: 600;
 }
 
 .value {
