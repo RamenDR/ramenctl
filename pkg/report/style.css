@@ -3,6 +3,7 @@
 
 body {
     font-family: system-ui, sans-serif;
+    font-size: 0.9em;
     margin: 0;
 }
 
@@ -26,7 +27,7 @@ h6 {
 
 .main-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(540px, 1fr));
     gap: 12px;
     background: #e8e8e8;
     padding: 12px;
@@ -60,7 +61,7 @@ section section {
 
 .details-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(540px, 1fr));
     gap: 12px;
     background: #e8e8e8;
     padding: 12px;
