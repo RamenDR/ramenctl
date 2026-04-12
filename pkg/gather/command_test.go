@@ -56,63 +56,73 @@ var (
 		applicationNamespace,
 	})
 
-	gatherClusterFailed = &helpers.ValidationMock{
-		GatherFunc: func(
-			ctx validation.Context,
-			clusters []*types.Cluster,
-			options gathering.Options,
-		) <-chan gathering.Result {
-			results := make(chan gathering.Result, 3)
-			for _, cluster := range clusters {
-				if cluster.Name == "hub" {
-					results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
-				} else {
-					results <- gathering.Result{Name: cluster.Name}
-				}
+	// Mock functions used by mock instances below.
+
+	gatherDataFailed = func(
+		ctx validation.Context,
+		clusters []*types.Cluster,
+		options gathering.Options,
+	) <-chan gathering.Result {
+		results := make(chan gathering.Result, 3)
+		for _, cluster := range clusters {
+			if cluster.Name == "hub" {
+				results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
+			} else {
+				results <- gathering.Result{Name: cluster.Name}
 			}
-			close(results)
-			return results
-		},
+		}
+		close(results)
+		return results
+	}
+
+	gatherS3DataFailed = func(
+		ctx validation.Context,
+		profiles []*s3.Profile,
+		prefixes []string,
+		outputDir string,
+	) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for i, profile := range profiles {
+			if i == 0 {
+				results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
+			} else {
+				results <- s3.Result{ProfileName: profile.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	gatherS3DataCanceled = func(
+		ctx validation.Context,
+		profiles []*s3.Profile,
+		prefixes []string,
+		outputDir string,
+	) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for i, profile := range profiles {
+			if i == 0 {
+				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+			} else {
+				results <- s3.Result{ProfileName: profile.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	// Mock instances composing shared mock functions and helpers.
+
+	gatherClusterFailed = &helpers.ValidationMock{
+		GatherFunc: gatherDataFailed,
 	}
 
 	gatherS3Failed = &helpers.ValidationMock{
-		GatherS3Func: func(
-			ctx validation.Context,
-			profiles []*s3.Profile,
-			prefixes []string,
-			outputDir string,
-		) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for i, profile := range profiles {
-				if i == 0 {
-					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
-				} else {
-					results <- s3.Result{ProfileName: profile.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		GatherS3Func: gatherS3DataFailed,
 	}
 
 	gatherS3Canceled = &helpers.ValidationMock{
-		GatherS3Func: func(
-			ctx validation.Context,
-			profiles []*s3.Profile,
-			prefixes []string,
-			outputDir string,
-		) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for i, profile := range profiles {
-				if i == 0 {
-					results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
-				} else {
-					results <- s3.Result{ProfileName: profile.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		GatherS3Func: gatherS3DataCanceled,
 	}
 )
 
