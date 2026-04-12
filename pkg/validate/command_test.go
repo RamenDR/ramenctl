@@ -190,8 +190,12 @@ var (
 			outputDir string,
 		) <-chan s3.Result {
 			results := make(chan s3.Result, 2)
-			for _, profile := range profiles {
-				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+			for i, profile := range profiles {
+				if i == 0 {
+					results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+				} else {
+					results <- s3.Result{ProfileName: profile.Name}
+				}
 			}
 			close(results)
 			return results
@@ -2613,7 +2617,7 @@ func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Passed},
 		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Canceled},
-		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Canceled},
+		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
 	checkSummary(t, validate.report, report.Summary{})
