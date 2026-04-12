@@ -76,55 +76,55 @@ var (
 		C2:  &types.Cluster{Name: "c2"},
 	}
 
-	validateFailed = &rtesting.Mock{
+	validateFailed = &helpers.TestingMock{
 		ValidateFunc: func(ctx types.Context) error {
 			return errors.New("No validate for you!")
 		},
 	}
 
-	validateCanceled = &rtesting.Mock{
+	validateCanceled = &helpers.TestingMock{
 		ValidateFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	setupFailed = &rtesting.Mock{
+	setupFailed = &helpers.TestingMock{
 		SetupFunc: func(ctx types.Context) error {
 			return errors.New("No setup for you!")
 		},
 	}
 
-	setupCanceled = &rtesting.Mock{
+	setupCanceled = &helpers.TestingMock{
 		SetupFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	cleanupFailed = &rtesting.Mock{
+	cleanupFailed = &helpers.TestingMock{
 		CleanupFunc: func(ctx types.Context) error {
 			return errors.New("No cleanup for you!")
 		},
 	}
 
-	cleanupCanceled = &rtesting.Mock{
+	cleanupCanceled = &helpers.TestingMock{
 		CleanupFunc: func(ctx types.Context) error {
 			return context.Canceled
 		},
 	}
 
-	failoverFailed = &rtesting.Mock{
+	failoverFailed = &helpers.TestingMock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			return errors.New("No failover for you!")
 		},
 	}
 
-	failoverCanceled = &rtesting.Mock{
+	failoverCanceled = &helpers.TestingMock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
 	}
 
-	disappFailoverFailed = &rtesting.Mock{
+	disappFailoverFailed = &helpers.TestingMock{
 		FailoverFunc: func(ctx types.TestContext) error {
 			if ctx.Deployer().IsDiscovered() {
 				return errors.New("No failover for you!")
@@ -133,13 +133,13 @@ var (
 		},
 	}
 
-	purgeFailed = &rtesting.Mock{
+	purgeFailed = &helpers.TestingMock{
 		PurgeFunc: func(ctx types.TestContext) error {
 			return errors.New("No purge for you!")
 		},
 	}
 
-	purgeCanceled = &rtesting.Mock{
+	purgeCanceled = &helpers.TestingMock{
 		PurgeFunc: func(ctx types.TestContext) error {
 			return context.Canceled
 		},
@@ -149,7 +149,7 @@ var (
 )
 
 func TestRunPassed(t *testing.T) {
-	test := testCommand(t, testRun, &rtesting.Mock{})
+	test := testCommand(t, testRun, &helpers.TestingMock{})
 
 	if err := test.Run(); err != nil {
 		t.Fatal(err)
@@ -329,7 +329,7 @@ func TestRunTestsCanceled(t *testing.T) {
 }
 
 func TestCleanPassed(t *testing.T) {
-	test := testCommand(t, testClean, &rtesting.Mock{})
+	test := testCommand(t, testClean, &helpers.TestingMock{})
 
 	if err := test.Clean(); err != nil {
 		t.Fatal(err)
