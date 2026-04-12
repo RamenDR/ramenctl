@@ -103,6 +103,27 @@ var (
 		applicationNamespace,
 	})
 
+	// Mock functions used by mock instances below.
+
+	gatherDataFailed = func(
+		ctx validation.Context,
+		clusters []*types.Cluster,
+		options gathering.Options,
+	) <-chan gathering.Result {
+		results := make(chan gathering.Result, 3)
+		for _, cluster := range clusters {
+			if cluster.Name == "hub" {
+				results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
+			} else {
+				results <- gathering.Result{Name: cluster.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	// Mock instances composing shared mock functions and helpers.
+
 	applicationMock = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return applicationNamespaces, nil
@@ -115,24 +136,13 @@ var (
 		},
 	}
 
-	gatherClusterFailed = &helpers.ValidationMock{
+	applicationGatherDataFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GatherFunc: func(
-			ctx validation.Context,
-			clusters []*types.Cluster,
-			options gathering.Options,
-		) <-chan gathering.Result {
-			results := make(chan gathering.Result, 3)
-			for _, cluster := range clusters {
-				if cluster.Name == "hub" {
-					results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you!")}
-				} else {
-					results <- gathering.Result{Name: cluster.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		GatherFunc:               gatherDataFailed,
+	}
+
+	clustersGatherDataFailed = &helpers.ValidationMock{
+		GatherFunc: gatherDataFailed,
 	}
 
 	inspectApplicationS3ProfilesCanceled = &helpers.ValidationMock{
@@ -1870,7 +1880,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, gatherClusterFailed, testK8s)
+	validate := testCommand(t, validateClusters, clustersGatherDataFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -2393,7 +2403,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, gatherClusterFailed, testK8s)
+	validate := testCommand(t, validateApplication, applicationGatherDataFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
