@@ -163,3 +163,80 @@ var (
 		},
 	}
 )
+
+// Mock functions for composing mock instances in tests.
+
+func GatherDataFailed(
+	ctx validation.Context,
+	clusters []*types.Cluster,
+	options gathering.Options,
+) <-chan gathering.Result {
+	results := make(chan gathering.Result, 3)
+	for _, cluster := range clusters {
+		if cluster.Name == "hub" {
+			results <- gathering.Result{Name: cluster.Name, Err: errors.New("no data for you")}
+		} else {
+			results <- gathering.Result{Name: cluster.Name}
+		}
+	}
+	close(results)
+	return results
+}
+
+func GatherS3DataFailed(
+	ctx validation.Context,
+	profiles []*s3.Profile,
+	prefixes []string,
+	outputDir string,
+) <-chan s3.Result {
+	results := make(chan s3.Result, 2)
+	for i, profile := range profiles {
+		if i == 0 {
+			results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you")}
+		} else {
+			results <- s3.Result{ProfileName: profile.Name}
+		}
+	}
+	close(results)
+	return results
+}
+
+func GatherS3DataCanceled(
+	ctx validation.Context,
+	profiles []*s3.Profile,
+	prefixes []string,
+	outputDir string,
+) <-chan s3.Result {
+	results := make(chan s3.Result, 2)
+	for i, profile := range profiles {
+		if i == 0 {
+			results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+		} else {
+			results <- s3.Result{ProfileName: profile.Name}
+		}
+	}
+	close(results)
+	return results
+}
+
+func CheckS3DataFailed(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+	results := make(chan s3.Result, 2)
+	for i, profile := range profiles {
+		if i == 0 {
+			results <- s3.Result{ProfileName: profile.Name, Err: errors.New("connection refused")}
+		} else {
+			results <- s3.Result{ProfileName: profile.Name}
+		}
+	}
+	close(results)
+	return results
+}
+
+func CheckS3DataCanceled(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+	results := make(chan s3.Result, 2)
+	for _, profile := range profiles {
+		results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+	}
+	close(results)
+	return results
+}
