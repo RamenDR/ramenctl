@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validation
+package helpers
 
 import (
 	"bytes"
@@ -11,34 +11,33 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/gathering"
-	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/s3"
+	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-type ContextFunc func(Context) error
-
-// Mock implements the Validation interface. All operations succeed without accessing the clusters.
-// To cause operations to fail or return non default values, set a function returning an error.
-type Mock struct {
-	ValidateFunc              ContextFunc
-	ApplicationNamespacesFunc func(ctx Context, drpcName, drpcNamespace string) ([]string, error)
-	GatherFunc                func(ctx Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
-	GatherS3Func              func(ctx Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
-	GetSecretFunc             func(ctx Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
-	CheckS3Func               func(ctx Context, profiles []*s3.Profile) <-chan s3.Result
+// ValidationMock implements the validation.Validation interface. All operations succeed without
+// accessing the clusters. To cause operations to fail or return non default values, set a function
+// returning an error.
+type ValidationMock struct {
+	ValidateFunc              func(validation.Context) error
+	ApplicationNamespacesFunc func(ctx validation.Context, drpcName, drpcNamespace string) ([]string, error)
+	GatherFunc                func(ctx validation.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
+	GatherS3Func              func(ctx validation.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
+	GetSecretFunc             func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
+	CheckS3Func               func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result
 }
 
-var _ Validation = &Mock{}
+var _ validation.Validation = &ValidationMock{}
 
-func (m *Mock) Validate(ctx Context) error {
+func (m *ValidationMock) Validate(ctx validation.Context) error {
 	if m.ValidateFunc != nil {
 		return m.ValidateFunc(ctx)
 	}
 	return nil
 }
 
-func (m *Mock) ApplicationNamespaces(
-	ctx Context,
+func (m *ValidationMock) ApplicationNamespaces(
+	ctx validation.Context,
 	drpcName, drpcNamespace string,
 ) ([]string, error) {
 	if m.ApplicationNamespacesFunc != nil {
@@ -47,8 +46,8 @@ func (m *Mock) ApplicationNamespaces(
 	return nil, nil
 }
 
-func (m *Mock) Gather(
-	ctx Context,
+func (m *ValidationMock) Gather(
+	ctx validation.Context,
 	clusters []*types.Cluster,
 	options gathering.Options,
 ) <-chan gathering.Result {
@@ -64,8 +63,8 @@ func (m *Mock) Gather(
 	return results
 }
 
-func (m *Mock) GetSecret(
-	ctx Context,
+func (m *ValidationMock) GetSecret(
+	ctx validation.Context,
 	cluster *types.Cluster,
 	name, namespace string,
 ) (*corev1.Secret, error) {
@@ -74,14 +73,14 @@ func (m *Mock) GetSecret(
 	}
 	return &corev1.Secret{
 		Data: map[string][]byte{
-			"AWS_ACCESS_KEY_ID":     []byte(helpers.FakeAWSKeyID),
-			"AWS_SECRET_ACCESS_KEY": []byte(helpers.FakeAWSKey),
+			"AWS_ACCESS_KEY_ID":     []byte(FakeAWSKeyID),
+			"AWS_SECRET_ACCESS_KEY": []byte(FakeAWSKey),
 		},
 	}, nil
 }
 
-func (m *Mock) GatherS3(
-	ctx Context,
+func (m *ValidationMock) GatherS3(
+	ctx validation.Context,
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
@@ -91,9 +90,8 @@ func (m *Mock) GatherS3(
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
-		// Fail if s3 secret credentials don't match expected testdata values.
-		if !bytes.Equal(profile.AWSAccessKeyID, []byte(helpers.FakeAWSKeyID)) ||
-			!bytes.Equal(profile.AWSSecretAccessKey, []byte(helpers.FakeAWSKey)) {
+		if !bytes.Equal(profile.AWSAccessKeyID, []byte(FakeAWSKeyID)) ||
+			!bytes.Equal(profile.AWSSecretAccessKey, []byte(FakeAWSKey)) {
 			results <- s3.Result{ProfileName: profile.Name, Err: errors.New("invalid credentials")}
 		} else {
 			results <- s3.Result{ProfileName: profile.Name, Err: nil}
@@ -103,15 +101,14 @@ func (m *Mock) GatherS3(
 	return results
 }
 
-func (m *Mock) CheckS3(ctx Context, profiles []*s3.Profile) <-chan s3.Result {
+func (m *ValidationMock) CheckS3(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
 	if m.CheckS3Func != nil {
 		return m.CheckS3Func(ctx, profiles)
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
-		// Fail if s3 secret credentials don't match expected testdata values.
-		if !bytes.Equal(profile.AWSAccessKeyID, []byte(helpers.FakeAWSKeyID)) ||
-			!bytes.Equal(profile.AWSSecretAccessKey, []byte(helpers.FakeAWSKey)) {
+		if !bytes.Equal(profile.AWSAccessKeyID, []byte(FakeAWSKeyID)) ||
+			!bytes.Equal(profile.AWSSecretAccessKey, []byte(FakeAWSKey)) {
 			results <- s3.Result{ProfileName: profile.Name, Err: errors.New("invalid credentials")}
 		} else {
 			results <- s3.Result{ProfileName: profile.Name, Err: nil}

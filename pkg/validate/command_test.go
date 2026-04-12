@@ -103,37 +103,37 @@ var (
 		applicationNamespace,
 	})
 
-	applicationMock = &validation.Mock{
+	applicationMock = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return applicationNamespaces, nil
 		},
 	}
 
-	validateConfigFailed = &validation.Mock{
+	validateConfigFailed = &helpers.ValidationMock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return errors.New("No validate for you!")
 		},
 	}
 
-	validateConfigCanceled = &validation.Mock{
+	validateConfigCanceled = &helpers.ValidationMock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return context.Canceled
 		},
 	}
 
-	inspectApplicationFailed = &validation.Mock{
+	inspectApplicationFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return nil, errors.New("No namespaces for you!")
 		},
 	}
 
-	inspectApplicationCanceled = &validation.Mock{
+	inspectApplicationCanceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return nil, context.Canceled
 		},
 	}
 
-	gatherClusterFailed = &validation.Mock{
+	gatherClusterFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherFunc: func(
 			ctx validation.Context,
@@ -153,26 +153,26 @@ var (
 		},
 	}
 
-	inspectApplicationS3ProfilesCanceled = &validation.Mock{
+	inspectApplicationS3ProfilesCanceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return nil, context.Canceled
 		},
 	}
 
-	inspectClustersS3ProfilesCanceled = &validation.Mock{
+	inspectClustersS3ProfilesCanceled = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return nil, context.Canceled
 		},
 	}
 
-	clustersGetSecretFailed = &validation.Mock{
+	clustersGetSecretFailed = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return nil, errors.New("secret not found")
 		},
 	}
 
-	clustersGetSecretInvalid = &validation.Mock{
+	clustersGetSecretInvalid = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return &corev1.Secret{
 				Data: map[string][]byte{
@@ -183,17 +183,17 @@ var (
 		},
 	}
 
-	applicationGetSecretFailed = &validation.Mock{
+	applicationGetSecretFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc:             clustersGetSecretFailed.GetSecret,
 	}
 
-	applicationGetSecretInvalid = &validation.Mock{
+	applicationGetSecretInvalid = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc:             clustersGetSecretInvalid.GetSecret,
 	}
 
-	gatherS3Failed = &validation.Mock{
+	gatherS3Failed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherS3Func: func(
 			ctx validation.Context,
@@ -214,7 +214,7 @@ var (
 		},
 	}
 
-	gatherS3Canceled = &validation.Mock{
+	gatherS3Canceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherS3Func: func(
 			ctx validation.Context,
@@ -231,7 +231,7 @@ var (
 		},
 	}
 
-	checkS3Failed = &validation.Mock{
+	checkS3Failed = &helpers.ValidationMock{
 		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
 			results := make(chan s3.Result, 2)
 			for i, profile := range profiles {
@@ -246,7 +246,7 @@ var (
 		},
 	}
 
-	checkS3Canceled = &validation.Mock{
+	checkS3Canceled = &helpers.ValidationMock{
 		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
 			results := make(chan s3.Result, 2)
 			for _, profile := range profiles {
@@ -261,7 +261,7 @@ var (
 // Command common tests
 
 func TestValidatedDeleted(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	t.Run("nil", func(t *testing.T) {
 		validated := cmd.validatedDeleted(nil)
@@ -318,7 +318,7 @@ func TestValidatedDeleted(t *testing.T) {
 // Command application tests
 
 func TestValidatedDRPCAction(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 	known := []struct {
 		name   string
 		action string
@@ -372,7 +372,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 		phase  ramenapi.DRState
 	}
 
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	unstable := []struct {
 		stable ramenapi.DRState
@@ -450,7 +450,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 }
 
 func TestValidatedDRPCPhaseOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name   string
@@ -492,7 +492,7 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 	progression := ramenapi.ProgressionCompleted
 
 	t.Run(string(progression), func(t *testing.T) {
@@ -520,7 +520,7 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	progressions := []ramenapi.ProgressionStatus{
 		ramenapi.ProgressionCreatingMW,
@@ -577,7 +577,7 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 }
 
 func TestValidatedVRGSTateOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -614,7 +614,7 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 }
 
 func TestValidatedVRGSTateError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -657,7 +657,7 @@ func TestValidatedVRGSTateError(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	t.Run("bound", func(t *testing.T) {
 		pvc := &corev1.PersistentVolumeClaim{
@@ -684,7 +684,7 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &validation.Mock{}, testK8s)
+	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name  string
@@ -726,7 +726,7 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 // Validate clusters tests.
 
 func TestValidateClustersK8s(t *testing.T) {
-	validate := testCommand(t, validateClusters, &validation.Mock{}, testK8s)
+	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
@@ -1310,7 +1310,7 @@ func TestValidateClustersK8s(t *testing.T) {
 }
 
 func TestValidateClustersOcp(t *testing.T) {
-	validate := testCommand(t, validateClusters, &validation.Mock{}, testOcp)
+	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testOcp)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testOcp.name, validate.report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
@@ -1940,7 +1940,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 }
 
 func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, &validation.Mock{}, testK8s)
+	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
 	// We don't add test data to cause inspect S3 profiles to fail.
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)

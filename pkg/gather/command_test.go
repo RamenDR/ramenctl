@@ -57,25 +57,25 @@ var (
 		applicationNamespace,
 	})
 
-	validateConfigFailed = &validation.Mock{
+	validateConfigFailed = &helpers.ValidationMock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return errors.New("No validate for you!")
 		},
 	}
 
-	validateConfigCanceled = &validation.Mock{
+	validateConfigCanceled = &helpers.ValidationMock{
 		ValidateFunc: func(ctx validation.Context) error {
 			return context.Canceled
 		},
 	}
 
-	inspectApplicationFailed = &validation.Mock{
+	inspectApplicationFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return nil, errors.New("No namespaces for you!")
 		},
 	}
 
-	gatherClusterFailed = &validation.Mock{
+	gatherClusterFailed = &helpers.ValidationMock{
 		GatherFunc: func(
 			ctx validation.Context,
 			clusters []*types.Cluster,
@@ -94,19 +94,19 @@ var (
 		},
 	}
 
-	inspectS3ProfilesCanceled = &validation.Mock{
+	inspectS3ProfilesCanceled = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return nil, context.Canceled
 		},
 	}
 
-	getSecretFailed = &validation.Mock{
+	getSecretFailed = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return nil, errors.New("secret not found")
 		},
 	}
 
-	getSecretInvalid = &validation.Mock{
+	getSecretInvalid = &helpers.ValidationMock{
 		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
 			return &corev1.Secret{
 				Data: map[string][]byte{
@@ -117,7 +117,7 @@ var (
 		},
 	}
 
-	gatherS3Failed = &validation.Mock{
+	gatherS3Failed = &helpers.ValidationMock{
 		GatherS3Func: func(
 			ctx validation.Context,
 			profiles []*s3.Profile,
@@ -137,7 +137,7 @@ var (
 		},
 	}
 
-	gatherS3Canceled = &validation.Mock{
+	gatherS3Canceled = &helpers.ValidationMock{
 		GatherS3Func: func(
 			ctx validation.Context,
 			profiles []*s3.Profile,
@@ -159,7 +159,7 @@ var (
 )
 
 func TestGatherApplicationPassed(t *testing.T) {
-	cmd := testCommand(t, &validation.Mock{})
+	cmd := testCommand(t, &helpers.ValidationMock{})
 	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
@@ -257,7 +257,7 @@ func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 }
 
 func TestGatherApplicationNamespaces(t *testing.T) {
-	mockBackend := &validation.Mock{
+	mockBackend := &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(ctx validation.Context, name, namespace string) ([]string, error) {
 			if name != drpcName || namespace != drpcNamespace {
 				t.Fatalf("unexpected args: name=%s, namespace=%s", drpcName, drpcNamespace)
@@ -280,7 +280,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 }
 
 func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
-	cmd := testCommand(t, &validation.Mock{})
+	cmd := testCommand(t, &helpers.ValidationMock{})
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
