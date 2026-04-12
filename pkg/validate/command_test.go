@@ -122,6 +122,64 @@ var (
 		return results
 	}
 
+	gatherS3DataFailed = func(
+		ctx validation.Context,
+		profiles []*s3.Profile,
+		prefixes []string,
+		outputDir string,
+	) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for i, profile := range profiles {
+			if i == 0 {
+				results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
+			} else {
+				results <- s3.Result{ProfileName: profile.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	gatherS3DataCanceled = func(
+		ctx validation.Context,
+		profiles []*s3.Profile,
+		prefixes []string,
+		outputDir string,
+	) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for i, profile := range profiles {
+			if i == 0 {
+				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+			} else {
+				results <- s3.Result{ProfileName: profile.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	checkS3DataFailed = func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for i, profile := range profiles {
+			if i == 0 {
+				results <- s3.Result{ProfileName: profile.Name, Err: errors.New("connection refused")}
+			} else {
+				results <- s3.Result{ProfileName: profile.Name}
+			}
+		}
+		close(results)
+		return results
+	}
+
+	checkS3DataCanceled = func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+		results := make(chan s3.Result, 2)
+		for _, profile := range profiles {
+			results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
+		}
+		close(results)
+		return results
+	}
+
 	// Mock instances composing shared mock functions and helpers.
 
 	applicationMock = &helpers.ValidationMock{
@@ -162,70 +220,20 @@ var (
 
 	gatherS3Failed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GatherS3Func: func(
-			ctx validation.Context,
-			profiles []*s3.Profile,
-			prefixes []string,
-			outputDir string,
-		) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for i, profile := range profiles {
-				if i == 0 {
-					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("no S3 data for you!")}
-				} else {
-					results <- s3.Result{ProfileName: profile.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		GatherS3Func:             gatherS3DataFailed,
 	}
 
 	gatherS3Canceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GatherS3Func: func(
-			ctx validation.Context,
-			profiles []*s3.Profile,
-			prefixes []string,
-			outputDir string,
-		) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for i, profile := range profiles {
-				if i == 0 {
-					results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
-				} else {
-					results <- s3.Result{ProfileName: profile.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		GatherS3Func:             gatherS3DataCanceled,
 	}
 
 	checkS3Failed = &helpers.ValidationMock{
-		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for i, profile := range profiles {
-				if i == 0 {
-					results <- s3.Result{ProfileName: profile.Name, Err: errors.New("connection refused")}
-				} else {
-					results <- s3.Result{ProfileName: profile.Name}
-				}
-			}
-			close(results)
-			return results
-		},
+		CheckS3Func: checkS3DataFailed,
 	}
 
 	checkS3Canceled = &helpers.ValidationMock{
-		CheckS3Func: func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
-			results := make(chan s3.Result, 2)
-			for _, profile := range profiles {
-				results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}
-			}
-			close(results)
-			return results
-		},
+		CheckS3Func: checkS3DataCanceled,
 	}
 )
 
