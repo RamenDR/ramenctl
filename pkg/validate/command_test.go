@@ -109,24 +109,6 @@ var (
 		},
 	}
 
-	validateConfigFailed = &helpers.ValidationMock{
-		ValidateFunc: func(ctx validation.Context) error {
-			return errors.New("No validate for you!")
-		},
-	}
-
-	validateConfigCanceled = &helpers.ValidationMock{
-		ValidateFunc: func(ctx validation.Context) error {
-			return context.Canceled
-		},
-	}
-
-	inspectApplicationFailed = &helpers.ValidationMock{
-		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
-			return nil, errors.New("No namespaces for you!")
-		},
-	}
-
 	inspectApplicationCanceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
 			return nil, context.Canceled
@@ -155,42 +137,17 @@ var (
 
 	inspectApplicationS3ProfilesCanceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return nil, context.Canceled
-		},
-	}
-
-	inspectClustersS3ProfilesCanceled = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return nil, context.Canceled
-		},
-	}
-
-	clustersGetSecretFailed = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return nil, errors.New("secret not found")
-		},
-	}
-
-	clustersGetSecretInvalid = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return &corev1.Secret{
-				Data: map[string][]byte{
-					"AWS_ACCESS_KEY_ID":     []byte("invalid id"),
-					"AWS_SECRET_ACCESS_KEY": []byte("invalid key"),
-				},
-			}, nil
-		},
+		GetSecretFunc:             helpers.GetSecretCanceled.GetSecret,
 	}
 
 	applicationGetSecretFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GetSecretFunc:             clustersGetSecretFailed.GetSecret,
+		GetSecretFunc:             helpers.GetSecretFailed.GetSecret,
 	}
 
 	applicationGetSecretInvalid = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
-		GetSecretFunc:             clustersGetSecretInvalid.GetSecret,
+		GetSecretFunc:             helpers.GetSecretInvalid.GetSecret,
 	}
 
 	gatherS3Failed = &helpers.ValidationMock{
@@ -1877,7 +1834,7 @@ func TestValidateClustersOcp(t *testing.T) {
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, validateConfigFailed, testK8s)
+	validate := testCommand(t, validateClusters, helpers.ValidateConfigFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1895,7 +1852,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, validateConfigCanceled, testK8s)
+	validate := testCommand(t, validateClusters, helpers.ValidateConfigCanceled, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1971,7 +1928,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 }
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, inspectClustersS3ProfilesCanceled, testK8s)
+	validate := testCommand(t, validateClusters, helpers.GetSecretCanceled, testK8s)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -2000,7 +1957,7 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 }
 
 func TestValidateClustersGetSecretFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, clustersGetSecretFailed, testK8s)
+	validate := testCommand(t, validateClusters, helpers.GetSecretFailed, testK8s)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -2032,7 +1989,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 }
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
-	validate := testCommand(t, validateClusters, clustersGetSecretInvalid, testK8s)
+	validate := testCommand(t, validateClusters, helpers.GetSecretInvalid, testK8s)
 	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -2354,7 +2311,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, validateConfigFailed, testK8s)
+	validate := testCommand(t, validateApplication, helpers.ValidateConfigFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -2371,7 +2328,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 }
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
-	validate := testCommand(t, validateApplication, validateConfigCanceled, testK8s)
+	validate := testCommand(t, validateApplication, helpers.ValidateConfigCanceled, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -2388,7 +2345,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
-	validate := testCommand(t, validateApplication, inspectApplicationFailed, testK8s)
+	validate := testCommand(t, validateApplication, helpers.InspectApplicationFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")

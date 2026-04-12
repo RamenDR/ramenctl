@@ -11,7 +11,6 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
-	corev1 "k8s.io/api/core/v1"
 
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -57,24 +56,6 @@ var (
 		applicationNamespace,
 	})
 
-	validateConfigFailed = &helpers.ValidationMock{
-		ValidateFunc: func(ctx validation.Context) error {
-			return errors.New("No validate for you!")
-		},
-	}
-
-	validateConfigCanceled = &helpers.ValidationMock{
-		ValidateFunc: func(ctx validation.Context) error {
-			return context.Canceled
-		},
-	}
-
-	inspectApplicationFailed = &helpers.ValidationMock{
-		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
-			return nil, errors.New("No namespaces for you!")
-		},
-	}
-
 	gatherClusterFailed = &helpers.ValidationMock{
 		GatherFunc: func(
 			ctx validation.Context,
@@ -91,29 +72,6 @@ var (
 			}
 			close(results)
 			return results
-		},
-	}
-
-	inspectS3ProfilesCanceled = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return nil, context.Canceled
-		},
-	}
-
-	getSecretFailed = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return nil, errors.New("secret not found")
-		},
-	}
-
-	getSecretInvalid = &helpers.ValidationMock{
-		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
-			return &corev1.Secret{
-				Data: map[string][]byte{
-					"AWS_ACCESS_KEY_ID":     []byte("invalid id"),
-					"AWS_SECRET_ACCESS_KEY": []byte("invalid key"),
-				},
-			}, nil
 		},
 	}
 
@@ -186,7 +144,7 @@ func TestGatherApplicationPassed(t *testing.T) {
 }
 
 func TestGatherApplicationValidateFailed(t *testing.T) {
-	cmd := testCommand(t, validateConfigFailed)
+	cmd := testCommand(t, helpers.ValidateConfigFailed)
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -200,7 +158,7 @@ func TestGatherApplicationValidateFailed(t *testing.T) {
 }
 
 func TestGatherApplicationValidateCanceled(t *testing.T) {
-	cmd := testCommand(t, validateConfigCanceled)
+	cmd := testCommand(t, helpers.ValidateConfigCanceled)
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -214,7 +172,7 @@ func TestGatherApplicationValidateCanceled(t *testing.T) {
 }
 
 func TestGatherApplicationInspectFailed(t *testing.T) {
-	cmd := testCommand(t, inspectApplicationFailed)
+	cmd := testCommand(t, helpers.InspectApplicationFailed)
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -304,7 +262,7 @@ func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 }
 
 func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
-	cmd := testCommand(t, inspectS3ProfilesCanceled)
+	cmd := testCommand(t, helpers.GetSecretCanceled)
 	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
@@ -329,7 +287,7 @@ func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 }
 
 func TestGatherApplicationGetSecretFailed(t *testing.T) {
-	cmd := testCommand(t, getSecretFailed)
+	cmd := testCommand(t, helpers.GetSecretFailed)
 	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
@@ -358,7 +316,7 @@ func TestGatherApplicationGetSecretFailed(t *testing.T) {
 }
 
 func TestGatherApplicationGetSecretInvalid(t *testing.T) {
-	cmd := testCommand(t, getSecretInvalid)
+	cmd := testCommand(t, helpers.GetSecretInvalid)
 	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")

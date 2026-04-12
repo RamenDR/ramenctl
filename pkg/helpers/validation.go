@@ -5,6 +5,7 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"errors"
 
 	"github.com/ramendr/ramen/e2e/types"
@@ -117,3 +118,48 @@ func (m *ValidationMock) CheckS3(ctx validation.Context, profiles []*s3.Profile)
 	close(results)
 	return results
 }
+
+// Pre-configured ValidationMock instances for common test scenarios.
+
+var (
+	ValidateConfigFailed = &ValidationMock{
+		ValidateFunc: func(ctx validation.Context) error {
+			return errors.New("no validate for you")
+		},
+	}
+
+	ValidateConfigCanceled = &ValidationMock{
+		ValidateFunc: func(ctx validation.Context) error {
+			return context.Canceled
+		},
+	}
+
+	InspectApplicationFailed = &ValidationMock{
+		ApplicationNamespacesFunc: func(validation.Context, string, string) ([]string, error) {
+			return nil, errors.New("no namespaces for you")
+		},
+	}
+
+	GetSecretCanceled = &ValidationMock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return nil, context.Canceled
+		},
+	}
+
+	GetSecretFailed = &ValidationMock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return nil, errors.New("secret not found")
+		},
+	}
+
+	GetSecretInvalid = &ValidationMock{
+		GetSecretFunc: func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error) {
+			return &corev1.Secret{
+				Data: map[string][]byte{
+					"AWS_ACCESS_KEY_ID":     []byte("invalid id"),
+					"AWS_SECRET_ACCESS_KEY": []byte("invalid key"),
+				},
+			}, nil
+		},
+	}
+)
