@@ -69,7 +69,7 @@ func (c *Command) validateClusters() bool {
 	console.Step("Validate clusters")
 	c.StartStep("validate clusters")
 
-	namespaces := c.clustersNamespacesToGather()
+	namespaces := c.namespacesToGather()
 	c.Report.Namespaces = namespaces
 
 	options := gathering.Options{
@@ -81,11 +81,11 @@ func (c *Command) validateClusters() bool {
 		return c.FinishStep()
 	}
 
-	if !c.checkClustersS3() {
+	if !c.checkS3Profiles() {
 		return c.FinishStep()
 	}
 
-	if !c.validateGatheredClustersData() {
+	if !c.validateGatheredData() {
 		return c.FinishStep()
 	}
 
@@ -93,31 +93,31 @@ func (c *Command) validateClusters() bool {
 	return true
 }
 
-func (c *Command) clustersNamespacesToGather() []string {
+func (c *Command) namespacesToGather() []string {
 	return sets.Sorted([]string{
 		c.Config().Namespaces.RamenHubNamespace,
 		c.Config().Namespaces.RamenDRClusterNamespace,
 	})
 }
 
-// checkClustersS3 inspects S3 profiles and checks access. It returns false only if
-// the user cancelled, otherwise true even if there were errors during inspection, as those
-// will be reported in the validation results.
-func (c *Command) checkClustersS3() bool {
-	profiles, err := c.inspectClustersS3Profiles()
+// checkS3Profiles inspects S3 profiles and checks access. It returns false only if the user
+// cancelled, otherwise true even if there were errors during inspection, as those will be
+// reported in the validation results.
+func (c *Command) checkS3Profiles() bool {
+	profiles, err := c.inspectS3Profiles()
 	if err != nil {
 		return !errors.Is(err, context.Canceled)
 	}
 	return c.checkS3(profiles)
 }
 
-func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, error) {
+func (c *Command) inspectS3Profiles() ([]*s3.Profile, error) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect S3 profiles"}
 
 	c.Logger().Infof("Step %q started", step.Name)
 
-	profiles, err := c.clustersS3Info()
+	profiles, err := c.s3Info()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -142,8 +142,8 @@ func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, error) {
 	return profiles, nil
 }
 
-// clustersS3Info reads S3 profiles and fetches secrets from the hub cluster.
-func (c *Command) clustersS3Info() ([]*s3.Profile, error) {
+// s3Info reads S3 profiles and fetches secrets from the hub cluster.
+func (c *Command) s3Info() ([]*s3.Profile, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
@@ -175,7 +175,7 @@ func (c *Command) clustersS3Info() ([]*s3.Profile, error) {
 	return profiles, nil
 }
 
-func (c *Command) validateGatheredClustersData() bool {
+func (c *Command) validateGatheredData() bool {
 	log := c.Logger()
 
 	start := time.Now()
@@ -188,7 +188,7 @@ func (c *Command) validateGatheredClustersData() bool {
 	s := &report.ClustersStatus{}
 	c.Report.ClustersStatus = s
 
-	if err := c.validateClustersHub(&s.Hub); err != nil {
+	if err := c.validateHub(&s.Hub); err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate hub"
 		console.Error(msg)
@@ -196,7 +196,7 @@ func (c *Command) validateGatheredClustersData() bool {
 		return false
 	}
 
-	if err := c.validateClustersClusters(&s.Clusters); err != nil {
+	if err := c.validateManagedClusters(&s.Clusters); err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate managed clusters"
 		console.Error(msg)
@@ -204,7 +204,7 @@ func (c *Command) validateGatheredClustersData() bool {
 		return false
 	}
 
-	c.validateClustersS3Status(&s.S3)
+	c.validateS3Status(&s.S3)
 
 	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
@@ -219,12 +219,12 @@ func (c *Command) validateGatheredClustersData() bool {
 	return true
 }
 
-func (c *Command) validateClustersHub(s *report.ClustersStatusHub) error {
-	if err := c.validateClustersDRPolicies(&s.DRPolicies); err != nil {
+func (c *Command) validateHub(s *report.ClustersStatusHub) error {
+	if err := c.validateDRPolicies(&s.DRPolicies); err != nil {
 		return fmt.Errorf("failed to validate drpolicies: %w", err)
 	}
 
-	if err := c.validateClustersDRClusters(&s.DRClusters); err != nil {
+	if err := c.validateDRClusters(&s.DRClusters); err != nil {
 		return fmt.Errorf("failed to validate drclusters: %w", err)
 	}
 
@@ -237,7 +237,7 @@ func (c *Command) validateClustersHub(s *report.ClustersStatusHub) error {
 	return nil
 }
 
-func (c *Command) validateClustersDRPolicies(
+func (c *Command) validateDRPolicies(
 	drPoliciesList *report.ValidatedDRPoliciesList,
 ) error {
 	log := c.Logger()
@@ -302,7 +302,7 @@ func (c *Command) validatedPeerClasses(
 	return peerClassesList
 }
 
-func (c *Command) validateClustersDRClusters(
+func (c *Command) validateDRClusters(
 	drClustersList *report.ValidatedDRClustersList,
 ) error {
 	log := c.Logger()
@@ -364,7 +364,7 @@ func (c *Command) validatedDRClusterConditions(
 	return conditions
 }
 
-func (c *Command) validateClustersClusters(s *[]report.ClustersStatusCluster) error {
+func (c *Command) validateManagedClusters(s *[]report.ClustersStatusCluster) error {
 	env := c.Env()
 	namespace := c.Config().Namespaces.RamenDRClusterNamespace
 
@@ -998,7 +998,7 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
 
 	for r := range c.Backend.CheckS3(c, profiles) {
-		// Collect results to validate and report S3 status in validateClustersS3Status.
+		// Collect results to validate and report S3 status in validateS3Status.
 		c.S3Results = append(c.S3Results, r)
 
 		step := &report.Step{
@@ -1029,16 +1029,16 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	return c.Current.Status != report.Canceled
 }
 
-func (c *Command) validateClustersS3Status(s *report.ClustersS3Status) {
-	c.validatedClustersS3ProfileStatus(&s.Profiles)
+func (c *Command) validateS3Status(s *report.ClustersS3Status) {
+	c.validatedS3ProfileStatus(&s.Profiles)
 }
 
-func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3ProfileStatusList) {
+func (c *Command) validatedS3ProfileStatus(s *report.ValidatedClustersS3ProfileStatusList) {
 	if len(c.S3Results) > 0 {
 		// Checked S3 for one or more profiles, validate the results.
 		s.State = report.OK
 		for _, result := range c.S3Results {
-			validated := c.validatedClustersS3Profile(result)
+			validated := c.validatedS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}
 	} else {
@@ -1050,7 +1050,7 @@ func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3
 	summary.AddValidation(c.Report.Summary, s)
 }
 
-func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
+func (c *Command) validatedS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
 	profileStatus := report.ClustersS3ProfileStatus{
 		Name: result.ProfileName,
 	}
