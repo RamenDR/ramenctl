@@ -51,7 +51,7 @@ var (
 		},
 	}
 
-	applicationGatherDataFailed = &helpers.ValidationMock{
+	gatherDataFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GatherFunc:                helpers.GatherDataFailed,
 	}
@@ -61,12 +61,12 @@ var (
 		GetSecretFunc:             helpers.GetSecretCanceled.GetSecret,
 	}
 
-	applicationGetSecretFailed = &helpers.ValidationMock{
+	getSecretFailed = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc:             helpers.GetSecretFailed.GetSecret,
 	}
 
-	applicationGetSecretInvalid = &helpers.ValidationMock{
+	getSecretInvalid = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc:             helpers.GetSecretInvalid.GetSecret,
 	}
@@ -387,7 +387,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, applicationGatherDataFailed, testK8s)
+	validate := testCommand(t, gatherDataFailed, testK8s)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -472,7 +472,7 @@ func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 }
 
 func TestValidateApplicationGetSecretFailed(t *testing.T) {
-	validate := testCommand(t, applicationGetSecretFailed, testK8s)
+	validate := testCommand(t, getSecretFailed, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
@@ -505,7 +505,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 }
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
-	validate := testCommand(t, applicationGetSecretInvalid, testK8s)
+	validate := testCommand(t, getSecretInvalid, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
