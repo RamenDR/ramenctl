@@ -9,7 +9,7 @@ import (
 	"io"
 
 	"github.com/ramendr/ramenctl/pkg/report"
-	"github.com/ramendr/ramenctl/pkg/validate"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 //go:embed templates/*.tmpl
@@ -30,7 +30,7 @@ func (d *templateData) HeaderData() report.HeaderData {
 
 // SummaryString returns a formatted summary for display.
 func (d *templateData) SummaryString() string {
-	return validate.SummaryString(d.Summary)
+	return summary.String(d.Summary)
 }
 
 // Template returns the HTML template for this report.

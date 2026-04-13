@@ -13,6 +13,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/sets"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
@@ -298,7 +299,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.report, expectedStatus)
 
-	checkSummary(t, validate.report, report.Summary{OK: 24})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 24})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -498,7 +499,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{OK: 22, Problem: 2})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 22, summary.Problem: 2})
 }
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
@@ -531,7 +532,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{OK: 22, Problem: 2})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 22, summary.Problem: 2})
 }
 
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
@@ -566,7 +567,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.report,
-		report.Summary{OK: 23, Problem: 1},
+		report.Summary{summary.OK: 23, summary.Problem: 1},
 	)
 }
 

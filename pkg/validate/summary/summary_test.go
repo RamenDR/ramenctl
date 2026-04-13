@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package summary
 
 import (
 	"testing"
@@ -12,12 +12,12 @@ import (
 func TestSummaryAdd(t *testing.T) {
 	s := &report.Summary{}
 
-	addValidation(s, &report.Validated{State: report.OK})
-	addValidation(s, &report.Validated{State: report.OK})
-	addValidation(s, &report.Validated{State: report.Stale})
-	addValidation(s, &report.Validated{State: report.OK})
-	addValidation(s, &report.Validated{State: report.Stale})
-	addValidation(s, &report.Validated{State: report.Problem})
+	AddValidation(s, &report.Validated{State: report.OK})
+	AddValidation(s, &report.Validated{State: report.OK})
+	AddValidation(s, &report.Validated{State: report.Stale})
+	AddValidation(s, &report.Validated{State: report.OK})
+	AddValidation(s, &report.Validated{State: report.Stale})
+	AddValidation(s, &report.Validated{State: report.Problem})
 
 	expected := report.Summary{
 		OK:      3,
@@ -46,7 +46,7 @@ func TestSummaryHasProblems(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
-		if got := hasIssues(tc.summary); got != tc.expected {
+		if got := HasIssues(tc.summary); got != tc.expected {
 			t.Errorf("%s: expected %v, got %v", tc.name, tc.expected, got)
 		}
 	}
@@ -58,7 +58,7 @@ func TestSummaryString(t *testing.T) {
 		Problem: 2,
 	}
 	expected := "1 ok, 0 stale, 2 problem"
-	if SummaryString(s) != expected {
-		t.Fatalf("expected %q, got %q", expected, SummaryString(s))
+	if String(s) != expected {
+		t.Fatalf("expected %q, got %q", expected, String(s))
 	}
 }

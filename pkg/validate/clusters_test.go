@@ -11,6 +11,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 // Clusters mock instances.
@@ -612,7 +613,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, report.Summary{OK: 90})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 90})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -1179,7 +1180,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.report, expected)
 
-	checkSummary(t, validate.report, report.Summary{OK: 88})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 88})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -1273,7 +1274,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 	if validate.report.ClustersStatus == nil {
 		t.Fatal("clusters status is nil")
 	}
-	checkSummary(t, validate.report, report.Summary{Problem: 9})
+	checkSummary(t, validate.report, report.Summary{summary.Problem: 9})
 }
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
@@ -1334,7 +1335,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{OK: 88, Problem: 2})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 88, summary.Problem: 2})
 }
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
@@ -1366,7 +1367,7 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{OK: 88, Problem: 2})
+	checkSummary(t, validate.report, report.Summary{summary.OK: 88, summary.Problem: 2})
 }
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
@@ -1403,7 +1404,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.report,
-		report.Summary{OK: 89, Problem: 1},
+		report.Summary{summary.OK: 89, summary.Problem: 1},
 	)
 }
 

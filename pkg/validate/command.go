@@ -24,6 +24,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
@@ -125,7 +126,7 @@ func (c *Command) validatedDeleted(obj client.Object) report.ValidatedBool {
 			validated.State = report.OK
 		}
 	}
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -137,7 +138,7 @@ func (c *Command) validatedConditions(
 	for i := range conditions {
 		condition := &conditions[i]
 		validated := validatedCondition(obj, condition, metav1.ConditionTrue)
-		addValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.report.Summary, &validated)
 		validatedConditions = append(validatedConditions, validated)
 	}
 	return validatedConditions
@@ -185,12 +186,12 @@ func (c *Command) dataDir() string {
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("validation %s (%s)", c.report.Status, SummaryString(c.report.Summary))
+	return fmt.Errorf("validation %s (%s)", c.report.Status, summary.String(c.report.Summary))
 }
 
 func (c *Command) passed() {
 	c.command.WriteYAMLReport(c.report)
-	console.Completed("Validation completed (%s)", SummaryString(c.report.Summary))
+	console.Completed("Validation completed (%s)", summary.String(c.report.Summary))
 }
 
 // Managing steps.

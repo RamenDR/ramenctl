@@ -25,6 +25,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/time"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 const (
@@ -186,11 +187,11 @@ func (c *Command) validateGatheredClustersData() bool {
 
 	c.validateClustersS3Status(&s.S3)
 
-	if hasIssues(c.report.Summary) {
+	if summary.HasIssues(c.report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, SummaryString(c.report.Summary))
+		log.Errorf("%s: %s", msg, summary.String(c.report.Summary))
 		return false
 	}
 
@@ -252,7 +253,7 @@ func (c *Command) validateClustersDRPolicies(
 		drPoliciesList.State = report.OK
 	}
 
-	addValidation(c.report.Summary, drPoliciesList)
+	summary.AddValidation(c.report.Summary, drPoliciesList)
 
 	return nil
 }
@@ -277,7 +278,7 @@ func (c *Command) validatedPeerClasses(
 	} else {
 		peerClassesList.State = report.OK
 	}
-	addValidation(c.report.Summary, &peerClassesList)
+	summary.AddValidation(c.report.Summary, &peerClassesList)
 
 	return peerClassesList
 }
@@ -316,7 +317,7 @@ func (c *Command) validateClustersDRClusters(
 		drClustersList.State = report.OK
 	}
 
-	addValidation(c.report.Summary, drClustersList)
+	summary.AddValidation(c.report.Summary, drClustersList)
 
 	return nil
 }
@@ -337,7 +338,7 @@ func (c *Command) validatedDRClusterConditions(
 			validated = validatedCondition(drCluster, condition, metav1.ConditionTrue)
 		}
 
-		addValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -471,7 +472,7 @@ func (c *Command) validatedRamenControllerType(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -513,7 +514,7 @@ func (c *Command) validatedHubS3Profiles(
 	} else {
 		s.State = report.OK
 	}
-	addValidation(c.report.Summary, s)
+	summary.AddValidation(c.report.Summary, s)
 
 	return nil
 }
@@ -578,7 +579,7 @@ func (c *Command) validatedManagedClusterS3Profiles(
 	default:
 		s.State = report.OK
 	}
-	addValidation(c.report.Summary, s)
+	summary.AddValidation(c.report.Summary, s)
 
 	return nil
 }
@@ -605,7 +606,7 @@ func (c *Command) validatedRequiredString(value string) report.ValidatedString {
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -630,7 +631,7 @@ func (c *Command) validatedManagedClusterRequiredString(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -652,7 +653,7 @@ func (c *Command) validatedCertificateFingerprint(certPem []byte) report.Validat
 		}
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -701,7 +702,7 @@ func (c *Command) validatedManagedClusterCertificateFingerprint(
 		}
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -811,7 +812,7 @@ func (c *Command) validatedSecretNamespaceString(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -838,7 +839,7 @@ func (c *Command) validatedSecretKeyFingerprint(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -881,7 +882,7 @@ func (c *Command) validatedManagedClusterSecretKeyFingerprint(
 		}
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -935,7 +936,7 @@ func (c *Command) validatedDeploymentReplicas(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -962,7 +963,7 @@ func (c *Command) validatedDeploymentConditions(
 		}
 
 		validated := validatedDeploymentCondition(condition, expectedStatus)
-		addValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -1027,7 +1028,7 @@ func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3
 		s.Description = "No s3 profiles found"
 	}
 
-	addValidation(c.report.Summary, s)
+	summary.AddValidation(c.report.Summary, s)
 }
 
 func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
@@ -1052,6 +1053,6 @@ func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3
 		}
 	}
 
-	addValidation(c.report.Summary, &profileStatus.Accessible)
+	summary.AddValidation(c.report.Summary, &profileStatus.Accessible)
 	return profileStatus
 }

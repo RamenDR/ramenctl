@@ -24,6 +24,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 func (c *Command) Application(drpcName, drpcNamespace string) error {
@@ -288,11 +289,11 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 
 	c.validateApplicationS3Status(&s.S3)
 
-	if hasIssues(c.report.Summary) {
+	if summary.HasIssues(c.report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, SummaryString(c.report.Summary))
+		log.Errorf("%s: %s", msg, summary.String(c.report.Summary))
 		return false
 	}
 
@@ -360,7 +361,7 @@ func (c *Command) validatedApplicationS3ProfileStatus(
 		s.Description = "S3 data not available"
 	}
 
-	addValidation(c.report.Summary, s)
+	summary.AddValidation(c.report.Summary, s)
 }
 
 func (c *Command) validatedApplicationS3Profile(
@@ -387,7 +388,7 @@ func (c *Command) validatedApplicationS3Profile(
 		}
 	}
 
-	addValidation(c.report.Summary, &profileStatus.Gathered)
+	summary.AddValidation(c.report.Summary, &profileStatus.Gathered)
 	return profileStatus
 }
 
@@ -461,7 +462,7 @@ func (c *Command) validatedDRPCPhase(drpc *ramenapi.DRPlacementControl) report.V
 		}
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -482,7 +483,7 @@ func (c *Command) validatedDRPCProgression(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -501,7 +502,7 @@ func (c *Command) validatedVRGState(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -518,7 +519,7 @@ func (c *Command) validatedProtectedPVCPhase(
 		validated.State = report.OK
 	}
 
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -530,7 +531,7 @@ func (c *Command) validatedDRPCAction(action string) report.ValidatedString {
 		validated.State = report.Problem
 		validated.Description = fmt.Sprintf("Unknown action %q", action)
 	}
-	addValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.report.Summary, &validated)
 	return validated
 }
 
@@ -595,7 +596,7 @@ func (c *Command) validatedVRGConditions(
 			continue
 		}
 		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		addValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
@@ -639,7 +640,7 @@ func (c *Command) validatedProtectedPVCConditions(
 		}
 
 		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		addValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions

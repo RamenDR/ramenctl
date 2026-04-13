@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package summary
 
 import (
 	"fmt"
@@ -16,8 +16,8 @@ const (
 	Problem = report.SummaryKey("problem")
 )
 
-// addValidation adds a validation to the summary.
-func addValidation(s *report.Summary, v report.Validation) {
+// AddValidation adds a validation to the summary.
+func AddValidation(s *report.Summary, v report.Validation) {
 	switch v.GetState() {
 	case report.OK:
 		s.Add(OK)
@@ -28,13 +28,13 @@ func addValidation(s *report.Summary, v report.Validation) {
 	}
 }
 
-// hasIssues returns true if there are any problems or stale results.
-func hasIssues(s *report.Summary) bool {
+// HasIssues returns true if there are any problems or stale results.
+func HasIssues(s *report.Summary) bool {
 	return s.Get(Stale) > 0 || s.Get(Problem) > 0
 }
 
-// SummaryString returns a string representation of a validation summary.
-func SummaryString(s *report.Summary) string {
+// String returns a string representation of a validation summary.
+func String(s *report.Summary) string {
 	return fmt.Sprintf("%d ok, %d stale, %d problem",
 		s.Get(OK), s.Get(Stale), s.Get(Problem))
 }

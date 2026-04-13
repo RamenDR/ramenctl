@@ -12,6 +12,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/time"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 // Command common tests
@@ -64,7 +65,7 @@ func TestValidatedDeleted(t *testing.T) {
 	})
 
 	t.Run("update summary", func(t *testing.T) {
-		expected := report.Summary{OK: 1, Problem: 2}
+		expected := report.Summary{summary.OK: 1, summary.Problem: 2}
 		if !cmd.report.Summary.Equal(&expected) {
 			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
 		}
