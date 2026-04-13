@@ -80,11 +80,11 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 		return c.FinishStep()
 	}
 
-	if !c.gatherApplicationS3Data(drpcName, drpcNamespace) {
+	if !c.gatherS3Data(drpcName, drpcNamespace) {
 		return c.FinishStep()
 	}
 
-	if !c.validateGatheredApplicationData(drpcName, drpcNamespace) {
+	if !c.validateGatheredData(drpcName, drpcNamespace) {
 		return c.FinishStep()
 	}
 
@@ -123,18 +123,18 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 	return namespaces, true
 }
 
-// gatherApplicationS3Data inspection application S3 profile and gathers it. It returns false only
-// if the user cancelled, otherwise true if there were errors during inspection, as those will be
-// reported in the validation results.
-func (c *Command) gatherApplicationS3Data(drpcName, drpcNamespace string) bool {
-	profiles, prefix, err := c.inspectApplicationS3Profiles(drpcName, drpcNamespace)
+// gatherS3Data inspects application S3 profiles and gathers data. It returns false only if the
+// user cancelled, otherwise true if there were errors during inspection, as those will be reported
+// in the validation results.
+func (c *Command) gatherS3Data(drpcName, drpcNamespace string) bool {
+	profiles, prefix, err := c.inspectS3Profiles(drpcName, drpcNamespace)
 	if err != nil {
 		return !errors.Is(err, context.Canceled)
 	}
-	return c.gatherApplicationS3Profiles(profiles, prefix)
+	return c.gatherS3Profiles(profiles, prefix)
 }
 
-func (c *Command) inspectApplicationS3Profiles(
+func (c *Command) inspectS3Profiles(
 	drpcName, drpcNamespace string,
 ) ([]*s3.Profile, string, error) {
 	start := time.Now()
@@ -142,7 +142,7 @@ func (c *Command) inspectApplicationS3Profiles(
 
 	c.Logger().Infof("Step %q started", step.Name)
 
-	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
+	profiles, prefix, err := c.s3Info(drpcName, drpcNamespace)
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -167,10 +167,10 @@ func (c *Command) inspectApplicationS3Profiles(
 	return profiles, prefix, nil
 }
 
-// gatherApplicationS3Profiles gathers S3 data from the given profiles using the specified prefix.
-// Returns false only if the user cancelled, otherwise true even if there were errors, as those
-// will be reported during validation.
-func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix string) bool {
+// gatherS3Profiles gathers S3 data from the given profiles using the specified prefix. Returns
+// false only if the user cancelled, otherwise true even if there were errors, as those will be
+// reported during validation.
+func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	start := time.Now()
 	outputDir := c.DataDir()
 
@@ -228,8 +228,8 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 	return slices.Sorted(maps.Keys(set)), nil
 }
 
-// applicationS3Info reads S3 profiles and application prefix from gathered hub data.
-func (c *Command) applicationS3Info(
+// s3Info reads S3 profiles and application prefix from gathered hub data.
+func (c *Command) s3Info(
 	drpcName, drpcNamespace string,
 ) ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
@@ -268,7 +268,7 @@ func (c *Command) applicationS3Info(
 	return profiles, prefix, nil
 }
 
-func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string) bool {
+func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
 	log := c.Logger()
 
 	start := time.Now()
@@ -281,7 +281,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 	s := &report.ApplicationStatus{}
 	c.Report.ApplicationStatus = s
 
-	drpc, err := c.validateApplicationHub(&s.Hub, drpcName, drpcNamespace)
+	drpc, err := c.validateHub(&s.Hub, drpcName, drpcNamespace)
 	if err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate hub"
@@ -290,7 +290,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	if err := c.validateApplicationPrimaryCluster(&s.PrimaryCluster, drpc); err != nil {
+	if err := c.validatePrimaryCluster(&s.PrimaryCluster, drpc); err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate primary cluster"
 		console.Error(msg)
@@ -298,7 +298,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	if err := c.validateApplicationSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
+	if err := c.validateSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate secondary cluster"
 		console.Error(msg)
@@ -306,7 +306,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 		return false
 	}
 
-	c.validateApplicationS3Status(&s.S3)
+	c.validateS3Status(&s.S3)
 
 	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
@@ -321,7 +321,7 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 	return true
 }
 
-func (c *Command) validateApplicationHub(
+func (c *Command) validateHub(
 	s *report.ApplicationStatusHub,
 	drpcName, drpcNamespace string,
 ) (*ramenapi.DRPlacementControl, error) {
@@ -332,11 +332,11 @@ func (c *Command) validateApplicationHub(
 		return nil, fmt.Errorf("failed to read drpc: %w", err)
 	}
 	log.Debugf("Read drpc \"%s/%s\"", drpc.Namespace, drpc.Name)
-	c.validateApplicationDRPC(&s.DRPC, drpc)
+	c.validateDRPC(&s.DRPC, drpc)
 	return drpc, nil
 }
 
-func (c *Command) validateApplicationPrimaryCluster(
+func (c *Command) validatePrimaryCluster(
 	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
@@ -345,10 +345,10 @@ func (c *Command) validateApplicationPrimaryCluster(
 		return fmt.Errorf("failed to find primary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.PrimaryState)
+	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.PrimaryState)
 }
 
-func (c *Command) validateApplicationSecondaryCluster(
+func (c *Command) validateSecondaryCluster(
 	s *report.ApplicationStatusCluster,
 	drpc *ramenapi.DRPlacementControl,
 ) error {
@@ -357,21 +357,21 @@ func (c *Command) validateApplicationSecondaryCluster(
 		return fmt.Errorf("failed to find secondary cluster: %w", err)
 	}
 	s.Name = cluster.Name
-	return c.validateApplicationVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
+	return c.validateVRG(&s.VRG, cluster, drpc, ramenapi.SecondaryState)
 }
 
-func (c *Command) validateApplicationS3Status(s *report.ApplicationS3Status) {
-	c.validatedApplicationS3ProfileStatus(&s.Profiles)
+func (c *Command) validateS3Status(s *report.ApplicationS3Status) {
+	c.validatedS3ProfileStatus(&s.Profiles)
 }
 
-func (c *Command) validatedApplicationS3ProfileStatus(
+func (c *Command) validatedS3ProfileStatus(
 	s *report.ValidatedApplicationS3ProfileStatusList,
 ) {
 	if len(c.S3Results) > 0 {
 		// Gathered objects from one or more profiles, validate the results.
 		s.State = report.OK
 		for _, result := range c.S3Results {
-			validated := c.validatedApplicationS3Profile(result)
+			validated := c.validatedS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}
 	} else {
@@ -383,7 +383,7 @@ func (c *Command) validatedApplicationS3ProfileStatus(
 	summary.AddValidation(c.Report.Summary, s)
 }
 
-func (c *Command) validatedApplicationS3Profile(
+func (c *Command) validatedS3Profile(
 	result s3.Result,
 ) report.ApplicationS3ProfileStatus {
 	profileStatus := report.ApplicationS3ProfileStatus{
@@ -411,7 +411,7 @@ func (c *Command) validatedApplicationS3Profile(
 	return profileStatus
 }
 
-func (c *Command) validateApplicationDRPC(
+func (c *Command) validateDRPC(
 	s *report.DRPCSummary,
 	drpc *ramenapi.DRPlacementControl,
 ) {
@@ -425,7 +425,7 @@ func (c *Command) validateApplicationDRPC(
 	s.Conditions = c.ValidatedConditions(drpc, drpc.Status.Conditions)
 }
 
-func (c *Command) validateApplicationVRG(
+func (c *Command) validateVRG(
 	s *report.VRGSummary,
 	cluster *e2etypes.Cluster,
 	drpc *ramenapi.DRPlacementControl,
