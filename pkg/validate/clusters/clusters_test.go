@@ -25,10 +25,10 @@ const caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:8
 
 // testSystem is a test system such as drenv or ocp clusters.
 type testSystem struct {
-	name                       string
-	config                     *config.Config
-	env                        *types.Env
-	validateClustersNamespaces []string
+	name       string
+	config     *config.Config
+	env        *types.Env
+	namespaces []string
 }
 
 var (
@@ -42,7 +42,7 @@ var (
 			C1:  &types.Cluster{Name: "dr1"},
 			C2:  &types.Cluster{Name: "dr2"},
 		},
-		validateClustersNamespaces: sets.Sorted([]string{
+		namespaces: sets.Sorted([]string{
 			e2econfig.K8sNamespaces.RamenHubNamespace,
 			e2econfig.K8sNamespaces.RamenDRClusterNamespace,
 		}),
@@ -58,7 +58,7 @@ var (
 			C1:  &types.Cluster{Name: "c1"},
 			C2:  &types.Cluster{Name: "c2"},
 		},
-		validateClustersNamespaces: sets.Sorted([]string{
+		namespaces: sets.Sorted([]string{
 			e2econfig.OcpNamespaces.RamenHubNamespace,
 			e2econfig.OcpNamespaces.RamenDRClusterNamespace,
 		}),

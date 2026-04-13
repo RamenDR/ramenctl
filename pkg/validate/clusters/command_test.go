@@ -46,7 +46,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -630,7 +630,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testOcp.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testOcp.namespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -1232,7 +1232,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -1291,7 +1291,7 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 	}
 	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
@@ -1320,7 +1320,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
@@ -1352,7 +1352,7 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
@@ -1384,7 +1384,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -1422,7 +1422,7 @@ func TestValidateClustersCheckS3Canceled(t *testing.T) {
 	}
 	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.Report, nil)
-	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	checkNamespaces(t, validate.Report, testK8s.namespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
