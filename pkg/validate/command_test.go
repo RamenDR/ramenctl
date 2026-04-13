@@ -5,19 +5,12 @@ package validate
 
 import (
 	"context"
-	"os"
-	"reflect"
-	"slices"
 	"testing"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
-	e2econfig "github.com/ramendr/ramen/e2e/config"
-	"github.com/ramendr/ramen/e2e/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/ramendr/ramenctl/pkg/command"
-	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -26,62 +19,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-const (
-	validateClusters     = "validate-clusters"
-	validateApplication  = "validate-application"
-	drpcName             = "appset-deploy-rbd"
-	drpcNamespace        = "argocd"
-	applicationNamespace = "e2e-appset-deploy-rbd"
-
-	// validateDeleted descriptions.
-	resourceDoesNotExist = "Resource does not exist"
-	resourceWasDeleted   = "Resource was deleted"
-
-	// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
-	caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
-)
-
-// testSystem is a test system such as drenv or ocp clusters.
-type testSystem struct {
-	name                       string
-	config                     *config.Config
-	env                        *types.Env
-	validateClustersNamespaces []string
-}
-
 var (
-	testK8s = testSystem{
-		name: "k8s",
-		config: &config.Config{
-			Namespaces: e2econfig.K8sNamespaces,
-		},
-		env: &types.Env{
-			Hub: &types.Cluster{Name: "hub"},
-			C1:  &types.Cluster{Name: "dr1"},
-			C2:  &types.Cluster{Name: "dr2"},
-		},
-		validateClustersNamespaces: sets.Sorted([]string{
-			e2econfig.K8sNamespaces.RamenHubNamespace,
-			e2econfig.K8sNamespaces.RamenDRClusterNamespace,
-		}),
-	}
-
-	testOcp = testSystem{
-		name: "ocp",
-		config: &config.Config{
-			Namespaces: e2econfig.OcpNamespaces,
-		},
-		env: &types.Env{
-			Hub: &types.Cluster{Name: "hub"},
-			C1:  &types.Cluster{Name: "c1"},
-			C2:  &types.Cluster{Name: "c2"},
-		},
-		validateClustersNamespaces: sets.Sorted([]string{
-			e2econfig.OcpNamespaces.RamenHubNamespace,
-			e2econfig.OcpNamespaces.RamenDRClusterNamespace,
-		}),
-	}
-
 	testApplication = &report.Application{
 		Name:      drpcName,
 		Namespace: drpcNamespace,
@@ -2144,121 +2082,3 @@ func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 
 // TODO: Test gather cancellation when kubectl-gahter supports it:
 // https://github.com/nirs/kubectl-gather/issues/88
-
-// Helpers.
-
-func testCommand(
-	t *testing.T,
-	name string,
-	backend validation.Validation,
-	system testSystem,
-) *Command {
-	cmd, err := command.ForTest(name, system.env, t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		cmd.Close()
-	})
-	return newCommand(cmd, system.config, backend)
-}
-
-func checkReport(t *testing.T, cmd *Command, status report.Status) {
-	if cmd.report.Status != status {
-		t.Fatalf("expected status %q, got %q", status, cmd.report.Status)
-	}
-	if !cmd.report.Config.Equal(cmd.Config()) {
-		t.Fatalf("expected config %q, got %q", cmd.Config(), cmd.report.Config)
-	}
-	duration := totalDuration(cmd.report.Steps)
-	if cmd.report.Duration != duration {
-		t.Fatalf("expected duration %v, got %v", duration, cmd.report.Duration)
-	}
-}
-
-func checkApplication(t *testing.T, r *report.Report, expected *report.Application) {
-	if !reflect.DeepEqual(expected, r.Application) {
-		diff := helpers.UnifiedDiff(t, expected, r.Application)
-		t.Fatalf("applications not equal\n%s", diff)
-	}
-}
-
-func checkNamespaces(t *testing.T, r *report.Report, expected []string) {
-	if !slices.Equal(r.Namespaces, expected) {
-		t.Fatalf("expected namespaces %q, got %q", expected, r.Namespaces)
-	}
-}
-
-func checkStep(t *testing.T, step *report.Step, name string, status report.Status) {
-	if name != step.Name {
-		t.Fatalf("expected step %q, got %q", name, step.Name)
-	}
-	if status != step.Status {
-		t.Fatalf("expected status %q, got %q", status, step.Status)
-	}
-	// We cannot check duration since it may be zero on windows.
-}
-
-func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
-	if len(expected) != len(step.Items) {
-		t.Fatalf("expected items %+v, got %+v", expected, step.Items)
-	}
-	for i, item := range expected {
-		checkStep(t, step.Items[i], item.Name, item.Status)
-	}
-}
-
-func checkApplicationStatus(
-	t *testing.T,
-	r *report.Report,
-	expected *report.ApplicationStatus,
-) {
-	if expected != nil {
-		if !expected.Equal(r.ApplicationStatus) {
-			diff := helpers.UnifiedDiff(t, expected, r.ApplicationStatus)
-			t.Fatalf("application statuses not equal\n%s", diff)
-		}
-	} else if r.ApplicationStatus != nil {
-		t.Fatalf("application status not nil\n%s",
-			helpers.MarshalYAML(t, r.ApplicationStatus))
-	}
-}
-
-func checkClusterStatus(
-	t *testing.T,
-	r *report.Report,
-	expected *report.ClustersStatus,
-) {
-	if expected != nil {
-		if !expected.Equal(r.ClustersStatus) {
-			diff := helpers.UnifiedDiff(t, expected, r.ClustersStatus)
-			t.Fatalf("clusters statuses not equal\n%s", diff)
-		}
-	} else if r.ClustersStatus != nil {
-		t.Fatalf("clusters status not nil\n%s",
-			helpers.MarshalYAML(t, r.ClustersStatus))
-	}
-}
-
-func checkSummary(t *testing.T, r *report.Report, expected report.Summary) {
-	if !r.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *r.Summary)
-	}
-}
-
-func totalDuration(steps []*report.Step) float64 {
-	var total float64
-	for _, step := range steps {
-		total += step.Duration
-	}
-	return total
-}
-
-func dumpCommandLog(t *testing.T, cmd *Command) {
-	log, err := os.ReadFile(cmd.command.LogFile())
-	if err != nil {
-		t.Logf("Failed to read command log: %s", err)
-		return
-	}
-	t.Logf("Command log:\n%s", log)
-}
