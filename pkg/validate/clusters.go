@@ -25,6 +25,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/time"
+	validatecmd "github.com/ramendr/ramenctl/pkg/validate/command"
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
@@ -36,48 +37,48 @@ const (
 )
 
 func (c *Command) Clusters() error {
-	if !c.validateConfig() {
-		return c.failed()
+	if !c.ValidateConfig() {
+		return c.Failed()
 	}
 	if !c.validateClusters() {
-		return c.failed()
+		return c.Failed()
 	}
-	c.passed()
+	c.Passed()
 	return nil
 }
 
 func (c *Command) validateClusters() bool {
 	console.Step("Validate clusters")
-	c.startStep("validate clusters")
+	c.StartStep("validate clusters")
 
 	namespaces := c.clustersNamespacesToGather()
-	c.report.Namespaces = namespaces
+	c.Report.Namespaces = namespaces
 
 	options := gathering.Options{
 		Namespaces: namespaces,
 		Cluster:    true,
-		OutputDir:  c.dataDir(),
+		OutputDir:  c.DataDir(),
 	}
-	if !c.gatherNamespaces(options) {
-		return c.finishStep()
+	if !c.GatherNamespaces(options) {
+		return c.FinishStep()
 	}
 
 	if !c.checkClustersS3() {
-		return c.finishStep()
+		return c.FinishStep()
 	}
 
 	if !c.validateGatheredClustersData() {
-		return c.finishStep()
+		return c.FinishStep()
 	}
 
-	c.finishStep()
+	c.FinishStep()
 	return true
 }
 
 func (c *Command) clustersNamespacesToGather() []string {
 	return sets.Sorted([]string{
-		c.config.Namespaces.RamenHubNamespace,
-		c.config.Namespaces.RamenDRClusterNamespace,
+		c.Config().Namespaces.RamenHubNamespace,
+		c.Config().Namespaces.RamenDRClusterNamespace,
 	})
 }
 
@@ -109,13 +110,13 @@ func (c *Command) inspectClustersS3Profiles() ([]*s3.Profile, error) {
 			console.Error("Failed to %s", step.Name)
 		}
 		c.Logger().Errorf("Step %q %s: %s", step.Name, step.Status, err)
-		c.current.AddStep(step)
+		c.Current.AddStep(step)
 		return nil, err
 	}
 
 	step.Duration = time.Since(start).Seconds()
 	step.Status = report.Passed
-	c.current.AddStep(step)
+	c.Current.AddStep(step)
 
 	console.Pass("Inspected S3 profiles")
 	c.Logger().Infof("Step %q passed", step.Name)
@@ -128,9 +129,9 @@ func (c *Command) clustersS3Info() ([]*s3.Profile, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
-	reader := c.outputReader(hub.Name)
+	reader := c.OutputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
-	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+	configMapNamespace := c.Config().Namespaces.RamenHubNamespace
 
 	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
@@ -142,7 +143,7 @@ func (c *Command) clustersS3Info() ([]*s3.Profile, error) {
 	// empty credentials will cause S3 operations to fail during checkS3.
 	var profiles []*s3.Profile
 	for _, sp := range storeProfiles {
-		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		secret, err := c.Backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return nil, err
@@ -163,11 +164,11 @@ func (c *Command) validateGatheredClustersData() bool {
 	step := &report.Step{Name: "validate clusters data"}
 	defer func() {
 		step.Duration = time.Since(start).Seconds()
-		c.current.AddStep(step)
+		c.Current.AddStep(step)
 	}()
 
 	s := &report.ClustersStatus{}
-	c.report.ClustersStatus = s
+	c.Report.ClustersStatus = s
 
 	if err := c.validateClustersHub(&s.Hub); err != nil {
 		step.Status = report.Failed
@@ -187,11 +188,11 @@ func (c *Command) validateGatheredClustersData() bool {
 
 	c.validateClustersS3Status(&s.S3)
 
-	if summary.HasIssues(c.report.Summary) {
+	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, summary.String(c.report.Summary))
+		log.Errorf("%s: %s", msg, summary.String(c.Report.Summary))
 		return false
 	}
 
@@ -222,7 +223,7 @@ func (c *Command) validateClustersDRPolicies(
 	drPoliciesList *report.ValidatedDRPoliciesList,
 ) error {
 	log := c.Logger()
-	reader := c.outputReader(c.Env().Hub.Name)
+	reader := c.OutputReader(c.Env().Hub.Name)
 
 	drPolicyNames, err := ramen.ListDRPolicies(reader)
 	if err != nil {
@@ -241,7 +242,7 @@ func (c *Command) validateClustersDRPolicies(
 			SchedulingInterval: drPolicy.Spec.SchedulingInterval,
 			DRClusters:         drPolicy.Spec.DRClusters,
 			PeerClasses:        c.validatedPeerClasses(drPolicy),
-			Conditions:         c.validatedConditions(drPolicy, drPolicy.Status.Conditions),
+			Conditions:         c.ValidatedConditions(drPolicy, drPolicy.Status.Conditions),
 		}
 		drPoliciesList.Value = append(drPoliciesList.Value, dps)
 	}
@@ -253,7 +254,7 @@ func (c *Command) validateClustersDRPolicies(
 		drPoliciesList.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, drPoliciesList)
+	summary.AddValidation(c.Report.Summary, drPoliciesList)
 
 	return nil
 }
@@ -278,7 +279,7 @@ func (c *Command) validatedPeerClasses(
 	} else {
 		peerClassesList.State = report.OK
 	}
-	summary.AddValidation(c.report.Summary, &peerClassesList)
+	summary.AddValidation(c.Report.Summary, &peerClassesList)
 
 	return peerClassesList
 }
@@ -287,7 +288,7 @@ func (c *Command) validateClustersDRClusters(
 	drClustersList *report.ValidatedDRClustersList,
 ) error {
 	log := c.Logger()
-	reader := c.outputReader(c.Env().Hub.Name)
+	reader := c.OutputReader(c.Env().Hub.Name)
 
 	drClusterNames, err := ramen.ListDRClusters(reader)
 	if err != nil {
@@ -317,7 +318,7 @@ func (c *Command) validateClustersDRClusters(
 		drClustersList.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, drClustersList)
+	summary.AddValidation(c.Report.Summary, drClustersList)
 
 	return nil
 }
@@ -332,13 +333,13 @@ func (c *Command) validatedDRClusterConditions(
 		var validated report.ValidatedCondition
 		if condition.Type == ramenapi.DRClusterConditionTypeFenced {
 			// For Fenced condition, "False" is the expected status.
-			validated = validatedCondition(drCluster, condition, metav1.ConditionFalse)
+			validated = validatecmd.ValidatedCondition(drCluster, condition, metav1.ConditionFalse)
 		} else {
 			// For Clean & Validated conditions, "True" is the expected status.
-			validated = validatedCondition(drCluster, condition, metav1.ConditionTrue)
+			validated = validatecmd.ValidatedCondition(drCluster, condition, metav1.ConditionTrue)
 		}
 
-		summary.AddValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.Report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -404,7 +405,7 @@ func (c *Command) validateRamenConfigMap(
 	controllerType ramenapi.ControllerType,
 ) error {
 	log := c.Logger()
-	reader := c.outputReader(cluster.Name)
+	reader := c.OutputReader(cluster.Name)
 
 	s.Name = name
 	s.Namespace = namespace
@@ -418,12 +419,12 @@ func (c *Command) validateRamenConfigMap(
 
 		log.Debugf("Configmap \"%s/%s\" does not exist in cluster %q",
 			namespace, name, cluster.Name)
-		s.Deleted = c.validatedDeleted(nil)
+		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
 
 	log.Debugf("Read configmap \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
-	s.Deleted = c.validatedDeleted(configMap)
+	s.Deleted = c.ValidatedDeleted(configMap)
 
 	config := &ramenapi.RamenConfig{}
 	data := []byte(configMap.Data[ramen.ConfigMapRamenConfigKeyName])
@@ -472,7 +473,7 @@ func (c *Command) validatedRamenControllerType(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -514,7 +515,7 @@ func (c *Command) validatedHubS3Profiles(
 	} else {
 		s.State = report.OK
 	}
-	summary.AddValidation(c.report.Summary, s)
+	summary.AddValidation(c.Report.Summary, s)
 
 	return nil
 }
@@ -566,7 +567,7 @@ func (c *Command) validatedManagedClusterS3Profiles(
 		s.Value = append(s.Value, ps)
 	}
 
-	hubS3ProfileCount := len(c.report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value)
+	hubS3ProfileCount := len(c.Report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value)
 	switch {
 	case len(s.Value) < minS3Profiles:
 		s.State = report.Problem
@@ -579,7 +580,7 @@ func (c *Command) validatedManagedClusterS3Profiles(
 	default:
 		s.State = report.OK
 	}
-	summary.AddValidation(c.report.Summary, s)
+	summary.AddValidation(c.Report.Summary, s)
 
 	return nil
 }
@@ -587,7 +588,7 @@ func (c *Command) validatedManagedClusterS3Profiles(
 func (c *Command) lookupHubS3StoreProfileSummary(
 	name string,
 ) (report.S3StoreProfilesSummary, bool) {
-	profiles := c.report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value
+	profiles := c.Report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value
 	for i := range profiles {
 		if profiles[i].S3ProfileName == name {
 			return profiles[i], true
@@ -606,7 +607,7 @@ func (c *Command) validatedRequiredString(value string) report.ValidatedString {
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -631,7 +632,7 @@ func (c *Command) validatedManagedClusterRequiredString(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -653,7 +654,7 @@ func (c *Command) validatedCertificateFingerprint(certPem []byte) report.Validat
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -702,7 +703,7 @@ func (c *Command) validatedManagedClusterCertificateFingerprint(
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -726,11 +727,11 @@ func (c *Command) validatedHubSecretRef(
 	if secret == nil {
 		log.Debugf("Secret \"%s/%s\" does not exist in cluster %q",
 			secretRef.Namespace, secretRef.Name, cluster.Name)
-		validated.Deleted = c.validatedDeleted(nil)
+		validated.Deleted = c.ValidatedDeleted(nil)
 	} else {
 		log.Debugf("Read secret \"%s/%s\" from cluster %q",
 			secretRef.Namespace, secretRef.Name, cluster.Name)
-		validated.Deleted = c.validatedDeleted(secret)
+		validated.Deleted = c.ValidatedDeleted(secret)
 		validated.AWSAccessKeyID = c.validatedSecretKeyFingerprint(secret, "AWS_ACCESS_KEY_ID")
 		validated.AWSSecretAccessKey = c.validatedSecretKeyFingerprint(
 			secret,
@@ -763,11 +764,11 @@ func (c *Command) validatedManagedClusterSecretRef(
 	if secret == nil {
 		log.Debugf("Secret \"%s/%s\" does not exist in cluster %q",
 			secretRef.Namespace, secretRef.Name, cluster.Name)
-		validated.Deleted = c.validatedDeleted(nil)
+		validated.Deleted = c.ValidatedDeleted(nil)
 	} else {
 		log.Debugf("Read secret \"%s/%s\" from cluster %q",
 			secretRef.Namespace, secretRef.Name, cluster.Name)
-		validated.Deleted = c.validatedDeleted(secret)
+		validated.Deleted = c.ValidatedDeleted(secret)
 		validated.AWSAccessKeyID = c.validatedManagedClusterSecretKeyFingerprint(
 			secret, "AWS_ACCESS_KEY_ID", hubSecret.AWSAccessKeyID, found)
 		validated.AWSSecretAccessKey = c.validatedManagedClusterSecretKeyFingerprint(
@@ -784,7 +785,7 @@ func (c *Command) readSecret(
 	if namespace == "" {
 		namespace = configNamespace
 	}
-	reader := c.outputReader(cluster.Name)
+	reader := c.OutputReader(cluster.Name)
 	secret, err := core.ReadSecret(reader, name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -812,7 +813,7 @@ func (c *Command) validatedSecretNamespaceString(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -839,7 +840,7 @@ func (c *Command) validatedSecretKeyFingerprint(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -882,7 +883,7 @@ func (c *Command) validatedManagedClusterSecretKeyFingerprint(
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -893,7 +894,7 @@ func (c *Command) validateDeployment(
 	expectedReplicas int32,
 ) error {
 	log := c.Logger()
-	reader := c.outputReader(cluster.Name)
+	reader := c.OutputReader(cluster.Name)
 
 	s.Name = name
 	s.Namespace = namespace
@@ -907,12 +908,12 @@ func (c *Command) validateDeployment(
 
 		log.Debugf("Deployment \"%s/%s\" does not exist in cluster %q",
 			namespace, name, cluster.Name)
-		s.Deleted = c.validatedDeleted(nil)
+		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
 
 	log.Debugf("Read deployment \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
-	s.Deleted = c.validatedDeleted(deployment)
+	s.Deleted = c.ValidatedDeleted(deployment)
 	s.Replicas = c.validatedDeploymentReplicas(deployment, expectedReplicas)
 	s.Conditions = c.validatedDeploymentConditions(deployment)
 
@@ -936,7 +937,7 @@ func (c *Command) validatedDeploymentReplicas(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -963,7 +964,7 @@ func (c *Command) validatedDeploymentConditions(
 		}
 
 		validated := validatedDeploymentCondition(condition, expectedStatus)
-		summary.AddValidation(c.report.Summary, &validated)
+		summary.AddValidation(c.Report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 
@@ -978,9 +979,9 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 
 	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
 
-	for r := range c.backend.CheckS3(c, profiles) {
+	for r := range c.Backend.CheckS3(c, profiles) {
 		// Collect results to validate and report S3 status in validateClustersS3Status.
-		c.s3Results = append(c.s3Results, r)
+		c.S3Results = append(c.S3Results, r)
 
 		step := &report.Step{
 			Name:     fmt.Sprintf("check S3 profile %q", r.ProfileName),
@@ -1002,12 +1003,12 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 			step.Status = report.Passed
 			console.Pass("Checked S3 profile %q", r.ProfileName)
 		}
-		c.current.AddStep(step)
+		c.Current.AddStep(step)
 	}
 
 	c.Logger().Infof("Checked S3 profiles in %.2f seconds", time.Since(start).Seconds())
 
-	return c.current.Status != report.Canceled
+	return c.Current.Status != report.Canceled
 }
 
 func (c *Command) validateClustersS3Status(s *report.ClustersS3Status) {
@@ -1015,10 +1016,10 @@ func (c *Command) validateClustersS3Status(s *report.ClustersS3Status) {
 }
 
 func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3ProfileStatusList) {
-	if len(c.s3Results) > 0 {
+	if len(c.S3Results) > 0 {
 		// Checked S3 for one or more profiles, validate the results.
 		s.State = report.OK
-		for _, result := range c.s3Results {
+		for _, result := range c.S3Results {
 			validated := c.validatedClustersS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}
@@ -1028,7 +1029,7 @@ func (c *Command) validatedClustersS3ProfileStatus(s *report.ValidatedClustersS3
 		s.Description = "No s3 profiles found"
 	}
 
-	summary.AddValidation(c.report.Summary, s)
+	summary.AddValidation(c.Report.Summary, s)
 }
 
 func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
@@ -1053,6 +1054,6 @@ func (c *Command) validatedClustersS3Profile(result s3.Result) report.ClustersS3
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &profileStatus.Accessible)
+	summary.AddValidation(c.Report.Summary, &profileStatus.Accessible)
 	return profileStatus
 }

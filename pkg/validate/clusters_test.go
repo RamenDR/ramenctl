@@ -34,19 +34,19 @@ var (
 
 func TestValidateClustersK8s(t *testing.T) {
 	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
 	checkReport(t, validate, report.Passed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Passed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Passed)
 
 	items := []*report.Step{
 		{Name: "gather \"hub\"", Status: report.Passed},
@@ -57,8 +57,8 @@ func TestValidateClustersK8s(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate clusters data", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
 
 	expected := &report.ClustersStatus{
 		Hub: report.ClustersStatusHub{
@@ -611,26 +611,26 @@ func TestValidateClustersK8s(t *testing.T) {
 			},
 		},
 	}
-	checkClusterStatus(t, validate.report, expected)
+	checkClusterStatus(t, validate.Report, expected)
 
-	checkSummary(t, validate.report, report.Summary{summary.OK: 90})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 90})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
 	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testOcp)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testOcp.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testOcp.name, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
 	checkReport(t, validate, report.Passed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testOcp.validateClustersNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testOcp.validateClustersNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Passed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Passed)
 
 	items := []*report.Step{
 		{Name: "gather \"hub\"", Status: report.Passed},
@@ -647,8 +647,8 @@ func TestValidateClustersOcp(t *testing.T) {
 		},
 		{Name: "validate clusters data", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
 
 	expected := &report.ClustersStatus{
 		Hub: report.ClustersStatusHub{
@@ -1178,9 +1178,9 @@ func TestValidateClustersOcp(t *testing.T) {
 			},
 		},
 	}
-	checkClusterStatus(t, validate.report, expected)
+	checkClusterStatus(t, validate.Report, expected)
 
-	checkSummary(t, validate.report, report.Summary{summary.OK: 88})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 88})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -1190,15 +1190,15 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
-	checkApplicationStatus(t, validate.report, nil)
-	checkClusterStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Failed)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
@@ -1208,15 +1208,15 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
-	checkApplicationStatus(t, validate.report, nil)
-	checkClusterStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Canceled)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
@@ -1226,13 +1226,13 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Failed)
 
 	// If gathering data fail for some of the clusters, we skip the validation step.
 	items := []*report.Step{
@@ -1240,10 +1240,10 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
-	checkClusterStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
@@ -1254,12 +1254,12 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Failed)
 
 	// Inspect S3 profiles fails, check S3 is skipped. Validation runs and reports missing S3
 	// status as problem.
@@ -1270,29 +1270,29 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 		{Name: "inspect S3 profiles", Status: report.Failed},
 		{Name: "validate clusters data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	if validate.report.ClustersStatus == nil {
+	checkItems(t, validate.Report.Steps[1], items)
+	if validate.Report.ClustersStatus == nil {
 		t.Fatal("clusters status is nil")
 	}
-	checkSummary(t, validate.report, report.Summary{summary.Problem: 9})
+	checkSummary(t, validate.Report, report.Summary{summary.Problem: 9})
 }
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretCanceled, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
 
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Canceled)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Canceled)
 
 	// Inspect S3 profiles is canceled, checkS3 and validation are skipped.
 	items := []*report.Step{
@@ -1301,27 +1301,27 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Canceled},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkClusterStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkClusterStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateClustersGetSecretFailed(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretFailed, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
 
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Failed)
 
 	// When GetSecret returns an error. The profile will have empty credentials
 	// causing checkS3 and validation to fail.
@@ -1334,26 +1334,26 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Failed},
 		{Name: "validate clusters data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{summary.OK: 88, summary.Problem: 2})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 88, summary.Problem: 2})
 }
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretInvalid, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
 
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Failed)
 
 	// When GetSecret returns a secret with invalid value, causing checkS3 and
 	// validation to fail.
@@ -1366,25 +1366,25 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Failed},
 		{Name: "validate clusters data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{summary.OK: 88, summary.Problem: 2})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 88, summary.Problem: 2})
 }
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
 	validate := testCommand(t, validateClusters, checkS3Failed, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Failed)
 
 	// Check s3 fails for one profile, other profile succeeds. Validation runs and reports the
 	// failed profile as problem.
@@ -1397,32 +1397,32 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate clusters data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	if validate.report.ClustersStatus == nil {
+	checkItems(t, validate.Report.Steps[1], items)
+	if validate.Report.ClustersStatus == nil {
 		t.Fatal("clusters status is nil")
 	}
 	checkSummary(
 		t,
-		validate.report,
+		validate.Report,
 		report.Summary{summary.OK: 89, summary.Problem: 1},
 	)
 }
 
 func TestValidateClustersCheckS3Canceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, checkS3Canceled, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "clusters/"+testK8s.name, validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, nil)
-	checkNamespaces(t, validate.report, testK8s.validateClustersNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, nil)
+	checkNamespaces(t, validate.Report, testK8s.validateClustersNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate clusters", report.Canceled)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate clusters", report.Canceled)
 
 	// Check S3 is canceled, validation is skipped.
 	items := []*report.Step{
@@ -1433,7 +1433,7 @@ func TestValidateClustersCheckS3Canceled(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr1\"", Status: report.Canceled},
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Canceled},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkClusterStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkClusterStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }

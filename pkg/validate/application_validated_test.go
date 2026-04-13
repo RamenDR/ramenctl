@@ -60,8 +60,8 @@ func TestValidatedDRPCAction(t *testing.T) {
 
 	t.Run("update summary", func(t *testing.T) {
 		expected := report.Summary{summary.OK: 3, summary.Problem: 1}
-		if !cmd.report.Summary.Equal(&expected) {
-			t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+		if !cmd.Report.Summary.Equal(&expected) {
+			t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 		}
 	})
 }
@@ -145,8 +145,8 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 		errors += len(group.cases)
 	}
 	expected := report.Summary{summary.Problem: errors}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -187,8 +187,8 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 	}
 
 	expected := report.Summary{summary.OK: len(cases)}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -215,8 +215,8 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 	})
 
 	expected := report.Summary{summary.OK: 1}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -272,8 +272,8 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 	}
 
 	expected := report.Summary{summary.Problem: len(progressions)}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -309,8 +309,8 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 	}
 
 	expected := report.Summary{summary.OK: len(cases)}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -352,8 +352,8 @@ func TestValidatedVRGSTateError(t *testing.T) {
 	}
 
 	expected := report.Summary{summary.Problem: len(cases)}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -379,8 +379,8 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 	})
 
 	expected := report.Summary{summary.OK: 1}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }
 
@@ -419,7 +419,7 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 	}
 
 	expected := report.Summary{summary.Problem: len(cases)}
-	if !cmd.report.Summary.Equal(&expected) {
-		t.Fatalf("expected summary %v, got %v", expected, *cmd.report.Summary)
+	if !cmd.Report.Summary.Equal(&expected) {
+		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
 	}
 }

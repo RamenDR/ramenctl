@@ -84,19 +84,19 @@ var (
 
 func TestValidateApplicationPassed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationMock, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
 	checkReport(t, validate, report.Passed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Passed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Passed)
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
@@ -108,7 +108,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate data", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
+	checkItems(t, validate.Report.Steps[1], items)
 
 	expectedStatus := &report.ApplicationStatus{
 		Hub: report.ApplicationStatusHub{
@@ -297,9 +297,9 @@ func TestValidateApplicationPassed(t *testing.T) {
 			},
 		},
 	}
-	checkApplicationStatus(t, validate.report, expectedStatus)
+	checkApplicationStatus(t, validate.Report, expectedStatus)
 
-	checkSummary(t, validate.report, report.Summary{summary.OK: 24})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 24})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -309,14 +309,14 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Failed)
-	checkApplicationStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Failed)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
@@ -326,14 +326,14 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 1 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 1 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Canceled)
-	checkApplicationStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Canceled)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
@@ -343,21 +343,21 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// If inspecting the application has failed we skip the gather step.
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
@@ -367,21 +367,21 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, nil)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, nil)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Canceled)
 
 	// If inspecting the application has been canceled we skip the gather step.
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Canceled},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
@@ -391,13 +391,13 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// If gathering data fail for some of the clusters, we skip the validation step.
 	items := []*report.Step{
@@ -406,9 +406,9 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkApplicationStatus(t, validate.report, nil)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkApplicationStatus(t, validate.Report, nil)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
@@ -419,13 +419,13 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// Inspect S3 profiles fails, S3 gathering is skipped.
 	// Validation runs and reports missing S3 data as problem.
@@ -437,25 +437,25 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 		{Name: "inspect S3 profiles", Status: report.Failed},
 		{Name: "validate data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	validate := testCommand(t, validateApplication, inspectApplicationS3ProfilesCanceled, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Canceled)
 
 	// Inspect S3 profiles is canceled, gatherS3 and validation are skipped.
 	items := []*report.Step{
@@ -465,26 +465,26 @@ func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Canceled},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{})
 }
 
 func TestValidateApplicationGetSecretFailed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationGetSecretFailed, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
 
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// When GetSecret returns an error. The profile will have empty credentials
 	// causing S3 gather and validation to fail.
@@ -498,26 +498,26 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
 		{Name: "validate data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{summary.OK: 22, summary.Problem: 2})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 22, summary.Problem: 2})
 }
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationGetSecretInvalid, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
 
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// When GetSecret returns a secret with invalid value, causing S3 gather and
 	// validation to fail.
@@ -531,25 +531,25 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
 		{Name: "validate data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{summary.OK: 22, summary.Problem: 2})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 22, summary.Problem: 2})
 }
 
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	validate := testCommand(t, validateApplication, gatherS3Failed, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Failed)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Failed)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Failed)
 
 	// S3 gather fails for one profile, other profile succeeds.
 	// Validation runs and reports the failed profile as problem.
@@ -563,29 +563,29 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 		{Name: "validate data", Status: report.Failed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
+	checkItems(t, validate.Report.Steps[1], items)
 	checkSummary(
 		t,
-		validate.report,
+		validate.Report,
 		report.Summary{summary.OK: 23, summary.Problem: 1},
 	)
 }
 
 func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 	validate := testCommand(t, validateApplication, gatherS3Canceled, testK8s)
-	helpers.AddGatheredData(t, validate.dataDir(), "appset-deploy-rbd", validate.report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, validate, report.Canceled)
-	checkApplication(t, validate.report, testApplication)
-	checkNamespaces(t, validate.report, validateApplicationNamespaces)
-	if len(validate.report.Steps) != 2 {
-		t.Fatalf("unexpected steps %+v", validate.report.Steps)
+	checkApplication(t, validate.Report, testApplication)
+	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	if len(validate.Report.Steps) != 2 {
+		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
-	checkStep(t, validate.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, validate.report.Steps[1], "validate application", report.Canceled)
+	checkStep(t, validate.Report.Steps[0], "validate config", report.Passed)
+	checkStep(t, validate.Report.Steps[1], "validate application", report.Canceled)
 
 	// S3 gather is canceled, validation is skipped.
 	items := []*report.Step{
@@ -597,6 +597,6 @@ func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Canceled},
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 	}
-	checkItems(t, validate.report.Steps[1], items)
-	checkSummary(t, validate.report, report.Summary{})
+	checkItems(t, validate.Report.Steps[1], items)
+	checkSummary(t, validate.Report, report.Summary{})
 }

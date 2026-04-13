@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package command
 
 import (
 	"fmt"
@@ -12,11 +12,11 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
-func isDeleted(obj client.Object) bool {
+func IsDeleted(obj client.Object) bool {
 	return !obj.GetDeletionTimestamp().IsZero()
 }
 
-func validatedCondition(
+func ValidatedCondition(
 	obj client.Object,
 	condition *metav1.Condition,
 	expectedStatus metav1.ConditionStatus,

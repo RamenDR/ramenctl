@@ -27,10 +27,6 @@ const (
 	drpcNamespace        = "argocd"
 	applicationNamespace = "e2e-appset-deploy-rbd"
 
-	// validateDeleted descriptions.
-	resourceDoesNotExist = "Resource does not exist"
-	resourceWasDeleted   = "Resource was deleted"
-
 	// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
 	caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
 )
@@ -96,15 +92,15 @@ func testCommand(
 }
 
 func checkReport(t *testing.T, cmd *Command, status report.Status) {
-	if cmd.report.Status != status {
-		t.Fatalf("expected status %q, got %q", status, cmd.report.Status)
+	if cmd.Report.Status != status {
+		t.Fatalf("expected status %q, got %q", status, cmd.Report.Status)
 	}
-	if !cmd.report.Config.Equal(cmd.Config()) {
-		t.Fatalf("expected config %q, got %q", cmd.Config(), cmd.report.Config)
+	if !cmd.Report.Config.Equal(cmd.Config()) {
+		t.Fatalf("expected config %q, got %q", cmd.Config(), cmd.Report.Config)
 	}
-	duration := totalDuration(cmd.report.Steps)
-	if cmd.report.Duration != duration {
-		t.Fatalf("expected duration %v, got %v", duration, cmd.report.Duration)
+	duration := totalDuration(cmd.Report.Steps)
+	if cmd.Report.Duration != duration {
+		t.Fatalf("expected duration %v, got %v", duration, cmd.Report.Duration)
 	}
 }
 
@@ -187,7 +183,7 @@ func totalDuration(steps []*report.Step) float64 {
 }
 
 func dumpCommandLog(t *testing.T, cmd *Command) {
-	log, err := os.ReadFile(cmd.command.LogFile())
+	log, err := os.ReadFile(cmd.LogFile())
 	if err != nil {
 		t.Logf("Failed to read command log: %s", err)
 		return

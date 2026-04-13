@@ -24,52 +24,53 @@ import (
 	"github.com/ramendr/ramenctl/pkg/report"
 	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/time"
+	validatecmd "github.com/ramendr/ramenctl/pkg/validate/command"
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
 func (c *Command) Application(drpcName, drpcNamespace string) error {
-	c.report.Application = &report.Application{
+	c.Report.Application = &report.Application{
 		Name:      drpcName,
 		Namespace: drpcNamespace,
 	}
-	if !c.validateConfig() {
-		return c.failed()
+	if !c.ValidateConfig() {
+		return c.Failed()
 	}
 	if !c.validateApplication(drpcName, drpcNamespace) {
-		return c.failed()
+		return c.Failed()
 	}
-	c.passed()
+	c.Passed()
 	return nil
 }
 
 func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 	console.Step("Validate application")
-	c.startStep("validate application")
+	c.StartStep("validate application")
 
 	namespaces, ok := c.inspectApplication(drpcName, drpcNamespace)
 	if !ok {
-		return c.finishStep()
+		return c.FinishStep()
 	}
 
-	c.report.Namespaces = namespaces
+	c.Report.Namespaces = namespaces
 
 	options := gathering.Options{
 		Namespaces: namespaces,
-		OutputDir:  c.dataDir(),
+		OutputDir:  c.DataDir(),
 	}
-	if !c.gatherNamespaces(options) {
-		return c.finishStep()
+	if !c.GatherNamespaces(options) {
+		return c.FinishStep()
 	}
 
 	if !c.gatherApplicationS3Data(drpcName, drpcNamespace) {
-		return c.finishStep()
+		return c.FinishStep()
 	}
 
 	if !c.validateGatheredApplicationData(drpcName, drpcNamespace) {
-		return c.finishStep()
+		return c.FinishStep()
 	}
 
-	c.finishStep()
+	c.FinishStep()
 	return true
 }
 
@@ -88,15 +89,15 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 			console.Error("Failed to %s", step.Name)
 			step.Status = report.Failed
 		}
-		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
-		c.current.AddStep(step)
+		c.Logger().Errorf("Step %q %s: %s", c.Current.Name, step.Status, err)
+		c.Current.AddStep(step)
 
 		return nil, false
 	}
 
 	step.Duration = time.Since(start).Seconds()
 	step.Status = report.Passed
-	c.current.AddStep(step)
+	c.Current.AddStep(step)
 
 	console.Pass("Inspected application")
 	c.Logger().Infof("Step %q passed", step.Name)
@@ -133,14 +134,14 @@ func (c *Command) inspectApplicationS3Profiles(
 			step.Status = report.Failed
 			console.Error("Failed to %s", step.Name)
 		}
-		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
-		c.current.AddStep(step)
+		c.Logger().Errorf("Step %q %s: %s", c.Current.Name, step.Status, err)
+		c.Current.AddStep(step)
 		return nil, "", err
 	}
 
 	step.Duration = time.Since(start).Seconds()
 	step.Status = report.Passed
-	c.current.AddStep(step)
+	c.Current.AddStep(step)
 
 	console.Pass("Inspected S3 profiles")
 	c.Logger().Infof("Step %q passed", step.Name)
@@ -153,14 +154,14 @@ func (c *Command) inspectApplicationS3Profiles(
 // will be reported during validation.
 func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	start := time.Now()
-	outputDir := c.dataDir()
+	outputDir := c.DataDir()
 
 	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
 		logging.ProfileNames(profiles), prefix)
 
-	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
+	for r := range c.Backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
 		// Store the s3 gather result for validation.
-		c.s3Results = append(c.s3Results, r)
+		c.S3Results = append(c.S3Results, r)
 
 		step := &report.Step{
 			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
@@ -182,22 +183,22 @@ func (c *Command) gatherApplicationS3Profiles(profiles []*s3.Profile, prefix str
 			step.Status = report.Passed
 			console.Pass("Gathered S3 profile %q", r.ProfileName)
 		}
-		c.current.AddStep(step)
+		c.Current.AddStep(step)
 	}
 
 	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
 
-	return c.current.Status != report.Canceled
+	return c.Current.Status != report.Canceled
 }
 
 func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
 	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
-		c.config.Namespaces.RamenHubNamespace:       {},
-		c.config.Namespaces.RamenDRClusterNamespace: {},
+		c.Config().Namespaces.RamenHubNamespace:       {},
+		c.Config().Namespaces.RamenDRClusterNamespace: {},
 	}
 
-	appNamespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	appNamespaces, err := c.Backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
 	if err != nil {
 		return nil, err
 	}
@@ -216,9 +217,9 @@ func (c *Command) applicationS3Info(
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
-	reader := c.outputReader(hub.Name)
+	reader := c.OutputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
-	configMapNamespace := c.config.Namespaces.RamenHubNamespace
+	configMapNamespace := c.Config().Namespaces.RamenHubNamespace
 
 	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
 	if err != nil {
@@ -230,7 +231,7 @@ func (c *Command) applicationS3Info(
 	// empty credentials will cause S3 operations to fail during gatherS3.
 	var profiles []*s3.Profile
 	for _, sp := range storeProfiles {
-		secret, err := c.backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		secret, err := c.Backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return nil, "", err
@@ -256,11 +257,11 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 	step := &report.Step{Name: "validate data"}
 	defer func() {
 		step.Duration = time.Since(start).Seconds()
-		c.current.AddStep(step)
+		c.Current.AddStep(step)
 	}()
 
 	s := &report.ApplicationStatus{}
-	c.report.ApplicationStatus = s
+	c.Report.ApplicationStatus = s
 
 	drpc, err := c.validateApplicationHub(&s.Hub, drpcName, drpcNamespace)
 	if err != nil {
@@ -289,11 +290,11 @@ func (c *Command) validateGatheredApplicationData(drpcName, drpcNamespace string
 
 	c.validateApplicationS3Status(&s.S3)
 
-	if summary.HasIssues(c.report.Summary) {
+	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
 		msg := "Issues found during validation"
 		console.Error(msg)
-		log.Errorf("%s: %s", msg, summary.String(c.report.Summary))
+		log.Errorf("%s: %s", msg, summary.String(c.Report.Summary))
 		return false
 	}
 
@@ -307,7 +308,7 @@ func (c *Command) validateApplicationHub(
 	drpcName, drpcNamespace string,
 ) (*ramenapi.DRPlacementControl, error) {
 	log := c.Logger()
-	reader := c.outputReader(c.Env().Hub.Name)
+	reader := c.OutputReader(c.Env().Hub.Name)
 	drpc, err := ramen.ReadDRPC(reader, drpcName, drpcNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read drpc: %w", err)
@@ -348,10 +349,10 @@ func (c *Command) validateApplicationS3Status(s *report.ApplicationS3Status) {
 func (c *Command) validatedApplicationS3ProfileStatus(
 	s *report.ValidatedApplicationS3ProfileStatusList,
 ) {
-	if len(c.s3Results) > 0 {
+	if len(c.S3Results) > 0 {
 		// Gathered objects from one or more profiles, validate the results.
 		s.State = report.OK
-		for _, result := range c.s3Results {
+		for _, result := range c.S3Results {
 			validated := c.validatedApplicationS3Profile(result)
 			s.Value = append(s.Value, validated)
 		}
@@ -361,7 +362,7 @@ func (c *Command) validatedApplicationS3ProfileStatus(
 		s.Description = "S3 data not available"
 	}
 
-	summary.AddValidation(c.report.Summary, s)
+	summary.AddValidation(c.Report.Summary, s)
 }
 
 func (c *Command) validatedApplicationS3Profile(
@@ -388,7 +389,7 @@ func (c *Command) validatedApplicationS3Profile(
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &profileStatus.Gathered)
+	summary.AddValidation(c.Report.Summary, &profileStatus.Gathered)
 	return profileStatus
 }
 
@@ -398,12 +399,12 @@ func (c *Command) validateApplicationDRPC(
 ) {
 	s.Name = drpc.Name
 	s.Namespace = drpc.Namespace
-	s.Deleted = c.validatedDeleted(drpc)
+	s.Deleted = c.ValidatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.Action = c.validatedDRPCAction(string(drpc.Spec.Action))
 	s.Phase = c.validatedDRPCPhase(drpc)
 	s.Progression = c.validatedDRPCProgression(drpc)
-	s.Conditions = c.validatedConditions(drpc, drpc.Status.Conditions)
+	s.Conditions = c.ValidatedConditions(drpc, drpc.Status.Conditions)
 }
 
 func (c *Command) validateApplicationVRG(
@@ -413,7 +414,7 @@ func (c *Command) validateApplicationVRG(
 	stableState ramenapi.State,
 ) error {
 	log := c.Logger()
-	reader := c.outputReader(cluster.Name)
+	reader := c.OutputReader(cluster.Name)
 	vrgName := drpc.Name
 	vrgNamespace := ramen.VRGNamespace(drpc)
 
@@ -426,14 +427,14 @@ func (c *Command) validateApplicationVRG(
 		log.Debugf("vrg \"%s/%s\" missing in cluster %q", vrgNamespace, vrgName, cluster.Name)
 		s.Name = vrgName
 		s.Namespace = vrgNamespace
-		s.Deleted = c.validatedDeleted(nil)
+		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
 
 	log.Debugf("Read vrg \"%s/%s\" from cluster %q", vrgNamespace, vrgName, cluster.Name)
 	s.Name = vrgName
 	s.Namespace = vrgNamespace
-	s.Deleted = c.validatedDeleted(vrg)
+	s.Deleted = c.ValidatedDeleted(vrg)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
 	s.PVCGroups = c.pvcGroups(vrg)
@@ -462,7 +463,7 @@ func (c *Command) validatedDRPCPhase(drpc *ramenapi.DRPlacementControl) report.V
 		}
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -483,7 +484,7 @@ func (c *Command) validatedDRPCProgression(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -502,7 +503,7 @@ func (c *Command) validatedVRGState(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -519,7 +520,7 @@ func (c *Command) validatedProtectedPVCPhase(
 		validated.State = report.OK
 	}
 
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -531,7 +532,7 @@ func (c *Command) validatedDRPCAction(action string) report.ValidatedString {
 		validated.State = report.Problem
 		validated.Description = fmt.Sprintf("Unknown action %q", action)
 	}
-	summary.AddValidation(c.report.Summary, &validated)
+	summary.AddValidation(c.Report.Summary, &validated)
 	return validated
 }
 
@@ -551,7 +552,7 @@ func (c *Command) validatedProtectedPVCs(
 		return nil
 	}
 
-	reader := c.outputReader(cluster.Name)
+	reader := c.OutputReader(cluster.Name)
 	var protectedPVCs []report.ProtectedPVCSummary
 
 	for i := range vrg.Status.ProtectedPVCs {
@@ -566,10 +567,10 @@ func (c *Command) validatedProtectedPVCs(
 		if pvc, err := core.ReadPVC(reader, ppvc.Name, ppvc.Namespace); err != nil {
 			log.Warnf("failed to read pvc \"%s/%s\" from cluster %q: %s",
 				ppvc.Namespace, ppvc.Name, cluster.Name, err)
-			ps.Deleted = c.validatedDeleted(nil)
+			ps.Deleted = c.ValidatedDeleted(nil)
 		} else {
 			log.Debugf("Read pvc \"%s/%s\" from cluster %q", pvc.Namespace, pvc.Name, cluster.Name)
-			ps.Deleted = c.validatedDeleted(pvc)
+			ps.Deleted = c.ValidatedDeleted(pvc)
 			ps.Phase = c.validatedProtectedPVCPhase(pvc)
 		}
 
@@ -595,8 +596,8 @@ func (c *Command) validatedVRGConditions(
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
 			continue
 		}
-		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		summary.AddValidation(c.report.Summary, &validated)
+		validated := validatecmd.ValidatedCondition(vrg, condition, metav1.ConditionTrue)
+		summary.AddValidation(c.Report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
@@ -639,8 +640,8 @@ func (c *Command) validatedProtectedPVCConditions(
 			continue
 		}
 
-		validated := validatedCondition(vrg, condition, metav1.ConditionTrue)
-		summary.AddValidation(c.report.Summary, &validated)
+		validated := validatecmd.ValidatedCondition(vrg, condition, metav1.ConditionTrue)
+		summary.AddValidation(c.Report.Summary, &validated)
 		conditions = append(conditions, validated)
 	}
 	return conditions
