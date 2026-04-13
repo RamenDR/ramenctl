@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package clusters
 
 import (
 	"context"
@@ -16,6 +16,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
+	basecmd "github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/core"
 	"github.com/ramendr/ramenctl/pkg/gathering"
@@ -27,6 +29,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/time"
 	validatecmd "github.com/ramendr/ramenctl/pkg/validate/command"
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
+	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 const (
@@ -35,6 +38,18 @@ const (
 
 	profileNotFoundInHub = "Profile not found in hub"
 )
+
+type Command struct {
+	*validatecmd.Command
+}
+
+func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Validation) *Command {
+	r := report.NewReport(cmd.Name(), cfg)
+	r.Summary = &report.Summary{}
+	return &Command{
+		Command: validatecmd.New(cmd, cfg, backend, r),
+	}
+}
 
 func (c *Command) Clusters() error {
 	if !c.ValidateConfig() {

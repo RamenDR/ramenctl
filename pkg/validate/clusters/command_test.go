@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package clusters
 
 import (
 	"testing"
@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	k8sTestdata = "../testdata/clusters/k8s"
-	ocpTestdata = "../testdata/clusters/ocp"
+	k8sTestdata = "../../testdata/clusters/k8s"
+	ocpTestdata = "../../testdata/clusters/ocp"
 )
 
 // Clusters mock instances.

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package clusters
 
 import (
 	"os"
@@ -12,40 +12,62 @@ import (
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/command"
+	basecmd "github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
 const (
-	validateApplication  = "validate-application"
-	drpcName             = "appset-deploy-rbd"
-	drpcNamespace        = "argocd"
-	applicationNamespace = "e2e-appset-deploy-rbd"
+	validateClusters = "validate-clusters"
+
+	// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
+	caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
 )
 
 // testSystem is a test system such as drenv or ocp clusters.
 type testSystem struct {
-	name   string
-	config *config.Config
-	env    *types.Env
+	name                       string
+	config                     *config.Config
+	env                        *types.Env
+	validateClustersNamespaces []string
 }
 
-var testK8s = testSystem{
-	name: "k8s",
-	config: &config.Config{
-		Namespaces: e2econfig.K8sNamespaces,
-	},
-	env: &types.Env{
-		Hub: &types.Cluster{Name: "hub"},
-		C1:  &types.Cluster{Name: "dr1"},
-		C2:  &types.Cluster{Name: "dr2"},
-	},
-}
+var (
+	testK8s = testSystem{
+		name: "k8s",
+		config: &config.Config{
+			Namespaces: e2econfig.K8sNamespaces,
+		},
+		env: &types.Env{
+			Hub: &types.Cluster{Name: "hub"},
+			C1:  &types.Cluster{Name: "dr1"},
+			C2:  &types.Cluster{Name: "dr2"},
+		},
+		validateClustersNamespaces: sets.Sorted([]string{
+			e2econfig.K8sNamespaces.RamenHubNamespace,
+			e2econfig.K8sNamespaces.RamenDRClusterNamespace,
+		}),
+	}
 
-// Helpers.
+	testOcp = testSystem{
+		name: "ocp",
+		config: &config.Config{
+			Namespaces: e2econfig.OcpNamespaces,
+		},
+		env: &types.Env{
+			Hub: &types.Cluster{Name: "hub"},
+			C1:  &types.Cluster{Name: "c1"},
+			C2:  &types.Cluster{Name: "c2"},
+		},
+		validateClustersNamespaces: sets.Sorted([]string{
+			e2econfig.OcpNamespaces.RamenHubNamespace,
+			e2econfig.OcpNamespaces.RamenDRClusterNamespace,
+		}),
+	}
+)
 
 func testCommand(
 	t *testing.T,
@@ -53,14 +75,14 @@ func testCommand(
 	backend validation.Validation,
 	system testSystem,
 ) *Command {
-	cmd, err := command.ForTest(name, system.env, t.TempDir())
+	cmd, err := basecmd.ForTest(name, system.env, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, system.config, backend)
+	return NewCommand(cmd, system.config, backend)
 }
 
 func checkReport(t *testing.T, cmd *Command, status report.Status) {
@@ -121,6 +143,22 @@ func checkApplicationStatus(
 	} else if r.ApplicationStatus != nil {
 		t.Fatalf("application status not nil\n%s",
 			helpers.MarshalYAML(t, r.ApplicationStatus))
+	}
+}
+
+func checkClusterStatus(
+	t *testing.T,
+	r *report.Report,
+	expected *report.ClustersStatus,
+) {
+	if expected != nil {
+		if !expected.Equal(r.ClustersStatus) {
+			diff := helpers.UnifiedDiff(t, expected, r.ClustersStatus)
+			t.Fatalf("clusters statuses not equal\n%s", diff)
+		}
+	} else if r.ClustersStatus != nil {
+		t.Fatalf("clusters status not nil\n%s",
+			helpers.MarshalYAML(t, r.ClustersStatus))
 	}
 }
 

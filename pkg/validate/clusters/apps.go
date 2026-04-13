@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package clusters
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
