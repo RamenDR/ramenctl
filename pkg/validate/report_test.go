@@ -6,10 +6,6 @@ package validate
 import (
 	"testing"
 
-	"sigs.k8s.io/yaml"
-
-	"github.com/ramendr/ramenctl/pkg/config"
-	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
 )
 
@@ -64,65 +60,5 @@ func TestSummaryString(t *testing.T) {
 	expected := "1 ok, 0 stale, 2 problem"
 	if SummaryString(s) != expected {
 		t.Fatalf("expected %q, got %q", expected, SummaryString(s))
-	}
-}
-
-func TestReportEqual(t *testing.T) {
-	helpers.FakeTime(t)
-	r1 := report.NewReport("name", &config.Config{})
-	r1.Summary = &report.Summary{}
-	t.Run("equal to self", func(t *testing.T) {
-		r2 := r1
-		if !r1.Equal(r2) {
-			diff := helpers.UnifiedDiff(t, r1, r2)
-			t.Fatalf("report not equal to itself\n%s", diff)
-		}
-	})
-	t.Run("equal reports", func(t *testing.T) {
-		r2 := report.NewReport("name", &config.Config{})
-		r2.Summary = &report.Summary{}
-		if !r1.Equal(r2) {
-			diff := helpers.UnifiedDiff(t, r1, r2)
-			t.Fatalf("reports not equal\n%s", diff)
-		}
-	})
-}
-
-func TestReportNotEqual(t *testing.T) {
-	helpers.FakeTime(t)
-	r1 := report.NewReport("name", &config.Config{})
-	r1.Summary = &report.Summary{}
-	t.Run("nil", func(t *testing.T) {
-		if r1.Equal(nil) {
-			t.Fatal("report should not be equal to nil")
-		}
-	})
-	t.Run("report", func(t *testing.T) {
-		r2 := report.NewReport("other", &config.Config{})
-		r2.Summary = &report.Summary{}
-		if r1.Equal(r2) {
-			t.Fatal("reports with different report should not be equal")
-		}
-	})
-}
-
-func TestReportRoundtrip(t *testing.T) {
-	r1 := report.NewReport("name", &config.Config{})
-	r1.Summary = &report.Summary{
-		OK:      3,
-		Stale:   2,
-		Problem: 1,
-	}
-	b, err := yaml.Marshal(r1)
-	if err != nil {
-		t.Fatalf("failed to marshal yaml: %s", err)
-	}
-	r2 := &report.Report{}
-	if err := yaml.Unmarshal(b, r2); err != nil {
-		t.Fatalf("failed to unmarshal yaml: %s", err)
-	}
-	if !r1.Equal(r2) {
-		diff := helpers.UnifiedDiff(t, r1, r2)
-		t.Fatalf("unmarshaled report not equal\n%s", diff)
 	}
 }
