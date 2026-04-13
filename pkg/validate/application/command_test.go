@@ -30,7 +30,7 @@ var (
 		applicationNamespace,
 	})
 
-	validateApplicationNamespaces = sets.Sorted([]string{
+	reportNamespaces = sets.Sorted([]string{
 		testK8s.config.Namespaces.RamenHubNamespace,
 		testK8s.config.Namespaces.RamenDRClusterNamespace,
 		drpcNamespace,
@@ -56,7 +56,7 @@ var (
 		GatherFunc:                helpers.GatherDataFailed,
 	}
 
-	inspectApplicationS3ProfilesCanceled = &helpers.ValidationMock{
+	inspectS3ProfilesCanceled = &helpers.ValidationMock{
 		ApplicationNamespacesFunc: applicationMock.ApplicationNamespaces,
 		GetSecretFunc:             helpers.GetSecretCanceled.GetSecret,
 	}
@@ -93,7 +93,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Passed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -394,7 +394,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -422,7 +422,7 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -444,7 +444,7 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 }
 
 func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
-	validate := testCommand(t, inspectApplicationS3ProfilesCanceled, testK8s)
+	validate := testCommand(t, inspectS3ProfilesCanceled, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
@@ -452,7 +452,7 @@ func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	}
 	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -480,7 +480,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
@@ -513,7 +513,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
@@ -546,7 +546,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	}
 	checkReport(t, validate, report.Failed)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
@@ -582,7 +582,7 @@ func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 	}
 	checkReport(t, validate, report.Canceled)
 	checkApplication(t, validate.Report, testApplication)
-	checkNamespaces(t, validate.Report, validateApplicationNamespaces)
+	checkNamespaces(t, validate.Report, reportNamespaces)
 	if len(validate.Report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
