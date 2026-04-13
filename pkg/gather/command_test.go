@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	applicationTestdata  = "../testdata/appset-deploy-rbd"
 	drpcName             = "appset-deploy-rbd"
 	drpcNamespace        = "argocd"
 	applicationNamespace = "e2e-appset-deploy-rbd"
@@ -69,7 +70,7 @@ var (
 
 func TestGatherApplicationPassed(t *testing.T) {
 	cmd := testCommand(t, &helpers.ValidationMock{})
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +177,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 	}
 
 	cmd := testCommand(t, mockBackend)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	err := cmd.Application(drpcName, drpcNamespace)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -214,7 +215,7 @@ func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 
 func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretCanceled)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -239,7 +240,7 @@ func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 
 func TestGatherApplicationGetSecretFailed(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretFailed)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -268,7 +269,7 @@ func TestGatherApplicationGetSecretFailed(t *testing.T) {
 
 func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretInvalid)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -296,7 +297,7 @@ func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 
 func TestGatherApplicationS3DataFailed(t *testing.T) {
 	cmd := testCommand(t, gatherS3Failed)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -323,7 +324,7 @@ func TestGatherApplicationS3DataFailed(t *testing.T) {
 
 func TestGatherApplicationS3DataCanceled(t *testing.T) {
 	cmd := testCommand(t, gatherS3Canceled)
-	helpers.AddGatheredData(t, cmd.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
 	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
 		t.Fatal("command did not fail")
 	}

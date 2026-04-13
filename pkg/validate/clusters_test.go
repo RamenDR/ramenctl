@@ -14,6 +14,11 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
+const (
+	k8sTestdata = "../testdata/clusters/k8s"
+	ocpTestdata = "../testdata/clusters/ocp"
+)
+
 // Clusters mock instances.
 
 var (
@@ -34,7 +39,7 @@ var (
 
 func TestValidateClustersK8s(t *testing.T) {
 	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -618,7 +623,7 @@ func TestValidateClustersK8s(t *testing.T) {
 
 func TestValidateClustersOcp(t *testing.T) {
 	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testOcp)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testOcp.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), ocpTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -1279,7 +1284,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretCanceled, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1308,7 +1313,7 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 
 func TestValidateClustersGetSecretFailed(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretFailed, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1340,7 +1345,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
 	validate := testCommand(t, validateClusters, helpers.GetSecretInvalid, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1372,7 +1377,7 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
 	validate := testCommand(t, validateClusters, checkS3Failed, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1410,7 +1415,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 
 func TestValidateClustersCheckS3Canceled(t *testing.T) {
 	validate := testCommand(t, validateClusters, checkS3Canceled, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "clusters/"+testK8s.name, validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")

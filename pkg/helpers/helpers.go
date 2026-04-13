@@ -5,7 +5,6 @@
 package helpers
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -54,8 +53,9 @@ func UnifiedDiff(t *testing.T, expected, actual any) string {
 }
 
 // AddGatheredData adds fake gathered data to the output directory.
-func AddGatheredData(t *testing.T, dataDir, name, commandName string) {
-	testData := fmt.Sprintf("../testdata/%s/%s.data", name, commandName)
+// path is the directory containing the gathered data relative to the caller's package.
+func AddGatheredData(t *testing.T, dataDir, path, commandName string) {
+	testData := filepath.Join(path, commandName+".data")
 	source, err := filepath.Abs(testData)
 	if err != nil {
 		t.Fatal(err)

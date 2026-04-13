@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	testRun   = "test-run"
-	testClean = "test-clean"
+	applicationTestdata = "../testdata/appset-deploy-rbd"
+	testRun             = "test-run"
+	testClean           = "test-clean"
 )
 
 var (
@@ -242,7 +243,7 @@ func TestRunSetupCanceled(t *testing.T) {
 
 func TestRunTestsFailed(t *testing.T) {
 	test := testCommand(t, testRun, failoverFailed)
-	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, test.dataDir(), applicationTestdata, "validate-application")
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -270,7 +271,7 @@ func TestRunTestsFailed(t *testing.T) {
 
 func TestRunDisappFailed(t *testing.T) {
 	test := testCommand(t, testRun, disappFailoverFailed)
-	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, test.dataDir(), applicationTestdata, "validate-application")
 	if err := test.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
@@ -383,7 +384,7 @@ func TestCleanValidateCanceled(t *testing.T) {
 
 func TestCleanPurgeFailed(t *testing.T) {
 	test := testCommand(t, testClean, purgeFailed)
-	helpers.AddGatheredData(t, test.dataDir(), "appset-deploy-rbd", "validate-application")
+	helpers.AddGatheredData(t, test.dataDir(), applicationTestdata, "validate-application")
 	if err := test.Clean(); err == nil {
 		t.Fatal("command did not fail")
 	}

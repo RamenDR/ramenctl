@@ -17,6 +17,8 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
+const applicationTestdata = "../testdata/appset-deploy-rbd"
+
 var (
 	testApplication = &report.Application{
 		Name:      drpcName,
@@ -84,7 +86,7 @@ var (
 
 func TestValidateApplicationPassed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationMock, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
@@ -443,7 +445,7 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 
 func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	validate := testCommand(t, validateApplication, inspectApplicationS3ProfilesCanceled, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -471,7 +473,7 @@ func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 
 func TestValidateApplicationGetSecretFailed(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationGetSecretFailed, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -504,7 +506,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 	validate := testCommand(t, validateApplication, applicationGetSecretInvalid, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -537,7 +539,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	validate := testCommand(t, validateApplication, gatherS3Failed, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -573,7 +575,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 
 func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 	validate := testCommand(t, validateApplication, gatherS3Canceled, testK8s)
-	helpers.AddGatheredData(t, validate.DataDir(), "appset-deploy-rbd", validate.Report.Name)
+	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
 	if err := validate.Application(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
