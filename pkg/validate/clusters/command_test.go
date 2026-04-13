@@ -38,7 +38,7 @@ var (
 // Validate clusters tests.
 
 func TestValidateClustersK8s(t *testing.T) {
-	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
+	validate := testCommand(t, &helpers.ValidationMock{}, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
@@ -622,7 +622,7 @@ func TestValidateClustersK8s(t *testing.T) {
 }
 
 func TestValidateClustersOcp(t *testing.T) {
-	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testOcp)
+	validate := testCommand(t, &helpers.ValidationMock{}, testOcp)
 	helpers.AddGatheredData(t, validate.DataDir(), ocpTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err != nil {
 		dumpCommandLog(t, validate)
@@ -1189,7 +1189,7 @@ func TestValidateClustersOcp(t *testing.T) {
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, helpers.ValidateConfigFailed, testK8s)
+	validate := testCommand(t, helpers.ValidateConfigFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1207,7 +1207,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 }
 
 func TestValidateClustersValidateCanceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, helpers.ValidateConfigCanceled, testK8s)
+	validate := testCommand(t, helpers.ValidateConfigCanceled, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1225,7 +1225,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 }
 
 func TestValidateClusterGatherClusterFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, clustersGatherDataFailed, testK8s)
+	validate := testCommand(t, clustersGatherDataFailed, testK8s)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
@@ -1252,7 +1252,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 }
 
 func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, &helpers.ValidationMock{}, testK8s)
+	validate := testCommand(t, &helpers.ValidationMock{}, testK8s)
 	// We don't add test data to cause inspect S3 profiles to fail.
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -1283,7 +1283,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 }
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, helpers.GetSecretCanceled, testK8s)
+	validate := testCommand(t, helpers.GetSecretCanceled, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -1312,7 +1312,7 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 }
 
 func TestValidateClustersGetSecretFailed(t *testing.T) {
-	validate := testCommand(t, validateClusters, helpers.GetSecretFailed, testK8s)
+	validate := testCommand(t, helpers.GetSecretFailed, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -1344,7 +1344,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 }
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
-	validate := testCommand(t, validateClusters, helpers.GetSecretInvalid, testK8s)
+	validate := testCommand(t, helpers.GetSecretInvalid, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -1376,7 +1376,7 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 }
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
-	validate := testCommand(t, validateClusters, checkS3Failed, testK8s)
+	validate := testCommand(t, checkS3Failed, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)
@@ -1414,7 +1414,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 }
 
 func TestValidateClustersCheckS3Canceled(t *testing.T) {
-	validate := testCommand(t, validateClusters, checkS3Canceled, testK8s)
+	validate := testCommand(t, checkS3Canceled, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), k8sTestdata, validate.Report.Name)
 	if err := validate.Clusters(); err == nil {
 		dumpCommandLog(t, validate)

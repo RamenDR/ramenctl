@@ -20,7 +20,6 @@ import (
 )
 
 const (
-	validateApplication  = CommandName
 	drpcName             = "appset-deploy-rbd"
 	drpcNamespace        = "argocd"
 	applicationNamespace = "e2e-appset-deploy-rbd"
@@ -47,11 +46,10 @@ var testK8s = testSystem{
 
 func testCommand(
 	t *testing.T,
-	name string,
 	backend validation.Validation,
 	system testSystem,
 ) *Command {
-	cmd, err := basecmd.ForTest(name, system.env, t.TempDir())
+	cmd, err := basecmd.ForTest(CommandName, system.env, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -20,12 +20,8 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-const (
-	validateClusters = CommandName
-
-	// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
-	caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
-)
+// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
+const caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
 
 // testSystem is a test system such as drenv or ocp clusters.
 type testSystem struct {
@@ -71,11 +67,10 @@ var (
 
 func testCommand(
 	t *testing.T,
-	name string,
 	backend validation.Validation,
 	system testSystem,
 ) *Command {
-	cmd, err := basecmd.ForTest(name, system.env, t.TempDir())
+	cmd, err := basecmd.ForTest(CommandName, system.env, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}

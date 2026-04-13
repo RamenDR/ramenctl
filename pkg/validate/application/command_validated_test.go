@@ -19,7 +19,7 @@ import (
 // command flow.
 
 func TestValidatedDRPCAction(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 	known := []struct {
 		name   string
 		action string
@@ -73,7 +73,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 		phase  ramenapi.DRState
 	}
 
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	unstable := []struct {
 		stable ramenapi.DRState
@@ -151,7 +151,7 @@ func TestValidatedDRPCPhaseError(t *testing.T) {
 }
 
 func TestValidatedDRPCPhaseOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name   string
@@ -193,7 +193,7 @@ func TestValidatedDRPCPhaseOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 	progression := ramenapi.ProgressionCompleted
 
 	t.Run(string(progression), func(t *testing.T) {
@@ -221,7 +221,7 @@ func TestValidatedDRPCProgressionOK(t *testing.T) {
 }
 
 func TestValidatedDRPCProgressionError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	progressions := []ramenapi.ProgressionStatus{
 		ramenapi.ProgressionCreatingMW,
@@ -278,7 +278,7 @@ func TestValidatedDRPCProgressionError(t *testing.T) {
 }
 
 func TestValidatedVRGSTateOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -315,7 +315,7 @@ func TestValidatedVRGSTateOK(t *testing.T) {
 }
 
 func TestValidatedVRGSTateError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name        string
@@ -358,7 +358,7 @@ func TestValidatedVRGSTateError(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCOK(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	t.Run("bound", func(t *testing.T) {
 		pvc := &corev1.PersistentVolumeClaim{
@@ -385,7 +385,7 @@ func TestValidatedProtectedPVCOK(t *testing.T) {
 }
 
 func TestValidatedProtectedPVCError(t *testing.T) {
-	cmd := testCommand(t, validateApplication, &helpers.ValidationMock{}, testK8s)
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
 
 	cases := []struct {
 		name  string
