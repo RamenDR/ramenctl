@@ -6,6 +6,7 @@ package validate
 import (
 	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/validate/application"
 	"github.com/ramendr/ramenctl/pkg/validate/clusters"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
@@ -38,6 +39,6 @@ func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
 	}
 	defer cmd.Close()
 
-	validate := newCommand(cmd, cfg, validation.Backend{})
+	validate := application.NewCommand(cmd, cfg, validation.Backend{})
 	return validate.Application(drpcName, drpcNamespace)
 }

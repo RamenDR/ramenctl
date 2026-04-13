@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package application
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-const applicationTestdata = "../testdata/appset-deploy-rbd"
+const applicationTestdata = "../../testdata/appset-deploy-rbd"
 
 var (
 	testApplication = &report.Application{

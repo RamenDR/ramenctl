@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: The RamenDR authors
 // SPDX-License-Identifier: Apache-2.0
 
-package validate
+package application
 
 import (
 	"os"
@@ -12,7 +12,7 @@ import (
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 
-	"github.com/ramendr/ramenctl/pkg/command"
+	basecmd "github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -45,22 +45,20 @@ var testK8s = testSystem{
 	},
 }
 
-// Helpers.
-
 func testCommand(
 	t *testing.T,
 	name string,
 	backend validation.Validation,
 	system testSystem,
 ) *Command {
-	cmd, err := command.ForTest(name, system.env, t.TempDir())
+	cmd, err := basecmd.ForTest(name, system.env, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, system.config, backend)
+	return NewCommand(cmd, system.config, backend)
 }
 
 func checkReport(t *testing.T, cmd *Command, status report.Status) {
