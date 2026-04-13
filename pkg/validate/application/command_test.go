@@ -87,7 +87,7 @@ var (
 func TestValidateApplicationPassed(t *testing.T) {
 	validate := testCommand(t, applicationMock, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err != nil {
+	if err := validate.Run(drpcName, drpcNamespace); err != nil {
 		dumpCommandLog(t, validate)
 		t.Fatal(err)
 	}
@@ -306,7 +306,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
 	validate := testCommand(t, helpers.ValidateConfigFailed, testK8s)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -323,7 +323,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 
 func TestValidateApplicationValidateCanceled(t *testing.T) {
 	validate := testCommand(t, helpers.ValidateConfigCanceled, testK8s)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -340,7 +340,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 
 func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 	validate := testCommand(t, helpers.InspectApplicationFailed, testK8s)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -364,7 +364,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 
 func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 	validate := testCommand(t, inspectApplicationCanceled, testK8s)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -388,7 +388,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 
 func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 	validate := testCommand(t, gatherDataFailed, testK8s)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -416,7 +416,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 	validate := testCommand(t, applicationMock, testK8s)
 	// We don't add test data to cause inspect application s3 to fail.
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -446,7 +446,7 @@ func TestValidateApplicationInspectS3ProfilesFailed(t *testing.T) {
 func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	validate := testCommand(t, inspectS3ProfilesCanceled, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -474,7 +474,7 @@ func TestValidateApplicationInspectS3ProfilesCanceled(t *testing.T) {
 func TestValidateApplicationGetSecretFailed(t *testing.T) {
 	validate := testCommand(t, getSecretFailed, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -507,7 +507,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 	validate := testCommand(t, getSecretInvalid, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -540,7 +540,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	validate := testCommand(t, gatherS3Failed, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}
@@ -576,7 +576,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 func TestValidateApplicationGatherS3Canceled(t *testing.T) {
 	validate := testCommand(t, gatherS3Canceled, testK8s)
 	helpers.AddGatheredData(t, validate.DataDir(), applicationTestdata, validate.Report.Name)
-	if err := validate.Application(drpcName, drpcNamespace); err == nil {
+	if err := validate.Run(drpcName, drpcNamespace); err == nil {
 		dumpCommandLog(t, validate)
 		t.Fatal("command did not fail")
 	}

@@ -54,7 +54,7 @@ func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Val
 	}
 }
 
-func (c *Command) Clusters() error {
+func (c *Command) Run() error {
 	if !c.ValidateConfig() {
 		return c.Failed()
 	}

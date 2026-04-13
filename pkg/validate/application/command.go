@@ -46,7 +46,7 @@ func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Val
 	}
 }
 
-func (c *Command) Application(drpcName, drpcNamespace string) error {
+func (c *Command) Run(drpcName, drpcNamespace string) error {
 	c.Report.Application = &report.Application{
 		Name:      drpcName,
 		Namespace: drpcNamespace,

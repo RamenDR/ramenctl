@@ -24,7 +24,7 @@ func Clusters(configFile string, outputDir string) error {
 	defer cmd.Close()
 
 	validate := clusters.NewCommand(cmd, cfg, validation.Backend{})
-	return validate.Clusters()
+	return validate.Run()
 }
 
 func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
@@ -40,5 +40,5 @@ func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
 	defer cmd.Close()
 
 	validate := application.NewCommand(cmd, cfg, validation.Backend{})
-	return validate.Application(drpcName, drpcNamespace)
+	return validate.Run(drpcName, drpcNamespace)
 }
