@@ -17,7 +17,7 @@ func Clusters(configFile string, outputDir string) error {
 		return err
 	}
 
-	cmd, err := command.New("validate-clusters", cfg.Clusters, outputDir)
+	cmd, err := command.New(clusters.CommandName, cfg.Clusters, outputDir)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
 		return err
 	}
 
-	cmd, err := command.New("validate-application", cfg.Clusters, outputDir)
+	cmd, err := command.New(application.CommandName, cfg.Clusters, outputDir)
 	if err != nil {
 		return err
 	}

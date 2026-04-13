@@ -33,6 +33,9 @@ import (
 )
 
 const (
+	// CommandName is the name of the validate-clusters command.
+	CommandName = "validate-clusters"
+
 	// minS3Profiles is the minimum S3 profiles in configmap required for DR.
 	minS3Profiles = 2
 

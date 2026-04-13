@@ -31,6 +31,9 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
+// CommandName is the name of the validate-application command.
+const CommandName = "validate-application"
+
 type Command struct {
 	*validatecmd.Command
 }

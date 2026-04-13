@@ -76,7 +76,7 @@ func TestHeaderData(t *testing.T) {
 	r := &Report{
 		Report: &report.Report{
 			Base: &report.Base{
-				Name: "validate-application",
+				Name: CommandName,
 			},
 		},
 		Application: report.Application{

@@ -16,7 +16,7 @@ type Report struct {
 
 // NewReport creates a new clusters validation report.
 func NewReport(cfg *config.Config) *Report {
-	r := report.NewReport("validate-clusters", cfg)
+	r := report.NewReport(CommandName, cfg)
 	r.Summary = &report.Summary{}
 	return &Report{
 		Report: r,

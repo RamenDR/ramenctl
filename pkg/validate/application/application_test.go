@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	validateApplication  = "validate-application"
+	validateApplication  = CommandName
 	drpcName             = "appset-deploy-rbd"
 	drpcNamespace        = "argocd"
 	applicationNamespace = "e2e-appset-deploy-rbd"

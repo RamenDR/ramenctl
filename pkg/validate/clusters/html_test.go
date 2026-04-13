@@ -77,7 +77,7 @@ func TestHeaderData(t *testing.T) {
 	r := &Report{
 		Report: &report.Report{
 			Base: &report.Base{
-				Name: "validate-clusters",
+				Name: CommandName,
 			},
 		},
 	}
