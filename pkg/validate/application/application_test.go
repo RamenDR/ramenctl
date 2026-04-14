@@ -5,6 +5,7 @@ package application
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
@@ -70,6 +71,7 @@ func checkReport(t *testing.T, cmd *Command, status report.Status) {
 	if cmd.Report.Duration != duration {
 		t.Fatalf("expected duration %v, got %v", duration, cmd.Report.Duration)
 	}
+	checkOutputFiles(t, cmd)
 }
 
 func checkApplication(t *testing.T, r *Report, expected *report.Application) {
@@ -118,6 +120,15 @@ func checkApplicationStatus(
 func checkSummary(t *testing.T, r *Report, expected report.Summary) {
 	if !r.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *r.Summary)
+	}
+}
+
+func checkOutputFiles(t *testing.T, cmd *Command) {
+	for _, name := range []string{CommandName + ".yaml", CommandName + ".html", "style.css"} {
+		path := filepath.Join(cmd.OutputDir(), name)
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("output file %q not found: %s", name, err)
+		}
 	}
 }
 

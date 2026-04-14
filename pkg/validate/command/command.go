@@ -183,6 +183,10 @@ func (c *Command) OutputReader(cluster string) gathering.OutputReader {
 	return gather.NewOutputReader(clusterDir)
 }
 
+func (c *Command) OutputDir() string {
+	return c.cmd.OutputDir()
+}
+
 func (c *Command) DataDir() string {
 	return filepath.Join(c.cmd.OutputDir(), c.cmd.Name()+".data")
 }
