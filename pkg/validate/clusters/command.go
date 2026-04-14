@@ -44,13 +44,14 @@ const (
 
 type Command struct {
 	*validatecmd.Command
+	Report *Report
 }
 
 func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Validation) *Command {
-	r := report.NewReport(cmd.Name(), cfg)
-	r.Summary = &report.Summary{}
+	r := NewReport(cfg)
 	return &Command{
-		Command: validatecmd.New(cmd, cfg, backend, r),
+		Command: validatecmd.New(cmd, cfg, backend, r.Report),
+		Report:  r,
 	}
 }
 
@@ -195,8 +196,7 @@ func (c *Command) validateGatheredData() bool {
 		c.Current.AddStep(step)
 	}()
 
-	s := &report.ClustersStatus{}
-	c.Report.ClustersStatus = s
+	s := &c.Report.ClustersStatus
 
 	if err := c.validateHub(&s.Hub); err != nil {
 		step.Status = report.Failed

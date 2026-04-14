@@ -1199,7 +1199,7 @@ func TestValidateClustersValidateFailed(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
 	checkStep(t, validate.Report.Steps[0], "validate config", report.Failed)
-	checkClusterStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, &report.ClustersStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -1216,7 +1216,7 @@ func TestValidateClustersValidateCanceled(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
 	checkStep(t, validate.Report.Steps[0], "validate config", report.Canceled)
-	checkClusterStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, &report.ClustersStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -1242,7 +1242,7 @@ func TestValidateClusterGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkClusterStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, &report.ClustersStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -1271,8 +1271,9 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	if validate.Report.ClustersStatus == nil {
-		t.Fatal("clusters status is nil")
+	empty := &report.ClustersStatus{}
+	if validate.Report.ClustersStatus.Equal(empty) {
+		t.Fatal("clusters status is empty")
 	}
 	checkSummary(t, validate.Report, report.Summary{summary.Problem: 9})
 }
@@ -1302,7 +1303,7 @@ func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {
 		{Name: "inspect S3 profiles", Status: report.Canceled},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkClusterStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, &report.ClustersStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -1398,8 +1399,9 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	if validate.Report.ClustersStatus == nil {
-		t.Fatal("clusters status is nil")
+	empty := &report.ClustersStatus{}
+	if validate.Report.ClustersStatus.Equal(empty) {
+		t.Fatal("clusters status is empty")
 	}
 	checkSummary(
 		t,
@@ -1434,6 +1436,6 @@ func TestValidateClustersCheckS3Canceled(t *testing.T) {
 		{Name: "check S3 profile \"minio-on-dr2\"", Status: report.Canceled},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkClusterStatus(t, validate.Report, nil)
+	checkClusterStatus(t, validate.Report, &report.ClustersStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }

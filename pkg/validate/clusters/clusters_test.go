@@ -93,14 +93,14 @@ func checkReport(t *testing.T, cmd *Command, status report.Status) {
 	}
 }
 
-func checkApplication(t *testing.T, r *report.Report, expected *report.Application) {
+func checkApplication(t *testing.T, r *Report, expected *report.Application) {
 	if !reflect.DeepEqual(expected, r.Application) {
 		diff := helpers.UnifiedDiff(t, expected, r.Application)
 		t.Fatalf("applications not equal\n%s", diff)
 	}
 }
 
-func checkNamespaces(t *testing.T, r *report.Report, expected []string) {
+func checkNamespaces(t *testing.T, r *Report, expected []string) {
 	if !slices.Equal(r.Namespaces, expected) {
 		t.Fatalf("expected namespaces %q, got %q", expected, r.Namespaces)
 	}
@@ -127,21 +127,16 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 
 func checkClusterStatus(
 	t *testing.T,
-	r *report.Report,
+	r *Report,
 	expected *report.ClustersStatus,
 ) {
-	if expected != nil {
-		if !expected.Equal(r.ClustersStatus) {
-			diff := helpers.UnifiedDiff(t, expected, r.ClustersStatus)
-			t.Fatalf("clusters statuses not equal\n%s", diff)
-		}
-	} else if r.ClustersStatus != nil {
-		t.Fatalf("clusters status not nil\n%s",
-			helpers.MarshalYAML(t, r.ClustersStatus))
+	if !r.ClustersStatus.Equal(expected) {
+		diff := helpers.UnifiedDiff(t, expected, &r.ClustersStatus)
+		t.Fatalf("clusters statuses not equal\n%s", diff)
 	}
 }
 
-func checkSummary(t *testing.T, r *report.Report, expected report.Summary) {
+func checkSummary(t *testing.T, r *Report, expected report.Summary) {
 	if !r.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *r.Summary)
 	}
