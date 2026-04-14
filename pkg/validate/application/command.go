@@ -36,28 +36,37 @@ const CommandName = "validate-application"
 
 type Command struct {
 	*validatecmd.Command
+	Report *Report
 }
 
 func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Validation) *Command {
-	r := report.NewReport(cmd.Name(), cfg)
-	r.Summary = &report.Summary{}
+	r := NewReport(cfg)
 	return &Command{
-		Command: validatecmd.New(cmd, cfg, backend, r),
+		Command: validatecmd.New(cmd, cfg, backend, r.Report),
+		Report:  r,
 	}
 }
 
+func (c *Command) passed() {
+	c.WriteReport(c.Report)
+	console.Completed("Validation completed (%s)", summary.String(c.Report.Summary))
+}
+
+func (c *Command) failed() error {
+	c.WriteReport(c.Report)
+	return fmt.Errorf("validation %s (%s)", c.Report.Status, summary.String(c.Report.Summary))
+}
+
 func (c *Command) Run(drpcName, drpcNamespace string) error {
-	c.Report.Application = &report.Application{
-		Name:      drpcName,
-		Namespace: drpcNamespace,
-	}
+	c.Report.Application.Name = drpcName
+	c.Report.Application.Namespace = drpcNamespace
 	if !c.ValidateConfig() {
-		return c.Failed()
+		return c.failed()
 	}
 	if !c.validateApplication(drpcName, drpcNamespace) {
-		return c.Failed()
+		return c.failed()
 	}
-	c.Passed()
+	c.passed()
 	return nil
 }
 
@@ -278,8 +287,7 @@ func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
 		c.Current.AddStep(step)
 	}()
 
-	s := &report.ApplicationStatus{}
-	c.Report.ApplicationStatus = s
+	s := &c.Report.ApplicationStatus
 
 	drpc, err := c.validateHub(&s.Hub, drpcName, drpcNamespace)
 	if err != nil {

@@ -70,11 +70,8 @@ type Report struct {
 	// Namespaces is set by `validate` and `gather` commands.
 	Namespaces []string `json:"namespaces,omitempty"`
 
-	// Application is set by `validate application` and `gather application` commands.
+	// Application is set by `gather application` command.
 	Application *Application `json:"application,omitempty"`
-
-	// ApplicationStatus is set by the `validate application` commmnad.
-	ApplicationStatus *ApplicationStatus `json:"applicationStatus,omitempty"`
 
 	// ClustersStatus is set by the `validate clusters` command.
 	ClustersStatus *ClustersStatus `json:"clustersStatus,omitempty"`

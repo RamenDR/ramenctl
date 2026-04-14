@@ -181,16 +181,9 @@ func (c *Command) DataDir() string {
 	return filepath.Join(c.cmd.OutputDir(), c.cmd.Name()+".data")
 }
 
-// Completing commands.
-
-func (c *Command) Failed() error {
-	c.cmd.WriteYAMLReport(c.Report)
-	return fmt.Errorf("validation %s (%s)", c.Report.Status, summary.String(c.Report.Summary))
-}
-
-func (c *Command) Passed() {
-	c.cmd.WriteYAMLReport(c.Report)
-	console.Completed("Validation completed (%s)", summary.String(c.Report.Summary))
+// WriteReport writes the report to the command output directory.
+func (c *Command) WriteReport(report any) {
+	c.cmd.WriteYAMLReport(report)
 }
 
 // Managing steps.

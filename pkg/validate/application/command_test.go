@@ -317,7 +317,7 @@ func TestValidateApplicationValidateFailed(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
 	checkStep(t, validate.Report.Steps[0], "validate config", report.Failed)
-	checkApplicationStatus(t, validate.Report, nil)
+	checkApplicationStatus(t, validate.Report, &report.ApplicationStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -334,7 +334,7 @@ func TestValidateApplicationValidateCanceled(t *testing.T) {
 		t.Fatalf("unexpected steps %+v", validate.Report.Steps)
 	}
 	checkStep(t, validate.Report.Steps[0], "validate config", report.Canceled)
-	checkApplicationStatus(t, validate.Report, nil)
+	checkApplicationStatus(t, validate.Report, &report.ApplicationStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -358,7 +358,7 @@ func TestValidateApplicationInspectApplicationFailed(t *testing.T) {
 		{Name: "inspect application", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkApplicationStatus(t, validate.Report, nil)
+	checkApplicationStatus(t, validate.Report, &report.ApplicationStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -382,7 +382,7 @@ func TestValidateApplicationInspectApplicationCanceled(t *testing.T) {
 		{Name: "inspect application", Status: report.Canceled},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkApplicationStatus(t, validate.Report, nil)
+	checkApplicationStatus(t, validate.Report, &report.ApplicationStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 
@@ -409,7 +409,7 @@ func TestValidateApplicationGatherClusterFailed(t *testing.T) {
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkApplicationStatus(t, validate.Report, nil)
+	checkApplicationStatus(t, validate.Report, &report.ApplicationStatus{})
 	checkSummary(t, validate.Report, report.Summary{})
 }
 

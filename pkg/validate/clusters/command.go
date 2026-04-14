@@ -54,14 +54,24 @@ func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Val
 	}
 }
 
+func (c *Command) passed() {
+	c.WriteReport(c.Report)
+	console.Completed("Validation completed (%s)", summary.String(c.Report.Summary))
+}
+
+func (c *Command) failed() error {
+	c.WriteReport(c.Report)
+	return fmt.Errorf("validation %s (%s)", c.Report.Status, summary.String(c.Report.Summary))
+}
+
 func (c *Command) Run() error {
 	if !c.ValidateConfig() {
-		return c.Failed()
+		return c.failed()
 	}
 	if !c.validateClusters() {
-		return c.Failed()
+		return c.failed()
 	}
-	c.Passed()
+	c.passed()
 	return nil
 }
 

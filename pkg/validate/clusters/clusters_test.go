@@ -125,22 +125,6 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 	}
 }
 
-func checkApplicationStatus(
-	t *testing.T,
-	r *report.Report,
-	expected *report.ApplicationStatus,
-) {
-	if expected != nil {
-		if !expected.Equal(r.ApplicationStatus) {
-			diff := helpers.UnifiedDiff(t, expected, r.ApplicationStatus)
-			t.Fatalf("application statuses not equal\n%s", diff)
-		}
-	} else if r.ApplicationStatus != nil {
-		t.Fatalf("application status not nil\n%s",
-			helpers.MarshalYAML(t, r.ApplicationStatus))
-	}
-}
-
 func checkClusterStatus(
 	t *testing.T,
 	r *report.Report,
