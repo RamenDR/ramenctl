@@ -86,10 +86,14 @@ resources, and stored output files in the specified output directory:
 ```console
 $ tree -L1 out
 out
+├── style.css
 ├── validate-application.data
+├── validate-application.html
 ├── validate-application.log
 └── validate-application.yaml
 ```
+
+Open the HTML report in a browser to view the report.
 
 > [!IMPORTANT]
 > When reporting DR related issues, please create an archive with the output
@@ -266,10 +270,14 @@ directory:
 ```console
 $ tree -L1 out
 out
+├── style.css
 ├── validate-clusters.data
+├── validate-clusters.html
 ├── validate-clusters.log
 └── validate-clusters.yaml
 ```
+
+Open the HTML report in a browser to view the report.
 
 > [!IMPORTANT]
 > When reporting DR related issues, please create an archive with the output

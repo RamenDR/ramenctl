@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	stdtime "time"
 
@@ -27,6 +28,11 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
+
+// HTMLWriter can write an HTML report.
+type HTMLWriter interface {
+	WriteHTML(io.Writer) error
+}
 
 type Command struct {
 	// Backend implementing the validation interface.
@@ -181,9 +187,26 @@ func (c *Command) DataDir() string {
 	return filepath.Join(c.cmd.OutputDir(), c.cmd.Name()+".data")
 }
 
-// WriteReport writes the report to the command output directory.
-func (c *Command) WriteReport(report any) {
-	c.cmd.WriteYAMLReport(report)
+// WriteReport writes YAML, HTML, and CSS reports to the command output directory.
+func (c *Command) WriteReport(r HTMLWriter) {
+	c.cmd.WriteYAMLReport(r)
+
+	file, err := c.cmd.OpenReport("html")
+	if err != nil {
+		console.Error("failed to open HTML report: %s", err)
+		return
+	}
+	defer file.Close()
+	if err := r.WriteHTML(file); err != nil {
+		console.Error("failed to write HTML report: %s", err)
+	}
+	if err := file.Close(); err != nil {
+		console.Error("failed to close HTML report: %s", err)
+	}
+
+	if err := report.WriteCSS(c.cmd.OutputDir()); err != nil {
+		console.Error("failed to write report CSS: %s", err)
+	}
 }
 
 // Managing steps.
