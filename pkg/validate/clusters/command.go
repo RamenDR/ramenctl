@@ -14,7 +14,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 
 	basecmd "github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -469,10 +468,9 @@ func (c *Command) validateRamenConfigMap(
 
 	s.Deleted = c.ValidatedDeleted(configMap)
 
-	config := &ramenapi.RamenConfig{}
-	data := []byte(configMap.Data[ramen.ConfigMapRamenConfigKeyName])
-	if err := yaml.Unmarshal(data, config); err != nil {
-		return fmt.Errorf("failed to unmarshal ramen config data: %w\n%s", err, data)
+	config, err := ramen.ParseRamenConfig(configMap)
+	if err != nil {
+		return fmt.Errorf("failed to parse ramen config: %w", err)
 	}
 
 	s.RamenControllerType = c.validatedRamenControllerType(config, controllerType)

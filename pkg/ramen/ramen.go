@@ -310,7 +310,17 @@ func ApplicationS3Prefix(
 	return fmt.Sprintf("%s/%s/", vrgNamespace, drpc.Name), nil
 }
 
-// getRamenConfigMapData reads and parse the ramen operator configmap data.
+// ParseRamenConfig parses the ramen config from a ramen operator configmap.
+func ParseRamenConfig(configMap *corev1.ConfigMap) (*ramenapi.RamenConfig, error) {
+	config := &ramenapi.RamenConfig{}
+	data := []byte(configMap.Data[ConfigMapRamenConfigKeyName])
+	if err := yaml.Unmarshal(data, config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal ramen configmap data: %w\n%s", err, data)
+	}
+	return config, nil
+}
+
+// getRamenConfigMapData reads and parses the ramen operator configmap data.
 func getRamenConfigMapData(
 	reader gathering.OutputReader,
 	name, namespace string,
@@ -320,12 +330,7 @@ func getRamenConfigMapData(
 		return nil, fmt.Errorf("failed to read ramen configmap \"%s/%s\": %w",
 			namespace, name, err)
 	}
-	configData := &ramenapi.RamenConfig{}
-	data := []byte(configMap.Data[ConfigMapRamenConfigKeyName])
-	if err := yaml.Unmarshal(data, configData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal ramen configmap data: %w\n%s", err, data)
-	}
-	return configData, nil
+	return ParseRamenConfig(configMap)
 }
 
 func primaryClusterName(drpc *ramenapi.DRPlacementControl) string {
