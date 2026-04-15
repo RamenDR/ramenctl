@@ -13,8 +13,12 @@ Manage application failover operations
 Usage:
   ramenctl failover [command]
 
-Available Commands:
-  dry-run     Test failover without affecting the primary application (DRY-RUN mode)
+Flags:
+      --abort         abort the dry-run failover test and revert to original state
+      --dry-run       perform dry-run failover test (required)
+  -n, --name string       name of the DRPlacementControl resource
+      --namespace string  namespace of the DRPlacementControl resource
+  -o, --output string     output directory for test report (default: ./failover-dry-run-<name>-<timestamp>)
 
 Flags:
   -h, --help   help for failover
@@ -29,26 +33,44 @@ Use "ramenctl failover [command] --help" for more information about a command.
 > The failover command requires a configuration file. See [init](docs/init.md) to
 > learn how to create one.
 
-> [!IMPORTANT]
-> This command requires Ramen PR [#2416](https://github.com/RamenDR/ramen/pull/2416)
-> to be merged. The `DryRun` field is not yet available in the current Ramen API version.
+## failover --dry-run
 
-## failover dry-run
-
-The failover dry-run command tests failover to the secondary cluster without
-affecting the primary application. This allows you to verify DR readiness without
-risk to production workloads.
+The failover dry-run command tests failover to the secondary cluster while
+keeping the primary application running. This allows you to verify DR readiness,
+but has significant implications for data synchronization.
 
 ### What is a dry-run failover?
 
-A dry-run failover is a non-destructive test that:
+A dry-run failover is a test that:
 - Starts the application on the secondary cluster
-- Keeps the primary application running
+- Keeps the primary application running (creating a temporary split-brain)
 - Validates that failover would work in a real disaster
-- Can be safely aborted and reverted
+- Can be aborted, but requires full data resynchronization afterward
 
-This is achieved by setting `dryRun: true` in the DRPC spec along with
-`action: Failover`.
+> [!WARNING]
+> **Data Sync Implications**: Aborting a dry-run creates a split-brain scenario
+> where both clusters had the application running. After abort, a full data sync
+> is required from the primary to secondary cluster to ensure consistency. This
+> sync can take significant time depending on data volume.
+
+> [!WARNING]
+> **Not Risk-Free**: While the primary application continues running during the
+> test, the abort operation requires full resynchronization of all data, which
+> can impact performance and take considerable time.
+
+### Preconditions
+
+Before running a dry-run failover, the following must be true:
+
+1. **No active action**: The DRPC must not have an ongoing action (empty `spec.action`)
+2. **Progression completed**: The DRPC `status.progression` must be `Completed` (not stuck in cleanup or other operation)
+3. **Ramen version**: Must have Ramen with dry-run support (v0.17.0+)
+
+The command validates all preconditions and fails with a clear error if not met. 
+If already in dry-run mode, the command continues the existing dry-run instead of failing.
+
+> [!NOTE]
+> Dry-run is only supported with `action: Failover`. There is no dry-run mode for relocate operations.
 
 ### Looking up applications
 
@@ -63,40 +85,32 @@ argocd      appset-deploy-rbd   6m16s   dr1                                     
 
 ### Starting a dry-run failover test
 
-To test failover for the application `appset-deploy-rbd` in namespace `argocd`,
-run the following command:
+To test failover for the application `appset-deploy-rbd` in namespace `argocd`:
 
 ```console
-$ ramenctl failover dry-run --name appset-deploy-rbd --namespace argocd -o dry-run-test
-⭐ Using config "config.yaml"
-🔎 Starting DRY-RUN failover test
-
-🧪 DRY-RUN MODE: Testing failover to cluster "dr2" without affecting primary
-✅ DRY-RUN failover triggered on cluster "dr2"
-
-🔎 Waiting for DRY-RUN to complete (this may take several minutes)
-✅ DRY-RUN: Application "appset-deploy-rbd" is available on cluster "dr2"
-✅ DRY-RUN: Primary application remains on original cluster
-
-✅ DRY-RUN failover test passed
-
-💡 To abort this dry-run: ramenctl failover dry-run --abort --name appset-deploy-rbd --namespace argocd
+$ ramenctl failover --dry-run --name appset-deploy-rbd --namespace argocd
+validating config
+failover dry run
 ```
 
-The command will:
-1. Validate preconditions (not already in dry-run, no active action)
-2. Determine the secondary cluster from the DR peer relationship
-3. Update the DRPC to trigger dry-run failover
-4. Wait for the application to become available on the secondary cluster
-5. Generate a test report if `-o` option is provided
+This starts the application on the secondary cluster while keeping the primary
+running, allowing you to verify that failover would work in a real disaster.
+The command waits for the test to complete and generates a test report.
+
+The report is automatically saved to `./failover-dry-run-<name>-<timestamp>/`.
+You can specify a custom location with `-o`:
+
+```console
+$ ramenctl failover --dry-run --name appset-deploy-rbd --namespace argocd -o my-report
+```
 
 ### Checking the test report
 
-If you specified an output directory with `-o`, you can examine the test results:
+Examine the test results in the auto-generated output directory:
 
 ```console
-$ tree dry-run-test
-dry-run-test
+$ tree failover-dry-run-appset-deploy-rbd-20260415-143022
+failover-dry-run-appset-deploy-rbd-20260415-143022
 ├── failover-dry-run.log
 └── failover-dry-run.yaml
 ```
@@ -108,96 +122,39 @@ The YAML report contains the test execution details and timing information.
 To abort the dry-run test and return the application to its original state:
 
 ```console
-$ ramenctl failover dry-run --abort --name appset-deploy-rbd --namespace argocd
-🔎 Aborting DRY-RUN failover test
-
-⚠️  Aborting dry-run failover for "appset-deploy-rbd"
-✅ DRY-RUN aborted
-
-🔎 Waiting for application to return to original state
-✅ Application "appset-deploy-rbd" restored to original state
-
-✅ DRY-RUN abort completed
+$ ramenctl failover --dry-run --abort --name appset-deploy-rbd --namespace argocd
+validating config
+abort dry run
 ```
 
-The abort command will:
-1. Verify the DRPC is in dry-run mode
-2. Read the `last-action` label to determine the original state
-3. Restore the DRPC spec to its pre-dry-run configuration
-4. Wait for the application to return to the original phase
-
-### How abort restores state
-
-The abort logic uses Ramen's `last-action` label to intelligently restore the
-DRPC to its state before the dry-run:
-
-| Original State | last-action label | Restored DRPC Spec |
-|----------------|-------------------|-------------------|
-| Deployed | `""` (empty) | `action=""`, `failoverCluster=""`, `dryRun=false` |
-| FailedOver | `"Failover"` | `action="Failover"`, `failoverCluster=preferredCluster`, `dryRun=false` |
-| Relocated | `"Relocate"` | `action="Relocate"`, `failoverCluster=""`, `dryRun=false` |
-
-**Important**: The `last-action` label is NOT updated during dry-run (per Ramen
-PR #2416), which allows safe state restoration.
+The abort operation stops the test and returns the application to the state it was
+in before the dry-run started. After abort completes, a full data resynchronization
+occurs from the primary to secondary cluster.
 
 ## Use cases
 
 ### Testing DR readiness
 
-Before a real disaster, test that failover will work:
+Users can use this feature to test failover in advance and verify that they are prepared for a real disaster.
 
 ```console
-# Test failover
-$ ramenctl failover dry-run --name my-app --namespace argocd -o test-$(date +%Y%m%d)
+# Test failover (report auto-generated in ./failover-dry-run-my-app-<timestamp>/)
+$ ramenctl failover --dry-run --name my-app --namespace argocd
 
 # Review results
-$ cat test-20260406/failover-dry-run.yaml
+$ ls failover-dry-run-my-app-*/
+$ cat failover-dry-run-my-app-*/failover-dry-run.yaml
 
 # Clean up
-$ ramenctl failover dry-run --abort --name my-app --namespace argocd
-```
-
-### Periodic DR drills
-
-Schedule regular dry-run tests to ensure DR readiness:
-
-```bash
-#!/bin/bash
-# Monthly DR drill script
-
-APPS=("app1" "app2" "app3")
-NAMESPACE="argocd"
-REPORT_DIR="dr-drill-$(date +%Y%m)"
-
-for app in "${APPS[@]}"; do
-    echo "Testing $app..."
-    ramenctl failover dry-run --name "$app" --namespace "$NAMESPACE" -o "$REPORT_DIR/$app"
-    sleep 60  # Wait between tests
-    ramenctl failover dry-run --abort --name "$app" --namespace "$NAMESPACE"
-done
-```
-
-### Pre-migration validation
-
-Before performing an actual failover or relocation, verify it will work:
-
-```console
-# Test first
-$ ramenctl failover dry-run --name critical-app --namespace prod
-
-# If test passes, perform actual failover
-$ kubectl patch drpc critical-app -n prod --type merge -p '{"spec":{"action":"Failover","failoverCluster":"dr2"}}'
+$ ramenctl failover --dry-run --abort --name my-app --namespace argocd
 ```
 
 ## Troubleshooting
 
-### Error: "DRPC is already in dry-run mode"
+### Error: "dry-run failover is not supported"
 
-You're trying to start a dry-run when one is already active. Abort first:
-
-```console
-$ ramenctl failover dry-run --abort --name my-app --namespace argocd
-```
+Your Ramen installation does not support dry-run failover. This feature requires
+Ramen v0.17.0 or later. Upgrade Ramen to use this command.
 
 ### Error: "DRPC has active action"
 
@@ -210,29 +167,31 @@ The command waits up to 10 minutes for completion. If stuck:
 
 1. Check DRPC status:
    ```console
-   $ kubectl get drpc my-app -n argocd -o yaml
+   $ kubectl get drpc my-app -n argocd --context hub -o yaml
    ```
 
 2. Check Ramen operator logs:
    ```console
-   $ kubectl logs -n ramen-system deployment/ramen-hub-operator
+   $ kubectl logs -n ramen-system deployment/ramen-hub-operator --context hub
    ```
 
 3. Cancel the operation with Ctrl+C and abort:
    ```console
-   $ ramenctl failover dry-run --abort --name my-app --namespace argocd
+   $ ramenctl failover --dry-run --abort --name my-app --namespace argocd
    ```
 
-## Safety features
+## Risks and Implications
 
-The dry-run failover command includes several safety features:
+**Split-Brain During Dry-Run**: Both clusters run the application as PRIMARY and write data 
+independently. This creates a true split-brain scenario where data diverges between sites.
 
-1. **Precondition validation**: Prevents starting if already in dry-run or has active action
-2. **Non-destructive**: Primary application continues running during test
-3. **State preservation**: Uses `last-action` label for safe abort
-4. **Timeout protection**: 10-minute timeout prevents indefinite hangs
-5. **Error detection**: Monitors DRPC conditions for failures
-6. **Cancellation support**: Handles Ctrl+C gracefully
+**Full Resynchronization Required on Abort**: When aborting the dry-run:
+- All data written on the secondary during the test is discarded
+- The entire dataset must be resynchronized from primary to secondary
+- This operation consumes significant time, network bandwidth, and may impact performance
+- There is no shortcut - the full resync is unavoidable
+
+Use this command only when you understand and accept the resync cost for your data volume.
 
 ## Comparison with actual failover
 

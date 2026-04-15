@@ -3,12 +3,22 @@
 
 // Package failover implements dry-run failover testing commands.
 //
-// IMPORTANT: This package requires Ramen PR #2416 to be merged.
-// The DryRun field in DRPlacementControlSpec is not yet available in the
-// current Ramen API version. Once PR #2416 is merged, update the Ramen
-// dependency with: go get github.com/ramendr/ramen/api@latest
+// Requires Ramen v0.17.0 or later with dry-run support.
 //
-// Reference: https://github.com/RamenDR/ramen/pull/2416
+// # Abort restore logic
+//
+// The abort logic uses Ramen's last-action label to restore the DRPC to its
+// state before the dry-run:
+//
+//	Original State | last-action label | Restored DRPC Spec
+//	---------------|-------------------|-------------------
+//	Deployed       | "" (empty)        | action="", failoverCluster="", dryRun=false
+//	FailedOver     | "Failover"        | action="Failover", failoverCluster=preferredCluster,
+//	               |                   | dryRun=false
+//	Relocated      | "Relocate"        | action="Relocate", failoverCluster="", dryRun=false
+//
+// The last-action label is NOT updated during dry-run, which allows safe state
+// restoration after aborting the test.
 
 package failover
 
@@ -21,6 +31,7 @@ import (
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
@@ -97,47 +108,51 @@ func (c *Command) TestDryRun(drpcName, drpcNamespace string) error {
 		Namespace: drpcNamespace,
 	}
 
-	console.Info("Using config %q", c.command.OutputDir())
-	console.Step("Starting DRY-RUN failover test")
+	console.Step("validating config")
 
-	c.startStep("dry-run failover test")
+	// Check if Ramen supports dry-run failover
+	if err := c.checkDryRunSupport(); err != nil {
+		return err
+	}
 
 	// Get current DRPC state
 	drpc, err := c.getDRPC(drpcName, drpcNamespace)
 	if err != nil {
-		return c.failStep(fmt.Errorf("failed to get DRPC: %w", err))
+		return fmt.Errorf("failed to get DRPC: %w", err)
 	}
 
+	console.Step("failover dry run")
+	c.startStep("failover dry run")
+
 	// Validate preconditions
-	if err := c.validateTestPreconditions(drpc); err != nil {
+	alreadyInDryRun, err := c.validateTestPreconditions(drpc)
+	if err != nil {
 		return c.failStep(err)
 	}
 
-	// Calculate secondary cluster
-	secondaryCluster, err := ramen.SecondaryCluster(c, drpc)
-	if err != nil {
-		return c.failStep(fmt.Errorf("failed to determine secondary cluster: %w", err))
+	// If already in dry-run, skip to waiting
+	if alreadyInDryRun {
+		console.Info("DRPC already in dry-run mode")
+	} else {
+		// Calculate secondary cluster
+		secondaryCluster, err := ramen.SecondaryCluster(c, drpc)
+		if err != nil {
+			return c.failStep(fmt.Errorf("failed to determine secondary cluster: %w", err))
+		}
+
+		c.Logger().Infof("Starting dry-run failover: DRPC=%s/%s, failoverCluster=%s",
+			drpcNamespace, drpcName, secondaryCluster.Name)
+
+		// Update DRPC to trigger dry-run
+		if err := c.triggerDryRun(drpc, secondaryCluster.Name); err != nil {
+			return c.failStep(fmt.Errorf("failed to trigger dry-run: %w", err))
+		}
 	}
-
-	console.Info("🧪 DRY-RUN MODE: Testing failover to cluster %q without affecting primary", secondaryCluster.Name)
-	c.Logger().Infof("Starting dry-run failover: DRPC=%s/%s, failoverCluster=%s",
-		drpcNamespace, drpcName, secondaryCluster.Name)
-
-	// Update DRPC to trigger dry-run
-	if err := c.triggerDryRun(drpc, secondaryCluster.Name); err != nil {
-		return c.failStep(fmt.Errorf("failed to trigger dry-run: %w", err))
-	}
-
-	console.Pass("DRY-RUN failover triggered on cluster %q", secondaryCluster.Name)
 
 	// Wait for dry-run to complete
-	console.Step("Waiting for DRY-RUN to complete (this may take several minutes)")
 	if err := c.waitForDryRunComplete(drpcName, drpcNamespace); err != nil {
 		return c.failStep(fmt.Errorf("dry-run failed: %w", err))
 	}
-
-	console.Pass("DRY-RUN: Application %q is available on cluster %q", drpcName, secondaryCluster.Name)
-	console.Pass("DRY-RUN: Primary application remains on original cluster")
 
 	c.passStep()
 
@@ -146,16 +161,17 @@ func (c *Command) TestDryRun(drpcName, drpcNamespace string) error {
 		c.command.WriteYAMLReport(c.report)
 	}
 
-	console.Completed("✅ DRY-RUN failover test passed")
-	console.Info("💡 To abort this dry-run: ramenctl failover dry-run --abort --name %s --namespace %s",
-		drpcName, drpcNamespace)
-
 	return nil
 }
 
 // AbortDryRun reverts a dry-run failover test for the specified DRPC.
 func (c *Command) AbortDryRun(drpcName, drpcNamespace string) error {
-	console.Step("Aborting DRY-RUN failover test")
+	console.Step("validating config")
+
+	// Check if Ramen supports dry-run failover
+	if err := c.checkDryRunSupport(); err != nil {
+		return err
+	}
 
 	// Get current DRPC state
 	drpc, err := c.getDRPC(drpcName, drpcNamespace)
@@ -168,7 +184,8 @@ func (c *Command) AbortDryRun(drpcName, drpcNamespace string) error {
 		return fmt.Errorf("DRPC %s/%s is not in dry-run mode", drpcNamespace, drpcName)
 	}
 
-	console.Info("⚠️  Aborting dry-run failover for %q", drpcName)
+	console.Step("abort dry run")
+
 	c.Logger().Infof("Aborting dry-run: DRPC=%s/%s", drpcNamespace, drpcName)
 
 	// Get the original state from last-action label
@@ -180,36 +197,50 @@ func (c *Command) AbortDryRun(drpcName, drpcNamespace string) error {
 		return fmt.Errorf("failed to revert dry-run: %w", err)
 	}
 
-	console.Pass("DRY-RUN aborted")
-
 	// Wait for revert to complete
-	console.Step("Waiting for application to return to original state")
 	if err := c.waitForRevertComplete(drpcName, drpcNamespace, lastAction); err != nil {
 		return fmt.Errorf("revert failed: %w", err)
 	}
-
-	console.Pass("Application %q restored to original state", drpcName)
-	console.Completed("✅ DRY-RUN abort completed")
 
 	return nil
 }
 
 // validateTestPreconditions checks if dry-run can be started.
-func (c *Command) validateTestPreconditions(drpc *ramenapi.DRPlacementControl) error {
-	// Check if already in dry-run mode
+// Returns true if already in dry-run mode (idempotent), false if starting new dry-run.
+func (c *Command) validateTestPreconditions(
+	drpc *ramenapi.DRPlacementControl,
+) (alreadyInDryRun bool, err error) {
+	// Check if already in dry-run mode (idempotent - allow re-running)
 	if drpc.Spec.DryRun {
-		return fmt.Errorf("DRPC is already in dry-run mode, use --abort to revert first")
+		c.Logger().Info("DRPC is already in dry-run mode, continuing...")
+		return true, nil
 	}
 
-	// Check if there's an active action
+	// Check if there's an active non-dry-run action
 	if drpc.Spec.Action != "" {
-		return fmt.Errorf("DRPC has active action %q, cannot start dry-run test", drpc.Spec.Action)
+		return false, fmt.Errorf(
+			"DRPC has active action %q, cannot start dry-run test",
+			drpc.Spec.Action,
+		)
 	}
 
-	c.Logger().Infof("Preconditions validated: dryRun=%v, action=%q",
-		drpc.Spec.DryRun, drpc.Spec.Action)
+	// Check if DRPC is in a completed state (not stuck in cleanup or other operation)
+	if drpc.Status.Progression != ramenapi.ProgressionCompleted {
+		return false, fmt.Errorf(
+			"DRPC progression is %q, must be %q before starting dry-run",
+			drpc.Status.Progression,
+			ramenapi.ProgressionCompleted,
+		)
+	}
 
-	return nil
+	c.Logger().Infof(
+		"Preconditions validated: dryRun=%v, action=%q, progression=%q",
+		drpc.Spec.DryRun,
+		drpc.Spec.Action,
+		drpc.Status.Progression,
+	)
+
+	return false, nil
 }
 
 // triggerDryRun updates the DRPC to start dry-run failover.
@@ -236,7 +267,10 @@ func (c *Command) revertDryRun(drpc *ramenapi.DRPlacementControl, lastAction str
 		drpc.Spec.Action = ramenapi.ActionFailover
 		drpc.Spec.FailoverCluster = drpc.Spec.PreferredCluster
 		drpc.Spec.DryRun = false
-		c.Logger().Infof("Restoring to FailedOver state with failoverCluster=%s", drpc.Spec.PreferredCluster)
+		c.Logger().Infof(
+			"Restoring to FailedOver state with failoverCluster=%s",
+			drpc.Spec.PreferredCluster,
+		)
 
 	case string(ramenapi.ActionRelocate):
 		// Was in Relocated state
@@ -263,6 +297,38 @@ func (c *Command) getDRPC(name, namespace string) (*ramenapi.DRPlacementControl,
 	return drpc, nil
 }
 
+// checkDryRunSupport verifies that the installed Ramen version supports dry-run failover.
+func (c *Command) checkDryRunSupport() error {
+	crd := &apiextensionsv1.CustomResourceDefinition{}
+	key := k8stypes.NamespacedName{Name: "drplacementcontrols.ramendr.openshift.io"}
+	err := c.Env().Hub.Client.Get(c.Context(), key, crd)
+	if err != nil {
+		return fmt.Errorf("failed to get DRPlacementControl CRD: %w", err)
+	}
+
+	// Check if the CRD has a version with the dryRun field in the spec
+	for _, version := range crd.Spec.Versions {
+		if version.Schema == nil || version.Schema.OpenAPIV3Schema == nil {
+			continue
+		}
+
+		// Navigate to spec.dryRun in the schema
+		spec, ok := version.Schema.OpenAPIV3Schema.Properties["spec"]
+		if !ok {
+			continue
+		}
+
+		if _, hasDryRun := spec.Properties["dryRun"]; hasDryRun {
+			c.Logger().Debugf("Dry-run support detected in CRD version %s", version.Name)
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"dry-run failover is not supported by the installed Ramen version",
+	)
+}
+
 // updateDRPC updates the DRPC on the hub cluster.
 func (c *Command) updateDRPC(drpc *ramenapi.DRPlacementControl) error {
 	c.Logger().Infof("Updating DRPC: action=%q, failoverCluster=%q, dryRun=%v",
@@ -281,34 +347,42 @@ func (c *Command) waitForDryRunComplete(name, namespace string) error {
 	ctx, cancel := context.WithTimeout(c.Context(), dryRunTimeout)
 	defer cancel()
 
-	return wait.PollUntilContextCancel(ctx, pollInterval, true, func(ctx context.Context) (bool, error) {
-		drpc, err := c.getDRPC(name, namespace)
-		if err != nil {
-			// If context is cancelled, return the cancellation error
-			if errors.Is(err, context.Canceled) {
-				return false, err
+	return wait.PollUntilContextCancel(
+		ctx,
+		pollInterval,
+		true,
+		func(ctx context.Context) (bool, error) {
+			drpc, err := c.getDRPC(name, namespace)
+			if err != nil {
+				// If context is cancelled, return the cancellation error
+				if errors.Is(err, context.Canceled) {
+					return false, err
+				}
+				// For other errors, log and retry
+				c.Logger().Warnf("Failed to get DRPC status (will retry): %s", err)
+				return false, nil
 			}
-			// For other errors, log and retry
-			c.Logger().Warnf("Failed to get DRPC status (will retry): %s", err)
+
+			c.Logger().Debugf("DRPC progression: %s", drpc.Status.Progression)
+
+			// Check if dry-run completed successfully
+			if drpc.Status.Progression == "ProgressionTestingFailover" {
+				c.Logger().Info("DRY-RUN completed: progression=ProgressionTestingFailover")
+				return true, nil
+			}
+
+			// Check for failures
+			if c.hasDRPCFailed(drpc) {
+				return false, fmt.Errorf(
+					"DRPC entered failed state: progression=%s",
+					drpc.Status.Progression,
+				)
+			}
+
+			// Still progressing
 			return false, nil
-		}
-
-		c.Logger().Debugf("DRPC progression: %s", drpc.Status.Progression)
-
-		// Check if dry-run completed successfully
-		if drpc.Status.Progression == "ProgressionTestingFailover" {
-			c.Logger().Info("DRY-RUN completed: progression=ProgressionTestingFailover")
-			return true, nil
-		}
-
-		// Check for failures
-		if c.hasDRPCFailed(drpc) {
-			return false, fmt.Errorf("DRPC entered failed state: progression=%s", drpc.Status.Progression)
-		}
-
-		// Still progressing
-		return false, nil
-	})
+		},
+	)
 }
 
 // waitForRevertComplete waits for DRPC to return to its original state after abort.
@@ -330,31 +404,48 @@ func (c *Command) waitForRevertComplete(name, namespace, lastAction string) erro
 
 	c.Logger().Infof("Waiting for DRPC to return to phase: %s", expectedPhase)
 
-	return wait.PollUntilContextCancel(ctx, pollInterval, true, func(ctx context.Context) (bool, error) {
-		drpc, err := c.getDRPC(name, namespace)
-		if err != nil {
-			if errors.Is(err, context.Canceled) {
-				return false, err
+	return wait.PollUntilContextCancel(
+		ctx,
+		pollInterval,
+		true,
+		func(ctx context.Context) (bool, error) {
+			drpc, err := c.getDRPC(name, namespace)
+			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return false, err
+				}
+				c.Logger().Warnf("Failed to get DRPC status (will retry): %s", err)
+				return false, nil
 			}
-			c.Logger().Warnf("Failed to get DRPC status (will retry): %s", err)
+
+			c.Logger().Debugf(
+				"DRPC phase: %s, progression: %s",
+				drpc.Status.Phase,
+				drpc.Status.Progression,
+			)
+
+			// Check if returned to expected phase
+			if drpc.Status.Phase == expectedPhase &&
+				drpc.Status.Progression == ramenapi.ProgressionCompleted {
+				c.Logger().Infof(
+					"Revert completed: phase=%s, progression=%s",
+					drpc.Status.Phase,
+					drpc.Status.Progression,
+				)
+				return true, nil
+			}
+
+			// Check for failures
+			if c.hasDRPCFailed(drpc) {
+				return false, fmt.Errorf(
+					"DRPC entered failed state during revert: progression=%s",
+					drpc.Status.Progression,
+				)
+			}
+
 			return false, nil
-		}
-
-		c.Logger().Debugf("DRPC phase: %s, progression: %s", drpc.Status.Phase, drpc.Status.Progression)
-
-		// Check if returned to expected phase
-		if drpc.Status.Phase == expectedPhase && drpc.Status.Progression == ramenapi.ProgressionCompleted {
-			c.Logger().Infof("Revert completed: phase=%s, progression=%s", drpc.Status.Phase, drpc.Status.Progression)
-			return true, nil
-		}
-
-		// Check for failures
-		if c.hasDRPCFailed(drpc) {
-			return false, fmt.Errorf("DRPC entered failed state during revert: progression=%s", drpc.Status.Progression)
-		}
-
-		return false, nil
-	})
+		},
+	)
 }
 
 // hasDRPCFailed checks if DRPC has entered a failed state.
