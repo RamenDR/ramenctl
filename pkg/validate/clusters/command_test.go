@@ -1275,7 +1275,7 @@ func TestValidateClustersInspectS3ProfilesFailed(t *testing.T) {
 	if validate.Report.ClustersStatus.Equal(empty) {
 		t.Fatal("clusters status is empty")
 	}
-	checkSummary(t, validate.Report, report.Summary{summary.Problem: 9})
+	checkSummary(t, validate.Report, report.Summary{summary.Problem: 12})
 }
 
 func TestValidateClustersInspectS3ProfilesCanceled(t *testing.T) {

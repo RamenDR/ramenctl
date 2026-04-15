@@ -11,6 +11,7 @@ import (
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
@@ -58,6 +59,16 @@ const (
 	// OperatorReplicas is the number of pods in the ramen operator deployment.
 	// TODO: discover the value from the cluster.
 	OperatorReplicas = 1
+
+	// ControllerTypeEnvName is the environment variable name for the controller type
+	// in the ramen operator deployment manager container. Used since ODF 4.22.
+	// In older versions, the controller type is set in the ramen configmap.
+	// TODO: consume from ramen: https://github.com/RamenDR/ramen/issues/2515
+	ControllerTypeEnvName = "RAMEN_CONTROLLER_TYPE"
+
+	// ManagerContainerName is the name of the manager container in the ramen operator deployment.
+	// TODO: consume from ramen: https://github.com/RamenDR/ramen/issues/2515
+	ManagerContainerName = "manager"
 )
 
 const (
@@ -106,6 +117,24 @@ func OperatorConfigMapName(controllerType ramenapi.ControllerType) string {
 	default:
 		panic(fmt.Sprintf("Invalid controller type %q", controllerType))
 	}
+}
+
+// DeploymentControllerType returns the controller type from the RAMEN_CONTROLLER_TYPE
+// environment variable in the manager container.
+func DeploymentControllerType(deployment *appsv1.Deployment) (ramenapi.ControllerType, bool) {
+	for i := range deployment.Spec.Template.Spec.Containers {
+		c := &deployment.Spec.Template.Spec.Containers[i]
+		if c.Name != ManagerContainerName {
+			continue
+		}
+		for _, e := range c.Env {
+			if e.Name == ControllerTypeEnvName {
+				return ramenapi.ControllerType(e.Value), true
+			}
+		}
+		return "", false
+	}
+	return "", false
 }
 
 func ApplicationNamespaces(drpc *ramenapi.DRPlacementControl) []string {

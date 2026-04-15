@@ -431,7 +431,12 @@ func (c *Command) validateRamen(
 		return fmt.Errorf("failed to validate configmap: %w", err)
 	}
 
-	if err := c.validateControllerType(&s.Deployment, configMap, controllerType); err != nil {
+	if err := c.validateControllerType(
+		&s.Deployment,
+		deployment,
+		configMap,
+		controllerType,
+	); err != nil {
 		return fmt.Errorf("failed to validate controller type: %w", err)
 	}
 
@@ -503,32 +508,48 @@ func (c *Command) validateRamenConfigMap(
 	return nil
 }
 
+// validateControllerType validates the ramen controller type. Since ODF 4.22 the controller type is
+// set as an environment variable in the deployment. In older versions it is set in the configmap.
+// We check the deployment first and fall back to the configmap to support all ramen versions.
 func (c *Command) validateControllerType(
 	s *report.DeploymentSummary,
+	deployment *appsv1.Deployment,
 	configMap *corev1.ConfigMap,
 	expectedType ramenapi.ControllerType,
 ) error {
-	if configMap == nil {
+	if deployment != nil {
+		if controllerType, ok := ramen.DeploymentControllerType(deployment); ok {
+			s.RamenControllerType = c.validatedRamenControllerType(controllerType, expectedType)
+			return nil
+		}
+	}
+
+	if configMap != nil {
+		config, err := ramen.ParseRamenConfig(configMap)
+		if err != nil {
+			return fmt.Errorf("failed to parse ramen config: %w", err)
+		}
+
+		s.RamenControllerType = c.validatedRamenControllerType(
+			config.RamenControllerType,
+			expectedType,
+		)
+
 		return nil
 	}
 
-	config, err := ramen.ParseRamenConfig(configMap)
-	if err != nil {
-		return fmt.Errorf("failed to parse ramen config: %w", err)
-	}
-
-	s.RamenControllerType = c.validatedRamenControllerType(config, expectedType)
+	s.RamenControllerType = c.validatedRamenControllerType("", expectedType)
 
 	return nil
 }
 
 func (c *Command) validatedRamenControllerType(
-	config *ramenapi.RamenConfig,
+	value ramenapi.ControllerType,
 	expectedType ramenapi.ControllerType,
 ) report.ValidatedString {
-	validated := report.ValidatedString{Value: string(config.RamenControllerType)}
+	validated := report.ValidatedString{Value: string(value)}
 
-	if config.RamenControllerType != expectedType {
+	if value != expectedType {
 		validated.State = report.Problem
 		validated.Description = fmt.Sprintf("Expecting controller type %q", expectedType)
 	} else {
