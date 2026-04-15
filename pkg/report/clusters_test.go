@@ -149,14 +149,14 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		}
 		checkClustersNotEqual(t, c1, c2)
 	})
-	t.Run("hub ramen configmap ramen controller type state", func(t *testing.T) {
+	t.Run("hub ramen deployment ramen controller type state", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.RamenControllerType.State = report.Problem
+		c2.Hub.Ramen.Deployment.RamenControllerType.State = report.Problem
 		checkClustersNotEqual(t, c1, c2)
 	})
-	t.Run("hub ramen configmap ramen controller type", func(t *testing.T) {
+	t.Run("hub ramen deployment ramen controller type", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Hub.Ramen.ConfigMap.RamenControllerType.Value = helpers.Modified
+		c2.Hub.Ramen.Deployment.RamenControllerType.Value = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("hub ramen configmap s3storeprofiles state", func(t *testing.T) {
@@ -333,14 +333,14 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		c2.Clusters[0].Ramen.ConfigMap.Namespace = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
-	t.Run("cluster ramen configmap ramen controller type state", func(t *testing.T) {
+	t.Run("cluster ramen deployment ramen controller type state", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.State = report.Problem
+		c2.Clusters[0].Ramen.Deployment.RamenControllerType.State = report.Problem
 		checkClustersNotEqual(t, c1, c2)
 	})
-	t.Run("cluster ramen configmap ramen controller type", func(t *testing.T) {
+	t.Run("cluster ramen deployment ramen controller type", func(t *testing.T) {
 		c2 := testClusterStatus()
-		c2.Clusters[0].Ramen.ConfigMap.RamenControllerType.Value = helpers.Modified
+		c2.Clusters[0].Ramen.Deployment.RamenControllerType.Value = helpers.Modified
 		checkClustersNotEqual(t, c1, c2)
 	})
 	t.Run("cluster ramen configmap s3storeprofiles state", func(t *testing.T) {
@@ -649,12 +649,6 @@ func testClusterStatus() *report.ClustersStatus {
 							State: report.OK,
 						},
 					},
-					RamenControllerType: report.ValidatedString{
-						Validated: report.Validated{
-							State: report.OK,
-						},
-						Value: string(ramenapi.DRHubType),
-					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -750,6 +744,12 @@ func testClusterStatus() *report.ClustersStatus {
 							State: report.OK,
 						},
 					},
+					RamenControllerType: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: string(ramenapi.DRHubType),
+					},
 					Replicas: report.ValidatedInteger{
 						Validated: report.Validated{
 							State: report.OK,
@@ -785,12 +785,6 @@ func testClusterStatus() *report.ClustersStatus {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -884,6 +878,12 @@ func testClusterStatus() *report.ClustersStatus {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{
@@ -919,12 +919,6 @@ func testClusterStatus() *report.ClustersStatus {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -1018,6 +1012,12 @@ func testClusterStatus() *report.ClustersStatus {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{

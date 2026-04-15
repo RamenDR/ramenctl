@@ -431,6 +431,10 @@ func (c *Command) validateRamen(
 		return fmt.Errorf("failed to validate configmap: %w", err)
 	}
 
+	if err := c.validateControllerType(&s.Deployment, configMap, controllerType); err != nil {
+		return fmt.Errorf("failed to validate controller type: %w", err)
+	}
+
 	return nil
 }
 
@@ -473,8 +477,6 @@ func (c *Command) validateRamenConfigMap(
 		return fmt.Errorf("failed to parse ramen config: %w", err)
 	}
 
-	s.RamenControllerType = c.validatedRamenControllerType(config, controllerType)
-
 	if controllerType == ramenapi.DRHubType {
 		if err := c.validatedHubS3Profiles(
 			&s.S3StoreProfiles,
@@ -497,6 +499,25 @@ func (c *Command) validateRamenConfigMap(
 
 	// TODO: Validate that configmap is identical to the configmap on the hub except the controller
 	// type.
+
+	return nil
+}
+
+func (c *Command) validateControllerType(
+	s *report.DeploymentSummary,
+	configMap *corev1.ConfigMap,
+	expectedType ramenapi.ControllerType,
+) error {
+	if configMap == nil {
+		return nil
+	}
+
+	config, err := ramen.ParseRamenConfig(configMap)
+	if err != nil {
+		return fmt.Errorf("failed to parse ramen config: %w", err)
+	}
+
+	s.RamenControllerType = c.validatedRamenControllerType(config, expectedType)
 
 	return nil
 }

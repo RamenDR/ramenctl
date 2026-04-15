@@ -193,12 +193,6 @@ func TestValidateClustersK8s(t *testing.T) {
 							State: report.OK,
 						},
 					},
-					RamenControllerType: report.ValidatedString{
-						Validated: report.Validated{
-							State: report.OK,
-						},
-						Value: string(ramenapi.DRHubType),
-					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -294,6 +288,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							State: report.OK,
 						},
 					},
+					RamenControllerType: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: string(ramenapi.DRHubType),
+					},
 					Replicas: report.ValidatedInteger{
 						Validated: report.Validated{
 							State: report.OK,
@@ -329,12 +329,6 @@ func TestValidateClustersK8s(t *testing.T) {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -428,6 +422,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{
@@ -463,12 +463,6 @@ func TestValidateClustersK8s(t *testing.T) {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -562,6 +556,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{
@@ -760,12 +760,6 @@ func TestValidateClustersOcp(t *testing.T) {
 							State: report.OK,
 						},
 					},
-					RamenControllerType: report.ValidatedString{
-						Validated: report.Validated{
-							State: report.OK,
-						},
-						Value: string(ramenapi.DRHubType),
-					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -860,6 +854,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							State: report.OK,
 						},
 					},
+					RamenControllerType: report.ValidatedString{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: string(ramenapi.DRHubType),
+					},
 					Replicas: report.ValidatedInteger{
 						Validated: report.Validated{
 							State: report.OK,
@@ -895,12 +895,6 @@ func TestValidateClustersOcp(t *testing.T) {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -994,6 +988,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{
@@ -1029,12 +1029,6 @@ func TestValidateClustersOcp(t *testing.T) {
 								State: report.OK,
 							},
 						},
-						RamenControllerType: report.ValidatedString{
-							Validated: report.Validated{
-								State: report.OK,
-							},
-							Value: string(ramenapi.DRClusterType),
-						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -1128,6 +1122,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						RamenControllerType: report.ValidatedString{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: string(ramenapi.DRClusterType),
 						},
 						Replicas: report.ValidatedInteger{
 							Validated: report.Validated{

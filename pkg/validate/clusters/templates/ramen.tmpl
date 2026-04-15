@@ -11,6 +11,8 @@
         <dd>{{.Namespace}}</dd>
     </dl>
     <dl class="validation">
+        <dt>Controller Type</dt>
+        <dd>{{template "validated" .RamenControllerType}}</dd>
         <dt>Replicas</dt>
         <dd>{{template "validated" .Replicas}}</dd>
         {{- if isProblem .Deleted.State}}
@@ -34,8 +36,6 @@
         <dd>{{.Namespace}}</dd>
     </dl>
     <dl class="validation">
-        <dt>Controller Type</dt>
-        <dd>{{template "validated" .RamenControllerType}}</dd>
         {{- if isProblem .Deleted.State}}
             <dt>Deleted</dt>
             <dd>{{template "validated" .Deleted}}</dd>

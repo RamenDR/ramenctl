@@ -51,20 +51,20 @@ type S3SecretSummary struct {
 
 // ConfigMapSummary is the summary of a Ramen ConfigMap.
 type ConfigMapSummary struct {
-	Name                string                       `json:"name"`
-	Namespace           string                       `json:"namespace"`
-	Deleted             ValidatedBool                `json:"deleted"`
-	RamenControllerType ValidatedString              `json:"ramenControllerType"`
-	S3StoreProfiles     ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
+	Name            string                       `json:"name"`
+	Namespace       string                       `json:"namespace"`
+	Deleted         ValidatedBool                `json:"deleted"`
+	S3StoreProfiles ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
 }
 
 // DeploymentSummary is the summary of a Deployment
 type DeploymentSummary struct {
-	Name       string               `json:"name"`
-	Namespace  string               `json:"namespace"`
-	Deleted    ValidatedBool        `json:"deleted"`
-	Replicas   ValidatedInteger     `json:"replicas"`
-	Conditions []ValidatedCondition `json:"conditions,omitempty"`
+	Name                string               `json:"name"`
+	Namespace           string               `json:"namespace"`
+	Deleted             ValidatedBool        `json:"deleted"`
+	RamenControllerType ValidatedString      `json:"ramenControllerType"`
+	Replicas            ValidatedInteger     `json:"replicas"`
+	Conditions          []ValidatedCondition `json:"conditions,omitempty"`
 }
 
 // RamenSummary is the summary of Ramen components.
@@ -259,9 +259,6 @@ func (c *ConfigMapSummary) Equal(o *ConfigMapSummary) bool {
 	if c.Deleted != o.Deleted {
 		return false
 	}
-	if c.RamenControllerType != o.RamenControllerType {
-		return false
-	}
 	if !c.S3StoreProfiles.Equal(&o.S3StoreProfiles) {
 		return false
 	}
@@ -339,6 +336,9 @@ func (d *DeploymentSummary) Equal(o *DeploymentSummary) bool {
 		return false
 	}
 	if d.Deleted != o.Deleted {
+		return false
+	}
+	if d.RamenControllerType != o.RamenControllerType {
 		return false
 	}
 	if d.Replicas != o.Replicas {

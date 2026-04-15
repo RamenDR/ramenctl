@@ -10,9 +10,6 @@ clustersStatus:
           state: ok ✅
         name: ramen-dr-cluster-operator-config
         namespace: ramen-system
-        ramenControllerType:
-          state: ok ✅
-          value: dr-cluster
         s3StoreProfiles:
           description: Found 0 S3 profile(s), expected at least 2
           state: problem ❌
@@ -26,6 +23,9 @@ clustersStatus:
           state: ok ✅
         name: ramen-dr-cluster-operator
         namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
         replicas:
           state: ok ✅
           value: 1
@@ -36,9 +36,6 @@ clustersStatus:
           state: ok ✅
         name: ramen-dr-cluster-operator-config
         namespace: ramen-system
-        ramenControllerType:
-          state: ok ✅
-          value: dr-cluster
         s3StoreProfiles:
           description: Found 0 S3 profile(s), expected at least 2
           state: problem ❌
@@ -52,6 +49,9 @@ clustersStatus:
           state: ok ✅
         name: ramen-dr-cluster-operator
         namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
         replicas:
           state: ok ✅
           value: 1
@@ -68,9 +68,6 @@ clustersStatus:
           state: ok ✅
         name: ramen-hub-operator-config
         namespace: ramen-system
-        ramenControllerType:
-          state: ok ✅
-          value: dr-hub
         s3StoreProfiles:
           description: Found 0 S3 profile(s), expected at least 2
           state: problem ❌
@@ -84,6 +81,9 @@ clustersStatus:
           state: ok ✅
         name: ramen-hub-operator
         namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-hub
         replicas:
           state: ok ✅
           value: 1
