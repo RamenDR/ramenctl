@@ -403,14 +403,22 @@ func (c *Command) validateRamen(
 	deploymentName := ramen.OperatorDeploymentName(controllerType)
 	configMapName := ramen.OperatorConfigMapName(controllerType)
 
-	if err := c.validateDeployment(
+	deployment, err := c.readRamenDeployment(cluster, deploymentName, namespace)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to read deployment: %w", err)
+	}
+
+	c.validateDeployment(
 		&s.Deployment,
-		cluster,
 		deploymentName,
 		namespace,
+		deployment,
 		ramen.OperatorReplicas,
-	); err != nil {
-		return fmt.Errorf("failed to validate deployment: %w", err)
+	)
+
+	configMap, err := c.readRamenConfigMap(cluster, configMapName, namespace)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to read configmap: %w", err)
 	}
 
 	if err := c.validateRamenConfigMap(
@@ -418,6 +426,7 @@ func (c *Command) validateRamen(
 		cluster,
 		configMapName,
 		namespace,
+		configMap,
 		controllerType,
 	); err != nil {
 		return fmt.Errorf("failed to validate configmap: %w", err)
@@ -447,20 +456,17 @@ func (c *Command) validateRamenConfigMap(
 	s *report.ConfigMapSummary,
 	cluster *types.Cluster,
 	name, namespace string,
+	configMap *corev1.ConfigMap,
 	controllerType ramenapi.ControllerType,
 ) error {
 	s.Name = name
 	s.Namespace = namespace
 
-	configMap, err := c.readRamenConfigMap(cluster, name, namespace)
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
-
+	if configMap == nil {
 		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
+
 	s.Deleted = c.ValidatedDeleted(configMap)
 
 	config := &ramenapi.RamenConfig{}
@@ -943,28 +949,21 @@ func (c *Command) readRamenDeployment(
 
 func (c *Command) validateDeployment(
 	s *report.DeploymentSummary,
-	cluster *types.Cluster,
 	name, namespace string,
+	deployment *appsv1.Deployment,
 	expectedReplicas int32,
-) error {
+) {
 	s.Name = name
 	s.Namespace = namespace
 
-	deployment, err := c.readRamenDeployment(cluster, name, namespace)
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
-
+	if deployment == nil {
 		s.Deleted = c.ValidatedDeleted(nil)
-		return nil
+		return
 	}
 
 	s.Deleted = c.ValidatedDeleted(deployment)
 	s.Replicas = c.validatedDeploymentReplicas(deployment, expectedReplicas)
 	s.Conditions = c.validatedDeploymentConditions(deployment)
-
-	return nil
 }
 
 func (c *Command) validatedDeploymentReplicas(
