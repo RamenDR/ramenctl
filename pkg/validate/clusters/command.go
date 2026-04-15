@@ -426,32 +426,41 @@ func (c *Command) validateRamen(
 	return nil
 }
 
+// readRamenConfigMap reads the ramen operator configmap from the gathered output.
+func (c *Command) readRamenConfigMap(
+	cluster *types.Cluster,
+	name, namespace string,
+) (*corev1.ConfigMap, error) {
+	reader := c.OutputReader(cluster.Name)
+
+	configMap, err := core.ReadConfigMap(reader, name, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read configmap \"%s/%s\" from cluster %q: %w",
+			namespace, name, cluster.Name, err)
+	}
+
+	c.Logger().Debugf("Read configmap \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
+	return configMap, nil
+}
+
 func (c *Command) validateRamenConfigMap(
 	s *report.ConfigMapSummary,
 	cluster *types.Cluster,
 	name, namespace string,
 	controllerType ramenapi.ControllerType,
 ) error {
-	log := c.Logger()
-	reader := c.OutputReader(cluster.Name)
-
 	s.Name = name
 	s.Namespace = namespace
 
-	configMap, err := core.ReadConfigMap(reader, name, namespace)
+	configMap, err := c.readRamenConfigMap(cluster, name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("failed to read configmap \"%s/%s\" from cluster %q: %w",
-				namespace, name, cluster.Name, err)
+			return err
 		}
 
-		log.Debugf("Configmap \"%s/%s\" does not exist in cluster %q",
-			namespace, name, cluster.Name)
 		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
-
-	log.Debugf("Read configmap \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
 	s.Deleted = c.ValidatedDeleted(configMap)
 
 	config := &ramenapi.RamenConfig{}
@@ -915,32 +924,42 @@ func (c *Command) validatedManagedClusterSecretKeyFingerprint(
 	return validated
 }
 
+// readRamenDeployment reads the ramen operator deployment from the gathered output.
+func (c *Command) readRamenDeployment(
+	cluster *types.Cluster,
+	name, namespace string,
+) (*appsv1.Deployment, error) {
+	reader := c.OutputReader(cluster.Name)
+
+	deployment, err := readDeployment(reader, name, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read deployment \"%s/%s\" from cluster %q: %w",
+			namespace, name, cluster.Name, err)
+	}
+
+	c.Logger().Debugf("Read deployment \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
+	return deployment, nil
+}
+
 func (c *Command) validateDeployment(
 	s *report.DeploymentSummary,
 	cluster *types.Cluster,
 	name, namespace string,
 	expectedReplicas int32,
 ) error {
-	log := c.Logger()
-	reader := c.OutputReader(cluster.Name)
-
 	s.Name = name
 	s.Namespace = namespace
 
-	deployment, err := readDeployment(reader, name, namespace)
+	deployment, err := c.readRamenDeployment(cluster, name, namespace)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("failed to read deployment \"%s/%s\" from cluster %q: %w",
-				namespace, name, cluster.Name, err)
+			return err
 		}
 
-		log.Debugf("Deployment \"%s/%s\" does not exist in cluster %q",
-			namespace, name, cluster.Name)
 		s.Deleted = c.ValidatedDeleted(nil)
 		return nil
 	}
 
-	log.Debugf("Read deployment \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
 	s.Deleted = c.ValidatedDeleted(deployment)
 	s.Replicas = c.validatedDeploymentReplicas(deployment, expectedReplicas)
 	s.Conditions = c.validatedDeploymentConditions(deployment)
