@@ -32,6 +32,9 @@ type Command struct {
 	// command is the generic command used by all ramenctl commands.
 	command *command.Command
 
+	// opts are the command options from the caller.
+	opts command.ApplicationOptions
+
 	// config is the config for this command.
 	config *config.Config
 
@@ -79,9 +82,15 @@ func (c *Command) dataDir() string {
 	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
 }
 
-func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Validation) *Command {
+func newCommand(
+	cmd *command.Command,
+	cfg *config.Config,
+	backend validation.Validation,
+	opts command.ApplicationOptions,
+) *Command {
 	return &Command{
 		command: cmd,
+		opts:    opts,
 		config:  cfg,
 		backend: backend,
 		context: cmd.Context(),
@@ -89,15 +98,15 @@ func newCommand(cmd *command.Command, cfg *config.Config, backend validation.Val
 	}
 }
 
-func (c *Command) Application(drpcName string, drpcNamespace string) error {
+func (c *Command) Run() error {
 	c.report.Application = &report.Application{
-		Name:      drpcName,
-		Namespace: drpcNamespace,
+		Name:      c.opts.DRPCName,
+		Namespace: c.opts.DRPCNamespace,
 	}
 	if !c.validateConfig() {
 		return c.failed()
 	}
-	if !c.gatherData(drpcName, drpcNamespace) {
+	if !c.gatherData() {
 		return c.failed()
 	}
 	c.passed()
@@ -117,11 +126,11 @@ func (c *Command) validateConfig() bool {
 	return true
 }
 
-func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
+func (c *Command) gatherData() bool {
 	console.Step("Gather application data")
 	c.startStep("gather data")
 
-	namespaces, ok := c.inspectApplication(drpcName, drpcNamespace)
+	namespaces, ok := c.inspectApplication()
 	if !ok {
 		return c.finishStep()
 	}
@@ -135,7 +144,7 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 		return c.finishStep()
 	}
 
-	profiles, prefix, ok := c.inspectS3Profiles(drpcName, drpcNamespace)
+	profiles, prefix, ok := c.inspectS3Profiles()
 	if !ok {
 		return c.finishStep()
 	}
@@ -148,12 +157,12 @@ func (c *Command) gatherData(drpcName string, drpcNamespace string) bool {
 	return true
 }
 
-func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, bool) {
+func (c *Command) inspectApplication() ([]string, bool) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect application"}
 	c.Logger().Infof("Step %q started", step.Name)
 
-	namespaces, err := c.namespacesToGather(drpcName, drpcNamespace)
+	namespaces, err := c.namespacesToGather()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -207,15 +216,13 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 	return c.current.Status == report.Passed
 }
 
-func (c *Command) inspectS3Profiles(
-	drpcName, drpcNamespace string,
-) ([]*s3.Profile, string, bool) {
+func (c *Command) inspectS3Profiles() ([]*s3.Profile, string, bool) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect S3 profiles"}
 
 	c.Logger().Infof("Step %q started", step.Name)
 
-	profiles, prefix, err := c.applicationS3Info(drpcName, drpcNamespace)
+	profiles, prefix, err := c.applicationS3Info()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -296,14 +303,14 @@ func (c *Command) passed() {
 	console.Completed("Gather completed")
 }
 
-func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
+func (c *Command) namespacesToGather() ([]string, error) {
 	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
 		c.config.Namespaces.RamenHubNamespace:       {},
 		c.config.Namespaces.RamenDRClusterNamespace: {},
 	}
 
-	appNamespaces, err := c.backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	appNamespaces, err := c.backend.ApplicationNamespaces(c, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, err
 	}
@@ -316,9 +323,7 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 }
 
 // applicationS3Info reads S3 profiles and application prefix from gathered hub data.
-func (c *Command) applicationS3Info(
-	drpcName, drpcNamespace string,
-) ([]*s3.Profile, string, error) {
+func (c *Command) applicationS3Info() ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
@@ -347,7 +352,7 @@ func (c *Command) applicationS3Info(
 		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
 	}
 
-	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)
+	prefix, err := ramen.ApplicationS3Prefix(reader, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, "", err
 	}

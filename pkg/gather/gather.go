@@ -23,6 +23,6 @@ func Gather(opts command.ApplicationOptions) error {
 	}
 	defer cmd.Close()
 
-	gather := newCommand(cmd, config, validation.Backend{})
-	return gather.Application(opts.DRPCName, opts.DRPCNamespace)
+	gather := newCommand(cmd, config, validation.Backend{}, opts)
+	return gather.Run()
 }

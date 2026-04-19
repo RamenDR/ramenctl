@@ -71,7 +71,7 @@ var (
 func TestGatherApplicationPassed(t *testing.T) {
 	cmd := testCommand(t, &helpers.ValidationMock{})
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err != nil {
+	if err := cmd.Run(); err != nil {
 		t.Fatal(err)
 	}
 	checkReport(t, cmd.report, report.Passed)
@@ -97,7 +97,7 @@ func TestGatherApplicationPassed(t *testing.T) {
 
 func TestGatherApplicationValidateFailed(t *testing.T) {
 	cmd := testCommand(t, helpers.ValidateConfigFailed)
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -111,7 +111,7 @@ func TestGatherApplicationValidateFailed(t *testing.T) {
 
 func TestGatherApplicationValidateCanceled(t *testing.T) {
 	cmd := testCommand(t, helpers.ValidateConfigCanceled)
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
@@ -125,7 +125,7 @@ func TestGatherApplicationValidateCanceled(t *testing.T) {
 
 func TestGatherApplicationInspectFailed(t *testing.T) {
 	cmd := testCommand(t, helpers.InspectApplicationFailed)
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -145,7 +145,7 @@ func TestGatherApplicationInspectFailed(t *testing.T) {
 
 func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 	cmd := testCommand(t, gatherClusterFailed)
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -178,7 +178,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 
 	cmd := testCommand(t, mockBackend)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	err := cmd.Application(drpcName, drpcNamespace)
+	err := cmd.Run()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -191,7 +191,7 @@ func TestGatherApplicationNamespaces(t *testing.T) {
 
 func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 	cmd := testCommand(t, &helpers.ValidationMock{})
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -216,7 +216,7 @@ func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretCanceled)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
@@ -241,7 +241,7 @@ func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 func TestGatherApplicationGetSecretFailed(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretFailed)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -270,7 +270,7 @@ func TestGatherApplicationGetSecretFailed(t *testing.T) {
 func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 	cmd := testCommand(t, helpers.GetSecretInvalid)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -298,7 +298,7 @@ func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 func TestGatherApplicationS3DataFailed(t *testing.T) {
 	cmd := testCommand(t, gatherS3Failed)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
@@ -325,7 +325,7 @@ func TestGatherApplicationS3DataFailed(t *testing.T) {
 func TestGatherApplicationS3DataCanceled(t *testing.T) {
 	cmd := testCommand(t, gatherS3Canceled)
 	helpers.AddGatheredData(t, cmd.dataDir(), applicationTestdata, "validate-application")
-	if err := cmd.Application(drpcName, drpcNamespace); err == nil {
+	if err := cmd.Run(); err == nil {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
@@ -359,7 +359,11 @@ func testCommand(t *testing.T, backend validation.Validation) *Command {
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return newCommand(cmd, testConfig, backend)
+	opts := command.ApplicationOptions{
+		DRPCName:      drpcName,
+		DRPCNamespace: drpcNamespace,
+	}
+	return newCommand(cmd, testConfig, backend, opts)
 }
 
 func checkReport(t *testing.T, report *report.Report, status report.Status) {
