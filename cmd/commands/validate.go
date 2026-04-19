@@ -22,8 +22,9 @@ var ValidateClustersCmd = &cobra.Command{
 	Short: "Detect problems in disaster recovery clusters",
 	Run: func(c *cobra.Command, args []string) {
 		if err := validate.Clusters(command.Options{
-			ConfigFile: configFile,
-			OutputDir:  outputDir,
+			ConfigFile:  configFile,
+			OutputDir:   outputDir,
+			Interactive: interactive,
 		}); err != nil {
 			os.Exit(1)
 		}
@@ -36,8 +37,9 @@ var ValidateApplicationCmd = &cobra.Command{
 	Run: func(c *cobra.Command, args []string) {
 		if err := validate.Application(command.ApplicationOptions{
 			Options: command.Options{
-				ConfigFile: configFile,
-				OutputDir:  outputDir,
+				ConfigFile:  configFile,
+				OutputDir:   outputDir,
+				Interactive: interactive,
 			},
 			DRPCName:      drpcName,
 			DRPCNamespace: drpcNamespace,

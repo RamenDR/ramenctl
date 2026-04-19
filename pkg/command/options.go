@@ -5,8 +5,9 @@ package command
 
 // Options shared by all commands except init.
 type Options struct {
-	ConfigFile string
-	OutputDir  string
+	ConfigFile  string
+	OutputDir   string
+	Interactive bool
 }
 
 // ApplicationOptions shared by commands operating on a protected application.

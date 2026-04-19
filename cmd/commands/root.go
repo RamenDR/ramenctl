@@ -4,7 +4,10 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	"github.com/ramendr/ramenctl/pkg/build"
 )
@@ -22,6 +25,10 @@ var (
 	// drpcNamespace is the DRPC resource namespace on the hub. Used by commands handlign protected
 	// applications.
 	drpcNamespace string
+
+	// interactive controls interactive features like opening a browser. When not set by the user,
+	// defaults to true if stdout is a terminal.
+	interactive bool
 )
 
 var RootCmd = &cobra.Command{
@@ -30,7 +37,11 @@ var RootCmd = &cobra.Command{
 	Version: build.Version,
 
 	// When used as a subcommand in another tool, don't inherit persistent pre run commands.
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if !cmd.Flags().Changed("interactive") {
+			interactive = term.IsTerminal(int(os.Stdout.Fd()))
+		}
+	},
 }
 
 func init() {
@@ -40,6 +51,9 @@ func init() {
 	// These flags are used by all sub commands.
 	RootCmd.PersistentFlags().
 		StringVarP(&configFile, "config", "c", "config.yaml", "configuration file")
+	RootCmd.PersistentFlags().
+		BoolVar(&interactive, "interactive", false, "enable interactive features")
+	RootCmd.PersistentFlags().Lookup("interactive").DefValue = "auto"
 }
 
 func addOutputFlags(c *cobra.Command) {
