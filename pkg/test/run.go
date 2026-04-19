@@ -8,13 +8,13 @@ import (
 	"github.com/ramendr/ramenctl/pkg/testing"
 )
 
-func Run(configFile string, outputDir string) error {
-	cfg, err := readConfig(configFile)
+func Run(opts command.Options) error {
+	cfg, err := readConfig(opts.ConfigFile)
 	if err != nil {
 		return err
 	}
 
-	cmd, err := command.New("test-run", cfg.Clusters, outputDir)
+	cmd, err := command.New("test-run", cfg.Clusters, opts)
 	if err != nil {
 		return err
 	}

@@ -46,15 +46,15 @@ type Command struct {
 func New(
 	commandName string,
 	clusters map[string]e2econfig.Cluster,
-	outputDir string,
+	opts Options,
 ) (*Command, error) {
 	// Create the logger first so we can log early command errors to the command log.
-	log, closeLog, err := newLogger(outputDir, commandName+".log")
+	log, closeLog, err := newLogger(opts.OutputDir, commandName+".log")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger: %w", err)
 	}
 
-	console.Info("Using report %q", outputDir)
+	console.Info("Using report %q", opts.OutputDir)
 
 	// Create the context before creating the env so we can cancel the command cleanly if accessing
 	// the clusters block for long time. The log will contain the cancellation error.
@@ -70,7 +70,7 @@ func New(
 
 	return &Command{
 		name:      commandName,
-		outputDir: outputDir,
+		outputDir: opts.OutputDir,
 		env:       env,
 		log:       log,
 		closeLog:  closeLog,

@@ -6,6 +6,7 @@ package commands
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/validate"
 )
@@ -19,7 +20,10 @@ var ValidateClustersCmd = &cobra.Command{
 	Use:   "clusters",
 	Short: "Detect problems in disaster recovery clusters",
 	Run: func(c *cobra.Command, args []string) {
-		if err := validate.Clusters(configFile, outputDir); err != nil {
+		if err := validate.Clusters(command.Options{
+			ConfigFile: configFile,
+			OutputDir:  outputDir,
+		}); err != nil {
 			console.Fatal(err)
 		}
 	},
@@ -29,7 +33,14 @@ var ValidateApplicationCmd = &cobra.Command{
 	Use:   "application",
 	Short: "Detect problems in disaster recovery protected application",
 	Run: func(c *cobra.Command, args []string) {
-		if err := validate.Application(configFile, outputDir, drpcName, drpcNamespace); err != nil {
+		if err := validate.Application(command.ApplicationOptions{
+			Options: command.Options{
+				ConfigFile: configFile,
+				OutputDir:  outputDir,
+			},
+			DRPCName:      drpcName,
+			DRPCNamespace: drpcNamespace,
+		}); err != nil {
 			console.Fatal(err)
 		}
 	},

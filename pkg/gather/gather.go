@@ -11,18 +11,18 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-func Gather(configFile string, outputDir string, drpcName string, drpcNamespace string) error {
-	config, err := config.ReadConfig(configFile)
+func Gather(opts command.ApplicationOptions) error {
+	config, err := config.ReadConfig(opts.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("unable to read config: %w", err)
 	}
 
-	cmd, err := command.New("gather-application", config.Clusters, outputDir)
+	cmd, err := command.New("gather-application", config.Clusters, opts.Options)
 	if err != nil {
 		return err
 	}
 	defer cmd.Close()
 
 	gather := newCommand(cmd, config, validation.Backend{})
-	return gather.Application(drpcName, drpcNamespace)
+	return gather.Application(opts.DRPCName, opts.DRPCNamespace)
 }

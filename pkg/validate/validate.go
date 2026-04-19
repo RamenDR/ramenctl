@@ -11,13 +11,13 @@ import (
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
-func Clusters(configFile string, outputDir string) error {
-	cfg, err := config.ReadConfig(configFile)
+func Clusters(opts command.Options) error {
+	cfg, err := config.ReadConfig(opts.ConfigFile)
 	if err != nil {
 		return err
 	}
 
-	cmd, err := command.New(clusters.CommandName, cfg.Clusters, outputDir)
+	cmd, err := command.New(clusters.CommandName, cfg.Clusters, opts)
 	if err != nil {
 		return err
 	}
@@ -27,18 +27,18 @@ func Clusters(configFile string, outputDir string) error {
 	return validate.Run()
 }
 
-func Application(configFile, outputDir, drpcName, drpcNamespace string) error {
-	cfg, err := config.ReadConfig(configFile)
+func Application(opts command.ApplicationOptions) error {
+	cfg, err := config.ReadConfig(opts.ConfigFile)
 	if err != nil {
 		return err
 	}
 
-	cmd, err := command.New(application.CommandName, cfg.Clusters, outputDir)
+	cmd, err := command.New(application.CommandName, cfg.Clusters, opts.Options)
 	if err != nil {
 		return err
 	}
 	defer cmd.Close()
 
 	validate := application.NewCommand(cmd, cfg, validation.Backend{})
-	return validate.Run(drpcName, drpcNamespace)
+	return validate.Run(opts.DRPCName, opts.DRPCNamespace)
 }

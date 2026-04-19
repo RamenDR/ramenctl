@@ -6,6 +6,7 @@ package commands
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gather"
 )
@@ -19,7 +20,14 @@ var GatherApplicationCmd = &cobra.Command{
 	Use:   "application",
 	Short: "Collect data for a protected application",
 	Run: func(c *cobra.Command, args []string) {
-		if err := gather.Gather(configFile, outputDir, drpcName, drpcNamespace); err != nil {
+		if err := gather.Gather(command.ApplicationOptions{
+			Options: command.Options{
+				ConfigFile: configFile,
+				OutputDir:  outputDir,
+			},
+			DRPCName:      drpcName,
+			DRPCNamespace: drpcNamespace,
+		}); err != nil {
 			console.Fatal(err)
 		}
 	},

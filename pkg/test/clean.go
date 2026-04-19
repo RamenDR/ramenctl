@@ -8,13 +8,13 @@ import (
 	"github.com/ramendr/ramenctl/pkg/testing"
 )
 
-func Clean(configFile string, outputDir string) error {
-	cfg, err := readConfig(configFile)
+func Clean(opts command.Options) error {
+	cfg, err := readConfig(opts.ConfigFile)
 	if err != nil {
 		return err
 	}
 
-	cmd, err := command.New("test-clean", cfg.Clusters, outputDir)
+	cmd, err := command.New("test-clean", cfg.Clusters, opts)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ package commands
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/test"
 )
@@ -19,7 +20,10 @@ var TestRunCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run disaster recovery flow",
 	Run: func(c *cobra.Command, args []string) {
-		if err := test.Run(configFile, outputDir); err != nil {
+		if err := test.Run(command.Options{
+			ConfigFile: configFile,
+			OutputDir:  outputDir,
+		}); err != nil {
 			console.Fatal(err)
 		}
 	},
@@ -29,7 +33,10 @@ var TestCleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Delete test artifacts",
 	Run: func(c *cobra.Command, args []string) {
-		if err := test.Clean(configFile, outputDir); err != nil {
+		if err := test.Clean(command.Options{
+			ConfigFile: configFile,
+			OutputDir:  outputDir,
+		}); err != nil {
 			console.Fatal(err)
 		}
 	},
