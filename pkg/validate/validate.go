@@ -39,6 +39,6 @@ func Application(opts command.ApplicationOptions) error {
 	}
 	defer cmd.Close()
 
-	validate := application.NewCommand(cmd, cfg, validation.Backend{})
-	return validate.Run(opts.DRPCName, opts.DRPCNamespace)
+	validate := application.NewCommand(cmd, cfg, validation.Backend{}, opts)
+	return validate.Run()
 }

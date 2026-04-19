@@ -57,7 +57,11 @@ func testCommand(
 	t.Cleanup(func() {
 		cmd.Close()
 	})
-	return NewCommand(cmd, system.config, backend)
+	opts := basecmd.ApplicationOptions{
+		DRPCName:      drpcName,
+		DRPCNamespace: drpcNamespace,
+	}
+	return NewCommand(cmd, system.config, backend, opts)
 }
 
 func checkReport(t *testing.T, cmd *Command, status report.Status) {

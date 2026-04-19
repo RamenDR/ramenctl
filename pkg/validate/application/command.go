@@ -36,13 +36,20 @@ const CommandName = "validate-application"
 
 type Command struct {
 	*validatecmd.Command
+	opts   basecmd.ApplicationOptions
 	Report *Report
 }
 
-func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Validation) *Command {
+func NewCommand(
+	cmd *basecmd.Command,
+	cfg *config.Config,
+	backend validation.Validation,
+	opts basecmd.ApplicationOptions,
+) *Command {
 	r := NewReport(cfg)
 	return &Command{
 		Command: validatecmd.New(cmd, cfg, backend, r.Report),
+		opts:    opts,
 		Report:  r,
 	}
 }
@@ -57,24 +64,24 @@ func (c *Command) failed() error {
 	return fmt.Errorf("validation %s (%s)", c.Report.Status, summary.String(c.Report.Summary))
 }
 
-func (c *Command) Run(drpcName, drpcNamespace string) error {
-	c.Report.Application.Name = drpcName
-	c.Report.Application.Namespace = drpcNamespace
+func (c *Command) Run() error {
+	c.Report.Application.Name = c.opts.DRPCName
+	c.Report.Application.Namespace = c.opts.DRPCNamespace
 	if !c.ValidateConfig() {
 		return c.failed()
 	}
-	if !c.validateApplication(drpcName, drpcNamespace) {
+	if !c.validateApplication() {
 		return c.failed()
 	}
 	c.passed()
 	return nil
 }
 
-func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
+func (c *Command) validateApplication() bool {
 	console.Step("Validate application")
 	c.StartStep("validate application")
 
-	namespaces, ok := c.inspectApplication(drpcName, drpcNamespace)
+	namespaces, ok := c.inspectApplication()
 	if !ok {
 		return c.FinishStep()
 	}
@@ -89,11 +96,11 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 		return c.FinishStep()
 	}
 
-	if !c.gatherS3Data(drpcName, drpcNamespace) {
+	if !c.gatherS3Data() {
 		return c.FinishStep()
 	}
 
-	if !c.validateGatheredData(drpcName, drpcNamespace) {
+	if !c.validateGatheredData() {
 		return c.FinishStep()
 	}
 
@@ -101,12 +108,12 @@ func (c *Command) validateApplication(drpcName, drpcNamespace string) bool {
 	return true
 }
 
-func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, bool) {
+func (c *Command) inspectApplication() ([]string, bool) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect application"}
 	c.Logger().Infof("Step %q started", step.Name)
 
-	namespaces, err := c.namespacesToGather(drpcName, drpcNamespace)
+	namespaces, err := c.namespacesToGather()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -135,23 +142,21 @@ func (c *Command) inspectApplication(drpcName, drpcNamespace string) ([]string, 
 // gatherS3Data inspects application S3 profiles and gathers data. It returns false only if the
 // user cancelled, otherwise true if there were errors during inspection, as those will be reported
 // in the validation results.
-func (c *Command) gatherS3Data(drpcName, drpcNamespace string) bool {
-	profiles, prefix, err := c.inspectS3Profiles(drpcName, drpcNamespace)
+func (c *Command) gatherS3Data() bool {
+	profiles, prefix, err := c.inspectS3Profiles()
 	if err != nil {
 		return !errors.Is(err, context.Canceled)
 	}
 	return c.gatherS3Profiles(profiles, prefix)
 }
 
-func (c *Command) inspectS3Profiles(
-	drpcName, drpcNamespace string,
-) ([]*s3.Profile, string, error) {
+func (c *Command) inspectS3Profiles() ([]*s3.Profile, string, error) {
 	start := time.Now()
 	step := &report.Step{Name: "inspect S3 profiles"}
 
 	c.Logger().Infof("Step %q started", step.Name)
 
-	profiles, prefix, err := c.s3Info(drpcName, drpcNamespace)
+	profiles, prefix, err := c.s3Info()
 	if err != nil {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
@@ -218,14 +223,14 @@ func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	return c.Current.Status != report.Canceled
 }
 
-func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]string, error) {
+func (c *Command) namespacesToGather() ([]string, error) {
 	set := map[string]struct{}{
 		// Gather ramen namespaces to get ramen hub and dr-cluster logs and related resources.
 		c.Config().Namespaces.RamenHubNamespace:       {},
 		c.Config().Namespaces.RamenDRClusterNamespace: {},
 	}
 
-	appNamespaces, err := c.Backend.ApplicationNamespaces(c, drpcName, drpcNamespace)
+	appNamespaces, err := c.Backend.ApplicationNamespaces(c, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, err
 	}
@@ -238,9 +243,7 @@ func (c *Command) namespacesToGather(drpcName string, drpcNamespace string) ([]s
 }
 
 // s3Info reads S3 profiles and application prefix from gathered hub data.
-func (c *Command) s3Info(
-	drpcName, drpcNamespace string,
-) ([]*s3.Profile, string, error) {
+func (c *Command) s3Info() ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
@@ -269,7 +272,7 @@ func (c *Command) s3Info(
 		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
 	}
 
-	prefix, err := ramen.ApplicationS3Prefix(reader, drpcName, drpcNamespace)
+	prefix, err := ramen.ApplicationS3Prefix(reader, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, "", err
 	}
@@ -277,7 +280,7 @@ func (c *Command) s3Info(
 	return profiles, prefix, nil
 }
 
-func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
+func (c *Command) validateGatheredData() bool {
 	log := c.Logger()
 
 	start := time.Now()
@@ -289,7 +292,7 @@ func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
 
 	s := &c.Report.ApplicationStatus
 
-	drpc, err := c.validateHub(&s.Hub, drpcName, drpcNamespace)
+	drpc, err := c.validateHub(&s.Hub)
 	if err != nil {
 		step.Status = report.Failed
 		msg := "Failed to validate hub"
@@ -331,11 +334,10 @@ func (c *Command) validateGatheredData(drpcName, drpcNamespace string) bool {
 
 func (c *Command) validateHub(
 	s *report.ApplicationStatusHub,
-	drpcName, drpcNamespace string,
 ) (*ramenapi.DRPlacementControl, error) {
 	log := c.Logger()
 	reader := c.OutputReader(c.Env().Hub.Name)
-	drpc, err := ramen.ReadDRPC(reader, drpcName, drpcNamespace)
+	drpc, err := ramen.ReadDRPC(reader, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read drpc: %w", err)
 	}
