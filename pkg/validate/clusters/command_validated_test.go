@@ -149,6 +149,39 @@ func TestValidateControllerTypeNilDeploymentAndConfigMap(t *testing.T) {
 	}
 }
 
+// Corrupted configmap: parse error is reported as a problem, validation continues.
+func TestValidateRamenConfigMapCorrupted(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+	configMap := testCorruptedConfigMap()
+
+	_, parseErr := ramen.ParseRamenConfig(configMap)
+
+	s := &report.ConfigMapSummary{}
+	err := cmd.validateRamenConfigMap(s, testK8s.env.Hub, "cm", "ns", configMap, ramenapi.DRHubType)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := report.ValidatedBool{
+		Validated: report.Validated{
+			State:       report.Problem,
+			Description: parseErr.Error(),
+		},
+	}
+	if s.Parsed != expected {
+		t.Errorf("unexpected parsed\n%s", helpers.UnifiedDiff(t, expected, s.Parsed))
+	}
+}
+
+func testCorruptedConfigMap() *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		Data: map[string]string{
+			ramen.ConfigMapRamenConfigKeyName: "invalid: yaml: data\n",
+		},
+	}
+}
+
 func testModernDeployment(controllerType string) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{
