@@ -193,6 +193,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							State: report.OK,
 						},
 					},
+					Parsed: report.ValidatedBool{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: true,
+					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -329,6 +335,12 @@ func TestValidateClustersK8s(t *testing.T) {
 								State: report.OK,
 							},
 						},
+						Parsed: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -462,6 +474,12 @@ func TestValidateClustersK8s(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						Parsed: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
 						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
@@ -617,7 +635,7 @@ func TestValidateClustersK8s(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.Report, expected)
 
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 90})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 93})
 }
 
 func TestValidateClustersOcp(t *testing.T) {
@@ -760,6 +778,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							State: report.OK,
 						},
 					},
+					Parsed: report.ValidatedBool{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+						Value: true,
+					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -895,6 +919,12 @@ func TestValidateClustersOcp(t *testing.T) {
 								State: report.OK,
 							},
 						},
+						Parsed: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
+						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -1028,6 +1058,12 @@ func TestValidateClustersOcp(t *testing.T) {
 							Validated: report.Validated{
 								State: report.OK,
 							},
+						},
+						Parsed: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+							Value: true,
 						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
@@ -1183,7 +1219,7 @@ func TestValidateClustersOcp(t *testing.T) {
 	}
 	checkClusterStatus(t, validate.Report, expected)
 
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 88})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 91})
 }
 
 func TestValidateClustersValidateFailed(t *testing.T) {
@@ -1336,7 +1372,7 @@ func TestValidateClustersGetSecretFailed(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 88, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 91, summary.Problem: 2})
 }
 
 func TestValidateClustersGetSecretInvalid(t *testing.T) {
@@ -1368,7 +1404,7 @@ func TestValidateClustersGetSecretInvalid(t *testing.T) {
 		{Name: "validate clusters data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 88, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 91, summary.Problem: 2})
 }
 
 func TestValidateClustersCheckS3Failed(t *testing.T) {
@@ -1406,7 +1442,7 @@ func TestValidateClustersCheckS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.Report,
-		report.Summary{summary.OK: 89, summary.Problem: 1},
+		report.Summary{summary.OK: 92, summary.Problem: 1},
 	)
 }
 

@@ -478,8 +478,11 @@ func (c *Command) validateRamenConfigMap(
 	s.Deleted = c.ValidatedDeleted(configMap)
 
 	config, err := ramen.ParseRamenConfig(configMap)
+	s.Parsed = c.validatedParsed(err)
 	if err != nil {
-		return fmt.Errorf("failed to parse ramen config: %w", err)
+		c.Logger().Errorf("Failed to parse ramen config from configmap \"%s/%s\": %s",
+			namespace, name, err)
+		return nil
 	}
 
 	if controllerType == ramenapi.DRHubType {
@@ -541,6 +544,19 @@ func (c *Command) validateControllerType(
 	s.RamenControllerType = c.validatedRamenControllerType("", expectedType)
 
 	return nil
+}
+
+func (c *Command) validatedParsed(err error) report.ValidatedBool {
+	validated := report.ValidatedBool{}
+	if err != nil {
+		validated.State = report.Problem
+		validated.Description = err.Error()
+	} else {
+		validated.Value = true
+		validated.State = report.OK
+	}
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
 }
 
 func (c *Command) validatedRamenControllerType(
