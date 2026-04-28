@@ -173,8 +173,10 @@ func checkBucket(
 		Bucket: aws.String(profile.Bucket),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to access bucket %q for profile %q: %w",
+		log.Warnf("Failed to access bucket %q for profile %q: %v",
 			profile.Bucket, profile.Name, err)
+		return fmt.Errorf("failed to access bucket %q for profile %q",
+			profile.Bucket, profile.Name)
 	}
 
 	return nil
@@ -289,8 +291,10 @@ func (s *objectStore) listObjects(ctx context.Context, prefix string) ([]string,
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list objects in bucket %q with prefix %q: %w",
+			s.log.Warnf("Failed to list objects in bucket %q with prefix %q: %v",
 				s.profile.Bucket, prefix, err)
+			return nil, fmt.Errorf("failed to list objects in bucket %q with prefix %q",
+				s.profile.Bucket, prefix)
 		}
 		for _, obj := range page.Contents {
 			keys = append(keys, *obj.Key)
