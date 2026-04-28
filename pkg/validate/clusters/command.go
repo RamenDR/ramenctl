@@ -529,16 +529,14 @@ func (c *Command) validateControllerType(
 
 	if configMap != nil {
 		config, err := ramen.ParseRamenConfig(configMap)
-		if err != nil {
-			return fmt.Errorf("failed to parse ramen config: %w", err)
+		if err == nil {
+			s.RamenControllerType = c.validatedRamenControllerType(
+				config.RamenControllerType,
+				expectedType,
+			)
+			return nil
 		}
-
-		s.RamenControllerType = c.validatedRamenControllerType(
-			config.RamenControllerType,
-			expectedType,
-		)
-
-		return nil
+		c.Logger().Errorf("Failed to parse ramen config for controller type: %s", err)
 	}
 
 	s.RamenControllerType = c.validatedRamenControllerType("", expectedType)
