@@ -174,6 +174,57 @@ func TestValidateRamenConfigMapCorrupted(t *testing.T) {
 	}
 }
 
+// Corrupted configmap with modern deployment: controller type comes from the deployment.
+func TestValidateControllerTypeCorruptedConfigMap(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+	deployment := testModernDeployment(string(ramenapi.DRHubType))
+	configMap := testCorruptedConfigMap()
+
+	s := &report.DeploymentSummary{}
+	if err := cmd.validateControllerType(s, deployment, configMap, ramenapi.DRHubType); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := report.ValidatedString{
+		Value:     string(ramenapi.DRHubType),
+		Validated: report.Validated{State: report.OK},
+	}
+	if s.RamenControllerType != expected {
+		t.Errorf(
+			"unexpected controller type\n%s",
+			helpers.UnifiedDiff(t, expected, s.RamenControllerType),
+		)
+	}
+}
+
+// Corrupted configmap with legacy deployment: controller type falls through to unknown.
+func TestValidateControllerTypeCorruptedConfigMapLegacyDeployment(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+	deployment := testLegacyDeployment()
+	configMap := testCorruptedConfigMap()
+
+	s := &report.DeploymentSummary{}
+	if err := cmd.validateControllerType(s, deployment, configMap, ramenapi.DRHubType); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := report.ValidatedString{
+		Value: "",
+		Validated: report.Validated{
+			State:       report.Problem,
+			Description: fmt.Sprintf("Expecting controller type %q", ramenapi.DRHubType),
+		},
+	}
+	if s.RamenControllerType != expected {
+		t.Errorf(
+			"unexpected controller type\n%s",
+			helpers.UnifiedDiff(t, expected, s.RamenControllerType),
+		)
+	}
+}
+
 func testCorruptedConfigMap() *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		Data: map[string]string{
