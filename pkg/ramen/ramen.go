@@ -344,7 +344,7 @@ func ParseRamenConfig(configMap *corev1.ConfigMap) (*ramenapi.RamenConfig, error
 	config := &ramenapi.RamenConfig{}
 	data := []byte(configMap.Data[ConfigMapRamenConfigKeyName])
 	if err := yaml.Unmarshal(data, config); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal ramen configmap data: %w\n%s", err, data)
+		return nil, fmt.Errorf("failed to parse %q: %w", ConfigMapRamenConfigKeyName, err)
 	}
 	return config, nil
 }
