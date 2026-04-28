@@ -40,7 +40,12 @@
             <dt>Deleted</dt>
             <dd>{{template "validated" .Deleted}}</dd>
         {{- end}}
+        {{- if isProblem .Parsed.State}}
+            <dt>Parsed</dt>
+            <dd>{{template "validated" .Parsed}}</dd>
+        {{- end}}
     </dl>
+    {{- if .S3StoreProfiles.State}}
     <section>
         <h6>S3 Store Profiles</h6>
         <dl class="validation">
@@ -57,6 +62,7 @@
             {{template "s3profile" .}}
         {{- end}}
     </section>
+    {{- end}}
 </section>
 {{- end}}
 {{- end}}

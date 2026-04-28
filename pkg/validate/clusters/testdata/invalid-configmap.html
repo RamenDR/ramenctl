@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Validate Clusters</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Validate Clusters</h1>
+      <div class="result"><span class="status failed">failed</span><span class="summary">18 ok, 0 stale, 3 problem</span></div>
+      <footer><span>Created 2026-03-23 18:20:41 &#43;0200</span><span>Duration 1.05s</span></footer>
+    </header>
+    <main>
+      <section>
+        <div class="main-grid">
+          <h2>Clusters Status</h2>
+          <section>
+            <h3>Hub</h3>
+            <section>
+              <h4>Ramen</h4>
+              <section>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-hub-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-hub</span><span class="state">✅</span></dd>
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-hub-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Parsed</dt>
+                  <dd>
+                    <span class="value">false</span><span class="state">❌</span>
+                    <p class="description">failed to parse &#34;ramen_manager_config.yaml&#34;: error converting YAML to JSON: yaml: mapping values are not allowed in this context</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+            <section>
+              <h4>DRPolicies</h4>
+              <dl class="validation">
+                <dt>Policies</dt>
+                <dd><span class="value">1</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h5>dr-policy</h5>
+                <dl class="metadata">
+                  <dt>Scheduling Interval</dt>
+                  <dd></dd>
+                  <dt>DRClusters</dt>
+                  <dd></dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Peer Classes</dt>
+                  <dd>
+                    <span class="value">0</span><span class="state"></span>
+                    <ul></ul>
+                  </dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Validated</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+            </section>
+            <section>
+              <h4>DRClusters</h4>
+              <dl class="validation">
+                <dt>Clusters</dt>
+                <dd><span class="value">2</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <h5>dr1</h5>
+                <dl class="metadata">
+                  <dt>Phase</dt>
+                  <dd></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation"></dl>
+                </section>
+              </section>
+              <section>
+                <h5>dr2</h5>
+                <dl class="metadata">
+                  <dt>Phase</dt>
+                  <dd></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation"></dl>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Managed Cluster: dr1</h3>
+            <section>
+              <h4>Ramen</h4>
+              <section>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Parsed</dt>
+                  <dd>
+                    <span class="value">false</span><span class="state">❌</span>
+                    <p class="description">failed to parse &#34;ramen_manager_config.yaml&#34;: error converting YAML to JSON: yaml: mapping values are not allowed in this context</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Managed Cluster: dr2</h3>
+            <section>
+              <h4>Ramen</h4>
+              <section>
+                <h5>Deployment</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Controller Type</dt>
+                  <dd><span class="value">dr-cluster</span><span class="state">✅</span></dd>
+                  <dt>Replicas</dt>
+                  <dd><span class="value">1</span><span class="state">✅</span></dd>
+                </dl>
+                <section>
+                  <h6>Conditions</h6>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Progressing</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </section>
+              </section>
+              <section>
+                <h5>ConfigMap</h5>
+                <dl class="metadata">
+                  <dt>Name</dt>
+                  <dd>ramen-dr-cluster-operator-config</dd>
+                  <dt>Namespace</dt>
+                  <dd>ramen-system</dd>
+                </dl>
+                <dl class="validation">
+                  <dt>Parsed</dt>
+                  <dd>
+                    <span class="value">false</span><span class="state">❌</span>
+                    <p class="description">failed to parse &#34;ramen_manager_config.yaml&#34;: error converting YAML to JSON: yaml: mapping values are not allowed in this context</p>
+                  </dd>
+                </dl>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>S3 Stores</h3>
+            <dl class="validation">
+              <dt>Profiles</dt>
+              <dd><span class="value">2</span><span class="state">✅</span></dd>
+            </dl>
+            <section>
+              <h4>minio-on-dr1</h4>
+              <dl class="validation">
+                <dt>Accessible</dt>
+                <dd><span class="value">false</span><span class="state"></span></dd>
+              </dl>
+            </section>
+            <section>
+              <h4>minio-on-dr2</h4>
+              <dl class="validation">
+                <dt>Accessible</dt>
+                <dd><span class="value">false</span><span class="state"></span></dd>
+              </dl>
+            </section>
+          </section>
+        </div>
+      </section>
+      <div class="details-grid">
+        <h2>Report Details</h2>
+        <section>
+          <h3>Build</h3>
+          <dl class="metadata">
+            <dt>Version</dt>
+            <dd>v0.17.0-15-gc306e20</dd>
+            <dt>Commit</dt>
+            <dd title="c306e20340a666f0124ad7e1c50cf0cd0531b094">c306e20340...</dd>
+          </dl>
+          <h3>Host</h3>
+          <dl class="metadata">
+            <dt>OS</dt>
+            <dd>darwin</dd>
+            <dt>Arch</dt>
+            <dd>arm64</dd>
+            <dt>CPUs</dt>
+            <dd>12</dd>
+          </dl>
+          <h3>Namespaces</h3>
+          <ul class="namespaces">
+            <li>ramen-system</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Config</h3>
+          <pre>clusterSet: default
+clusters:
+  c1:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+  c2:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+  hub:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+  passive-hub:
+    kubeconfig: &#34;&#34;
+distro: k8s
+namespaces:
+  argocdNamespace: argocd
+  ramenDRClusterNamespace: ramen-system
+  ramenHubNamespace: ramen-system
+  ramenOpsNamespace: ramen-ops
+</pre>
+        </section>
+        <section>
+          <h3>Steps</h3>
+          <ul class="steps">
+            <li class="step passed"><span class="step-name">validate config</span><span class="step-duration">0.01s</span></li>
+            <li class="step failed">
+              <span class="step-name">validate clusters</span><span class="step-duration">1.04s</span>
+              <ul>
+                <li class="step passed"><span class="step-name">gather &#34;hub&#34;</span><span class="step-duration">0.40s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr1&#34;</span><span class="step-duration">1.03s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr2&#34;</span><span class="step-duration">1.03s</span></li>
+                <li class="step passed"><span class="step-name">inspect S3 profiles</span><span class="step-duration">0.00s</span></li>
+                <li class="step failed"><span class="step-name">validate clusters data</span><span class="step-duration">0.00s</span></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
