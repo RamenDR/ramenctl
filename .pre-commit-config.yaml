@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Pre-commit hooks for ramenctl. Closes
+# https://github.com/RamenDR/ramenctl/issues/429.
+#
+# Mirrors the project's existing Make targets so a contributor's local
+# commit catches the same issues CI would otherwise catch on the PR:
+#
+#   - `make fmt`  → `golangci-lint fmt`  (run via the local-system hook)
+#   - `make lint` → `golangci-lint run ./...`
+#
+# One-time setup (per machine):
+#
+#   pip install pre-commit         # or: brew install pre-commit
+#
+# One-time setup (per clone):
+#
+#   pre-commit install
+#
+# Run all hooks against the whole tree:
+#
+#   pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-yaml
+      - id: check-json
+
+  # Use system-resolved hooks rather than vendored Go binaries so the
+  # exact same `golangci-lint` version that `make lint` uses runs at
+  # commit time. Contributors install golangci-lint per CONTRIBUTING.md
+  # (or via the `make` recipes).
+  - repo: local
+    hooks:
+      - id: make-fmt
+        name: make fmt (golangci-lint fmt)
+        description: Format Go sources with the project's golangci-lint config.
+        entry: make fmt
+        language: system
+        types_or: [go]
+        pass_filenames: false
+
+      - id: make-lint
+        name: make lint (golangci-lint run ./...)
+        description: Run the project's full linter suite.
+        entry: make lint
+        language: system
+        types_or: [go]
+        pass_filenames: false

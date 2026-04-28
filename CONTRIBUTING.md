@@ -16,6 +16,25 @@ easier to get your contribution accepted.
 1. Play with the *ramenctl* tool
 1. Open issues, create pull requests
 
+### Pre-commit hooks
+
+The repo ships a [`.pre-commit-config.yaml`](.pre-commit-config.yaml)
+that wires `make fmt` and `make lint` into a git pre-commit hook so
+CI never has to push you back for a missed format/lint pass. Setup
+is two one-time commands (per machine and per clone):
+
+```bash
+pip install pre-commit          # or: brew install pre-commit
+pre-commit install              # in this repo
+```
+
+The hook then runs automatically on every `git commit`. To run all
+hooks across the tree (useful right after cloning, or in CI), use:
+
+```bash
+pre-commit run --all-files
+```
+
 ## Contribution Flow
 
 This is a rough outline of what a contributor's workflow looks like:
