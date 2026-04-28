@@ -4,11 +4,14 @@
 package ramen
 
 import (
+	"errors"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/ramendr/ramen/api/v1alpha1"
 	e2econfig "github.com/ramendr/ramen/e2e/config"
+	corev1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -148,6 +151,51 @@ func TestApplicationNamespacesEmptyAppNamespaceAnnotation(t *testing.T) {
 		disappProtectedNamespace,
 	})
 	checkNamespaces(t, namespaces, expectedNamespaces)
+}
+
+func TestParseRamenConfig(t *testing.T) {
+	t.Run("valid yaml", func(t *testing.T) {
+		configMap := &corev1.ConfigMap{
+			Data: map[string]string{
+				ConfigMapRamenConfigKeyName: "apiVersion: ramendr.openshift.io/v1alpha1\nkind: RamenConfig\n",
+			},
+		}
+		config, err := ParseRamenConfig(configMap)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if config.Kind != "RamenConfig" {
+			t.Fatalf("expected kind %q, got %q", "RamenConfig", config.Kind)
+		}
+		if config.APIVersion != "ramendr.openshift.io/v1alpha1" {
+			t.Fatalf("expected apiVersion %q, got %q", "ramendr.openshift.io/v1alpha1", config.APIVersion)
+		}
+	})
+
+	// The error is used as a description in the YAML and HTML validation
+	// reports, so it must be a short single line. It must also wrap the
+	// underlying error so callers can inspect the cause.
+	t.Run("invalid yaml", func(t *testing.T) {
+		configMap := &corev1.ConfigMap{
+			Data: map[string]string{
+				ConfigMapRamenConfigKeyName: "invalid: yaml: data\n",
+			},
+		}
+		_, err := ParseRamenConfig(configMap)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		msg := err.Error()
+		if strings.Contains(msg, "\n") {
+			t.Errorf("error should be a single line: %q", msg)
+		}
+		if len(msg) > 256 {
+			t.Errorf("error too long for reports (%d chars): %q", len(msg), msg)
+		}
+		if errors.Unwrap(err) == nil {
+			t.Error("error should wrap the underlying yaml error")
+		}
+	})
 }
 
 func checkNamespaces(t *testing.T, namespaces []string, expected []string) {
