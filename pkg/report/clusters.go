@@ -54,6 +54,7 @@ type ConfigMapSummary struct {
 	Name            string                       `json:"name"`
 	Namespace       string                       `json:"namespace"`
 	Deleted         ValidatedBool                `json:"deleted"`
+	Parsed          ValidatedBool                `json:"parsed"`
 	S3StoreProfiles ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
 }
 
@@ -257,6 +258,9 @@ func (c *ConfigMapSummary) Equal(o *ConfigMapSummary) bool {
 		return false
 	}
 	if c.Deleted != o.Deleted {
+		return false
+	}
+	if c.Parsed != o.Parsed {
 		return false
 	}
 	if !c.S3StoreProfiles.Equal(&o.S3StoreProfiles) {

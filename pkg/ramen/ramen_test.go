@@ -168,7 +168,11 @@ func TestParseRamenConfig(t *testing.T) {
 			t.Fatalf("expected kind %q, got %q", "RamenConfig", config.Kind)
 		}
 		if config.APIVersion != "ramendr.openshift.io/v1alpha1" {
-			t.Fatalf("expected apiVersion %q, got %q", "ramendr.openshift.io/v1alpha1", config.APIVersion)
+			t.Fatalf(
+				"expected apiVersion %q, got %q",
+				"ramendr.openshift.io/v1alpha1",
+				config.APIVersion,
+			)
 		}
 	})
 

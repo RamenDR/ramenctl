@@ -149,6 +149,16 @@ func TestReportClusterStatusNotEqual(t *testing.T) {
 		}
 		checkClustersNotEqual(t, c1, c2)
 	})
+	t.Run("hub ramen configmap parsed", func(t *testing.T) {
+		c2 := testClusterStatus()
+		c2.Hub.Ramen.ConfigMap.Parsed = report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "failed to parse",
+			},
+		}
+		checkClustersNotEqual(t, c1, c2)
+	})
 	t.Run("hub ramen deployment ramen controller type state", func(t *testing.T) {
 		c2 := testClusterStatus()
 		c2.Hub.Ramen.Deployment.RamenControllerType.State = report.Problem
@@ -649,6 +659,11 @@ func testClusterStatus() *report.ClustersStatus {
 							State: report.OK,
 						},
 					},
+					Parsed: report.ValidatedBool{
+						Validated: report.Validated{
+							State: report.OK,
+						},
+					},
 					S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 						Validated: report.Validated{
 							State: report.OK,
@@ -785,6 +800,11 @@ func testClusterStatus() *report.ClustersStatus {
 								State: report.OK,
 							},
 						},
+						Parsed: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
 						S3StoreProfiles: report.ValidatedS3StoreProfilesList{
 							Validated: report.Validated{
 								State: report.OK,
@@ -915,6 +935,11 @@ func testClusterStatus() *report.ClustersStatus {
 						Name:      ramen.DrClusterOperatorConfigMapName,
 						Namespace: "ramen-system",
 						Deleted: report.ValidatedBool{
+							Validated: report.Validated{
+								State: report.OK,
+							},
+						},
+						Parsed: report.ValidatedBool{
 							Validated: report.Validated{
 								State: report.OK,
 							},
