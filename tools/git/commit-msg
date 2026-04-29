@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Copy to .git/hooks/ to automatically add Signed-off-by trailer.
+
+sob=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+git interpret-trailers --in-place --trailer "$sob" "$1"

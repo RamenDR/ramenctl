@@ -94,3 +94,10 @@ To format the code automatically before committing a change run:
 ```console
 make fmt
 ```
+
+## Git configuration
+
+The `tools/git` directory contains git hooks that you may want to install. See
+the hook documentation for more info:
+- pre-commit - automatically run `make pre-commit`
+- commit-msg - automatically add Signed-off-by footer

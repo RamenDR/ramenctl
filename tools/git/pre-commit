@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Copy to .git/hooks/ to run pre-commit check automatically.
+
+make pre-commit
