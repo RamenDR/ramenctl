@@ -33,7 +33,7 @@ htmlfmt:
 	find pkg -path '*/testdata/*.html' -exec $(GO) run ./tools/htmlfmt {} \;
 
 spell:
-	codespell --skip="go.sum"
+	codespell --skip="go.sum,./out"
 
 spell-fix:
 	codespell --skip="go.sum" --write-changes
