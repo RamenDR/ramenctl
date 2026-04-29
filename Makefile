@@ -16,7 +16,7 @@ build := github.com/ramendr/ramenctl/pkg/build
 ldflags := -X '$(build).Version=$(version)' \
 		   -X '$(build).Commit=$(commit)'
 
-.PHONY: ramenctl examples test clean coverage lint fmt htmlfmt
+.PHONY: ramenctl examples test clean coverage pre-commit lint fmt htmlfmt
 
 all: ramenctl examples
 
@@ -25,6 +25,8 @@ ramenctl:
 
 examples:
 	$(GO) build -o examples/odf examples/odf.go
+
+pre-commit: fmt htmlfmt spell lint
 
 fmt:
 	golangci-lint fmt

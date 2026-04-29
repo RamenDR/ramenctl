@@ -26,6 +26,7 @@ This is a rough outline of what a contributor's workflow looks like:
 1. Make sure your commit messages are in the proper format (see below).
 1. Push your changes to the branch in your fork of the repository.
 1. Make sure all tests pass, and add any new tests as appropriate.
+1. Run `make pre-commit` to format code and check lint and spelling errors.
 1. Create a pull request in the original repository.
 
 ## Commit message

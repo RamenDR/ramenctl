@@ -21,9 +21,9 @@ alwaysApply: true
 
 ## After making code changes
 
-- Run `make fmt` to format code with golangci-lint formatters
+- Run `make pre-commit` to format code and check lint and spelling errors
 - Use package tests for quick iteration: `go test ./pkg/foo/...`
-- Before committing, run `make lint` and `make test` to catch issues early
+- Before committing, run `make test` to catch issues early
 
 ## File organization
 
