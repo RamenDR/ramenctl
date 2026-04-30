@@ -86,7 +86,7 @@ func ForTest(
 	env *types.Env,
 	outputDir string,
 ) (*Command, error) {
-	log, closeLog, err := newLogger(outputDir, logName(commandName))
+	log, closeLog, err := newLogger(outputDir, commandName+".log")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger: %w", err)
 	}
@@ -109,7 +109,7 @@ func (c *Command) OutputDir() string {
 }
 
 func (c *Command) LogFile() string {
-	return filepath.Join(c.outputDir, logName(c.name))
+	return filepath.Join(c.outputDir, c.name+".log")
 }
 
 func (c *Command) DataDir() string {
@@ -170,8 +170,4 @@ func (c *Command) WriteYAMLReport(r any) {
 	if err := file.Close(); err != nil {
 		console.Error("failed to close report file: %s", err)
 	}
-}
-
-func logName(commandName string) string {
-	return commandName + ".log"
 }
