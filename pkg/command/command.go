@@ -116,6 +116,11 @@ func (c *Command) DataDir() string {
 	return filepath.Join(c.outputDir, c.name+".data")
 }
 
+// ReportFile returns the path to a report file for the given format (e.g. "yaml", "html").
+func (c *Command) ReportFile(format string) string {
+	return filepath.Join(c.outputDir, c.name+"."+format)
+}
+
 func (c *Command) Logger() *zap.SugaredLogger {
 	return c.log
 }
@@ -140,7 +145,7 @@ func (c *Command) Close() {
 
 // OpenReport opens a report file for writing in the specified format.
 func (c *Command) OpenReport(format string) (*os.File, error) {
-	path := filepath.Join(c.outputDir, c.name+"."+format)
+	path := c.ReportFile(format)
 	file, err := os.Create(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create report file %s: %w", path, err)

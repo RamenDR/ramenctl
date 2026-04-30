@@ -191,6 +191,10 @@ func (c *Command) DataDir() string {
 	return c.cmd.DataDir()
 }
 
+func (c *Command) ReportFile(format string) string {
+	return c.cmd.ReportFile(format)
+}
+
 // WriteReport writes YAML, HTML, and CSS reports to the command output directory.
 func (c *Command) WriteReport(r HTMLWriter) {
 	c.cmd.WriteYAMLReport(r)

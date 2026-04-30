@@ -128,10 +128,13 @@ func checkSummary(t *testing.T, r *Report, expected report.Summary) {
 }
 
 func checkOutputFiles(t *testing.T, cmd *Command) {
-	for _, name := range []string{CommandName + ".yaml", CommandName + ".html", "style.css"} {
-		path := filepath.Join(cmd.OutputDir(), name)
+	for _, path := range []string{
+		cmd.ReportFile("yaml"),
+		cmd.ReportFile("html"),
+		filepath.Join(cmd.OutputDir(), "style.css"),
+	} {
 		if _, err := os.Stat(path); err != nil {
-			t.Errorf("output file %q not found: %s", name, err)
+			t.Errorf("output file %q not found: %s", path, err)
 		}
 	}
 }

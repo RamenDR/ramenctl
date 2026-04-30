@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 
 	"github.com/ramendr/ramenctl/pkg/console"
@@ -17,8 +16,7 @@ import (
 // BrowseReport opens the HTML report in the default browser. If the report cannot be opened, it
 // logs a notice suggesting to open the file manually to view the report.
 func (c *Command) BrowseReport() {
-	path := filepath.Join(c.outputDir, c.name+".html")
-
+	path := c.ReportFile("html")
 	if _, err := os.Stat(path); err != nil {
 		c.log.Warnf("Skipping browse %q: %s", path, err)
 		return
