@@ -55,6 +55,7 @@ func UnifiedDiff(t *testing.T, expected, actual any) string {
 // AddGatheredData adds fake gathered data to the output directory.
 // path is the directory containing the gathered data relative to the caller's package.
 func AddGatheredData(t *testing.T, dataDir, path, commandName string) {
+	// Test fixtures never use a suffix since tests always run with a clean output directory.
 	testData := filepath.Join(path, commandName+".data")
 	source, err := filepath.Abs(testData)
 	if err != nil {

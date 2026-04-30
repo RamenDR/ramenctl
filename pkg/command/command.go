@@ -26,6 +26,10 @@ type Command struct {
 	// name is the command name (e.g. "test-run")
 	name string
 
+	// suffix is empty for the first run. Subsequent runs of the same command use "-" + sequence
+	// number (e.g. -2).
+	suffix string
+
 	// outputDir contains the command log, summary, and gathered files.
 	outputDir string
 
@@ -48,8 +52,13 @@ func New(
 	clusters map[string]e2econfig.Cluster,
 	opts Options,
 ) (*Command, error) {
+	suffix, err := findNextSuffix(opts.OutputDir, commandName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find next suffix: %w", err)
+	}
+
 	// Create the logger first so we can log early command errors to the command log.
-	log, closeLog, err := newLogger(opts.OutputDir, commandName+".log")
+	log, closeLog, err := newLogger(opts.OutputDir, commandName+suffix+".log")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger: %w", err)
 	}
@@ -70,6 +79,7 @@ func New(
 
 	return &Command{
 		name:      commandName,
+		suffix:    suffix,
 		outputDir: opts.OutputDir,
 		env:       env,
 		log:       log,
@@ -109,16 +119,16 @@ func (c *Command) OutputDir() string {
 }
 
 func (c *Command) LogFile() string {
-	return filepath.Join(c.outputDir, c.name+".log")
+	return filepath.Join(c.outputDir, c.name+c.suffix+".log")
 }
 
 func (c *Command) DataDir() string {
-	return filepath.Join(c.outputDir, c.name+".data")
+	return filepath.Join(c.outputDir, c.name+c.suffix+".data")
 }
 
 // ReportFile returns the path to a report file for the given format (e.g. "yaml", "html").
 func (c *Command) ReportFile(format string) string {
-	return filepath.Join(c.outputDir, c.name+"."+format)
+	return filepath.Join(c.outputDir, c.name+c.suffix+"."+format)
 }
 
 func (c *Command) Logger() *zap.SugaredLogger {
