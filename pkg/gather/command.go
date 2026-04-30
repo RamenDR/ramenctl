@@ -79,7 +79,7 @@ func (c *Command) outputReader(cluster string) gathering.OutputReader {
 }
 
 func (c *Command) dataDir() string {
-	return filepath.Join(c.command.OutputDir(), c.command.Name()+".data")
+	return c.command.DataDir()
 }
 
 func newCommand(

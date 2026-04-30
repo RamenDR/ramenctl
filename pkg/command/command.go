@@ -112,6 +112,10 @@ func (c *Command) LogFile() string {
 	return filepath.Join(c.outputDir, logName(c.name))
 }
 
+func (c *Command) DataDir() string {
+	return filepath.Join(c.outputDir, c.name+".data")
+}
+
 func (c *Command) Logger() *zap.SugaredLogger {
 	return c.log
 }

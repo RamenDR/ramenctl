@@ -188,7 +188,7 @@ func (c *Command) OutputDir() string {
 }
 
 func (c *Command) DataDir() string {
-	return filepath.Join(c.cmd.OutputDir(), c.cmd.Name()+".data")
+	return c.cmd.DataDir()
 }
 
 // WriteReport writes YAML, HTML, and CSS reports to the command output directory.
