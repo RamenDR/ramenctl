@@ -290,11 +290,18 @@ dl.validation > dd.nested {
     font-size: 0.85em;
 }
 
-.pvc {
+.main-grid ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-grid li {
     background: #f9fafb;
     border-left: 3px solid #d1d5db;
     border-radius: 4px;
     margin: 8px 0;
+    padding-left: 12px;
 }
 
 .description {

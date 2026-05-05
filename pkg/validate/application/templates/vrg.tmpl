@@ -22,11 +22,11 @@
 {{- with .ProtectedPVCs}}
 <section>
     <h5>Protected PVCs</h5>
-    {{- range .}}
-    <section class="pvc">
-        {{template "pvc" .}}
-    </section>
-    {{- end}}
+    <ul>
+        {{- range .}}
+        <li>{{template "pvc" .}}</li>
+        {{- end}}
+    </ul>
 </section>
 {{- end}}
 {{- end}}
