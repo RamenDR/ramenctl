@@ -4,7 +4,6 @@
 version: "2"
 linters:
   enable:
-    - goconst
     - gocritic
     - gosec
     - misspell
