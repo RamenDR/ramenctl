@@ -106,11 +106,6 @@ func (v *Validated) MaxLen() int {
 	return 32
 }
 
-// MaxLen returns the maximum display length for fingerprint truncation.
-func (v *ValidatedFingerprint) MaxLen() int {
-	return 16
-}
-
 func (v *ValidatedDRClustersList) Equal(o *ValidatedDRClustersList) bool {
 	if v == o {
 		return true

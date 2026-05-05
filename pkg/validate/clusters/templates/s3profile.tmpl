@@ -13,7 +13,7 @@
         <dt>CA Certificate</dt>
         <dd>{{template "validated" .CACertificate}}</dd>
         <dt>Secret</dt>
-        <dd>
+        <dd class="nested">
             <dl class="validation">
                 <dt>Name</dt>
                 <dd>{{template "validated" .S3SecretRef.Name}}</dd>

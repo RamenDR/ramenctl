@@ -230,15 +230,15 @@ header footer {
  *   key ... value
  *
  * dl.validation - key/value pairs with state icon,
- * optional description, and optional nested dl:
+ * optional description, and nested dl (dd.nested):
  *
  *   key ... value text .............................. icon
  *           optional description
  *
- *   key ... nested key ... value .................... icon
- *
- *       ... nested key ... value .................... icon
- *                          optional description
+ *   key
+ *       nested key ... value ........................ icon
+ *       nested key ... value ........................ icon
+ *                      optional description
  */
 
 dl.metadata,
@@ -272,6 +272,12 @@ dl.validation dd {
     margin: 0;
     min-width: 0;
     font-weight: 600;
+}
+
+dl.validation > dd.nested {
+    grid-column: 1 / -1;
+    /* Match section section padding-left. */
+    padding-left: 12px;
 }
 
 .value {
