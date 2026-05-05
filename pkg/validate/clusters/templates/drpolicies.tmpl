@@ -21,30 +21,35 @@
         <dd>{{range $i, $c := .DRClusters}}{{if $i}}, {{end}}{{$c}}{{end}}</dd>
     </dl>
     {{- with .PeerClasses}}
-    <dl class="validation">
-        <dt>Peer Classes</dt>
-        <dd>
-            <span class="value">{{len .Value}}</span>
-            <span class="state">{{icon .State}}</span>
-            {{- if .Description}}
-                <p class="description">{{.Description}}</p>
-            {{- end}}
-            <ul>
-                {{- range .Value}}
-                <li>
-                    <dl class="metadata">
-                        <dt>Storage Class</dt>
-                        <dd>{{.StorageClassName}}</dd>
-                        {{- if .ReplicationID}}
-                            <dt>Replication ID</dt>
-                            <dd>{{.ReplicationID}}</dd>
-                        {{- end}}
-                    </dl>
-                </li>
+    <section>
+        <h6>Peer Classes</h6>
+        <dl class="validation">
+            <dt>Classes</dt>
+            <dd>
+                <span class="value">{{len .Value}}</span>
+                <span class="state">{{icon .State}}</span>
+                {{- if .Description}}
+                    <p class="description">{{.Description}}</p>
                 {{- end}}
-            </ul>
-        </dd>
-    </dl>
+            </dd>
+        </dl>
+        {{- with .Value}}
+        <ul>
+            {{- range .}}
+            <li>
+                <dl class="metadata">
+                    <dt>Storage Class</dt>
+                    <dd>{{.StorageClassName}}</dd>
+                    {{- if .ReplicationID}}
+                        <dt>Replication ID</dt>
+                        <dd>{{.ReplicationID}}</dd>
+                    {{- end}}
+                </dl>
+            </li>
+            {{- end}}
+        </ul>
+        {{- end}}
+    </section>
     {{- end}}
     <section>
         <h6>Conditions</h6>
