@@ -34,8 +34,9 @@ The command supports the following sub-commands:
 * [clusters](#validate-clusters)
 
 > [!IMPORTANT]
-> The validate command requires a configuration file. See [init](docs/init.md) to
-> learn how to create one.
+> The validate command requires a configuration file. See
+> [Configuring common options](docs/init.md#configuring-common-options)
+> to learn how to create one.
 
 ## validate application
 

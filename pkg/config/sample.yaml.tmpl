@@ -2,6 +2,8 @@
 {{/* SPDX-License-Identifier: Apache-2.0 */}}
 ## {{.CommandName}} configuration file
 
+## Common options - used by all commands (validate, gather, test).
+
 ## Clusters configuration.
 # - Modify clusters "kubeconfig" to match your hub and managed clusters
 #   kubeconfig files.
@@ -17,23 +19,25 @@ clusters:
   c2:
     kubeconfig: {{.SecondaryKubeconfig}}
 
-## Git repository for test command.
+## ClusterSet with the managed clusters.
+# - Modify to match your Open Cluster Management configuration.
+clusterSet: default
+
+## Test options - used only by the test command.
+
+## Git repository.
 # - Modify "url" to use your own Git repository.
 # - Modify "branch" to test a different branch.
 repo:
   url: https://github.com/RamenDR/ocm-ramen-samples.git
   branch: main
 
-## DRPolicy for test command.
+## DRPolicy.
 # - Modify to match actual DRPolicy in the hub cluster.
 drPolicy: dr-policy-1m
 
-## ClusterSet for test command.
-# - Modify to match your Open Cluster Management configuration.
-clusterSet: default
-
-## PVC specifications for test command.
-# - Modify items "storageclassname" to match the actual storage classes in the
+## PVC specifications.
+# - Modify items "storageClassName" to match the actual storage classes in the
 #   managed clusters.
 # - Add new items for testing more storage types.
 pvcSpecs:
@@ -44,7 +48,7 @@ pvcSpecs:
   storageClassName: {{.CephFSStorageClassName}}
   accessModes: ReadWriteMany
 
-## Deployer specifications for test command.
+## Deployer specifications.
 # - Modify items "name" and "type" to match your deployer configurations.
 # - Add new items for testing more deployers.
 # - Available types: appset, subscr, disapp
@@ -83,7 +87,7 @@ deployers:
     execHook: true
   description: Discovered Application deployer with recipe using check and exec hooks
 
-## Tests cases for test command.
+## Test cases.
 # - Modify the test for your preferred workload or deployment type.
 # - Add new tests for testing more combinations in parallel.
 # - Available workloads: deploy.

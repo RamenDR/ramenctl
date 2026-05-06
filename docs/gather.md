@@ -27,8 +27,9 @@ Use "ramenctl gather [command] --help" for more information about a command.
 ```
 
 > [!IMPORTANT]
-> The gather command requires a configuration file. See [init](docs/init.md) to
-> learn how to create one.
+> The gather command requires a configuration file. See
+> [Configuring common options](docs/init.md#configuring-common-options)
+> to learn how to create one.
 
 ## gather application
 

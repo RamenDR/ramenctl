@@ -24,9 +24,9 @@ type Sample struct {
 func NewSample(commandName string) *Sample {
 	sample := &Sample{
 		CommandName:         commandName,
-		HubKubeconfig:       "hub/config",
-		PrimaryKubeconfig:   "primary/config",
-		SecondaryKubeconfig: "secondary/config",
+		HubKubeconfig:       "my-hub.yaml",
+		PrimaryKubeconfig:   "my-c1.yaml",
+		SecondaryKubeconfig: "my-c2.yaml",
 	}
 
 	// When running as `odf dr init` we optimize for ODF cluster.

@@ -76,13 +76,86 @@ $ ramenctl test run --config myenv.yaml -o test
 ...
 ```
 
-## Sample configuration file
+## Configuring common options
 
-The following is a sample configuration file showing the default values. You
-must modify it to match your clusters and storage.
+All *ramenctl* commands require the `clusters` and `clusterSet` options.
+For the validate and gather commands, these are the only options needed.
+
+> [!TIP]
+> When using a ramen testing environment, the `--envfile` option configures
+> everything for you. See
+> [Creating configuration file for a ramen testing environment](#creating-configuration-file-for-a-ramen-testing-environment).
+
+### Configuring clusters
+
+Modify the `clusters` section to match your hub and managed clusters
+kubeconfig files. Set `passive-hub` kubeconfig for optional passive hub
+cluster, or leave it empty if not using passive hub.
+
+```yaml
+clusters:
+  hub:
+    kubeconfig: my-hub.yaml
+  passive-hub:
+    kubeconfig: ""
+  c1:
+    kubeconfig: my-c1.yaml
+  c2:
+    kubeconfig: my-c2.yaml
+```
+
+### Configuring clusterSet
+
+The `clusterSet` option specifies the Open Cluster Management
+`ManagedClusterSet` that contains the managed clusters.
+
+To find the clusterSet for your managed clusters, run the following
+command:
+
+```console
+$ kubectl get managedclusters --kubeconfig my-hub.yaml -L cluster.open-cluster-management.io/clusterset
+NAME            HUB ACCEPTED   MANAGED CLUSTER URLS                 JOINED   AVAILABLE   AGE   CLUSTERSET
+my-c1           true           https://api.my-c1.example.com:6443   True     True        16d   dr-clusters
+my-c2           true           https://api.my-c2.example.com:6443   True     True        16d   dr-clusters
+local-cluster   true           https://api.my-hub.example.com:6443  True     True        16d   default
+```
+
+The `CLUSTERSET` column shows which clusterSet each managed cluster
+belongs to. Use this value in the configuration file:
+
+```yaml
+clusterSet: dr-clusters
+```
+
+### Example common configuration
 
 ```yaml
 ## ramenctl configuration file
+
+clusters:
+  hub:
+    kubeconfig: my-hub.yaml
+  passive-hub:
+    kubeconfig: ""
+  c1:
+    kubeconfig: my-c1.yaml
+  c2:
+    kubeconfig: my-c2.yaml
+
+clusterSet: dr-clusters
+```
+
+## Configuration for the test command
+
+The test command requires the [common options](#configuring-common-options)
+and additional test options. The following is a sample configuration
+file showing the default values. You must modify it to match your
+clusters and storage.
+
+```yaml
+## ramenctl configuration file
+
+## Common options - used by all commands (validate, gather, test).
 
 ## Clusters configuration.
 # - Modify clusters "kubeconfig" to match your hub and managed clusters
@@ -91,31 +164,33 @@ must modify it to match your clusters and storage.
 #   leave it empty if not using passive hub.
 clusters:
   hub:
-    kubeconfig: hub/config
+    kubeconfig: my-hub.yaml
   passive-hub:
     kubeconfig: ""
   c1:
-    kubeconfig: primary/config
+    kubeconfig: my-c1.yaml
   c2:
-    kubeconfig: secondary/config
+    kubeconfig: my-c2.yaml
 
-## Git repository for test command.
+## ClusterSet with the managed clusters.
+# - Modify to match your Open Cluster Management configuration.
+clusterSet: default
+
+## Test options - used only by the test command.
+
+## Git repository.
 # - Modify "url" to use your own Git repository.
 # - Modify "branch" to test a different branch.
 repo:
   url: https://github.com/RamenDR/ocm-ramen-samples.git
   branch: main
 
-## DRPolicy for test command.
+## DRPolicy.
 # - Modify to match actual DRPolicy in the hub cluster.
 drPolicy: dr-policy-1m
 
-## ClusterSet for test command.
-# - Modify to match your Open Cluster Management configuration.
-clusterSet: default
-
-## PVC specifications for test command.
-# - Modify items "storageclassname" to match the actual storage classes in the
+## PVC specifications.
+# - Modify items "storageClassName" to match the actual storage classes in the
 #   managed clusters.
 # - Add new items for testing more storage types.
 pvcSpecs:
@@ -126,7 +201,7 @@ pvcSpecs:
   storageClassName: rook-cephfs-fs1
   accessModes: ReadWriteMany
 
-## Deployer specifications for test command.
+## Deployer specifications.
 # - Modify items "name" and "type" to match your deployer configurations.
 # - Add new items for testing more deployers.
 # - Available types: appset, subscr, disapp
@@ -139,33 +214,38 @@ deployers:
   description: Subscription deployer for OCM subscriptions
 - name: disapp
   type: disapp
-  description: Discovered Application deployer for discovered applications
+  description: Discovered Application deployer
 - name: disapp-recipe
   type: disapp
   recipe:
     type: generate
+  description: Discovered Application deployer with recipe
 - name: disapp-recipe-check
   type: disapp
   recipe:
     type: generate
     checkHook: true
+  description: Discovered Application deployer with recipe using check hook
 - name: disapp-recipe-exec
   type: disapp
   recipe:
     type: generate
     execHook: true
+  description: Discovered Application deployer with recipe using exec hook
 - name: disapp-recipe-check-exec
   type: disapp
   recipe:
     type: generate
     checkHook: true
     execHook: true
+  description: Discovered Application deployer with recipe using check and exec hooks
 
-## Tests cases for test command.
+## Test cases.
 # - Modify the test for your preferred workload or deployment type.
 # - Add new tests for testing more combinations in parallel.
-# - Available workloads: deploy
-# - Available deployers: appset, subscr, disapp
+# - Available workloads: deploy.
+# - Available deployers: appset, subscr, disapp, disapp-recipe,
+#   disapp-recipe-check, disapp-recipe-exec, disapp-recipe-check-exec.
 tests:
 - workload: deploy
   deployer: appset

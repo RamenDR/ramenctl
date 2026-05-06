@@ -17,9 +17,9 @@ func TestSample(t *testing.T) {
 	sample := config.NewSample("ramenctl")
 	expected := &config.Sample{
 		CommandName:            "ramenctl",
-		HubKubeconfig:          "hub/config",
-		PrimaryKubeconfig:      "primary/config",
-		SecondaryKubeconfig:    "secondary/config",
+		HubKubeconfig:          "my-hub.yaml",
+		PrimaryKubeconfig:      "my-c1.yaml",
+		SecondaryKubeconfig:    "my-c2.yaml",
 		RBDStorageClassName:    "rook-ceph-block",
 		CephFSStorageClassName: "rook-cephfs-fs1",
 	}
@@ -33,9 +33,9 @@ func TestSampleForODF(t *testing.T) {
 	sample := config.NewSample("odf dr")
 	expected := &config.Sample{
 		CommandName:            "odf dr",
-		HubKubeconfig:          "hub/config",
-		PrimaryKubeconfig:      "primary/config",
-		SecondaryKubeconfig:    "secondary/config",
+		HubKubeconfig:          "my-hub.yaml",
+		PrimaryKubeconfig:      "my-c1.yaml",
+		SecondaryKubeconfig:    "my-c2.yaml",
 		RBDStorageClassName:    "ocs-storagecluster-ceph-rbd",
 		CephFSStorageClassName: "ocs-storagecluster-cephfs",
 	}
