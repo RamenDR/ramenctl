@@ -85,6 +85,7 @@ Visit the docs below to learn about *ramenctl* commands:
 - [test](docs/test.md)
 - [validate](docs/validate.md)
 - [gather](docs/gather.md)
+- [failover](docs/failover.md) - ⚠️ Requires [Ramen PR #2416](https://github.com/RamenDR/ramen/pull/2416)
 
 Check the guides below to learn more:
 

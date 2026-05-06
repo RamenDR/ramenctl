@@ -17,6 +17,7 @@ func main() {
 		commands.TestCmd,
 		commands.GatherCmd,
 		commands.ValidateCmd,
+		commands.FailoverCmd,
 	)
 
 	err := commands.RootCmd.Execute()
