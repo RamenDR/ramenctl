@@ -88,6 +88,35 @@ func (d *ValidatedDuration) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ValidatedTime is a validated object time property.
+// Value is a pointer to properly omit zero values in JSON/YAML.
+type ValidatedTime struct {
+	Validated
+	Value *time.Time `json:"value,omitempty"`
+}
+
+func (t *ValidatedTime) Equal(o *ValidatedTime) bool {
+	if t == o {
+		return true
+	}
+	if o == nil {
+		return false
+	}
+	if t.Validated != o.Validated {
+		return false
+	}
+
+	if t.Value != nil && o.Value != nil {
+		if !t.Value.Equal(*o.Value) {
+			return false
+		}
+	} else if t.Value != o.Value {
+		return false
+	}
+
+	return true
+}
+
 // ValidatedCondition is a validated condition.
 type ValidatedCondition struct {
 	Validated

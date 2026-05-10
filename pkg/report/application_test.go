@@ -88,6 +88,18 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("hub drpc lastGroupSyncTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		a2.Hub.DRPC.LastGroupSyncTime = report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Replication is stale",
+			},
+			Value: &staleTime,
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("hub drpc phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.Hub.DRPC.Phase = report.ValidatedString{
@@ -147,6 +159,18 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 				State: report.OK,
 			},
 			Value: 2 * stdtime.Minute,
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("primary cluster vrg lastGroupSyncTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		a2.PrimaryCluster.VRG.LastGroupSyncTime = report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Replication is stale",
+			},
+			Value: &staleTime,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -275,6 +299,18 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("secondary cluster vrg lastGroupSyncTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		a2.SecondaryCluster.VRG.LastGroupSyncTime = report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Replication is stale",
+			},
+			Value: &staleTime,
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.SecondaryCluster.VRG.Deleted = report.ValidatedBool{
@@ -378,6 +414,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 					},
 					Value: stdtime.Minute,
 				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: &now,
+				},
 				Action: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -433,6 +475,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						State: report.OK,
 					},
 					Value: stdtime.Minute,
+				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: &now,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
@@ -539,6 +587,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 						State: report.OK,
 					},
 					Value: stdtime.Minute,
+				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: &now,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{

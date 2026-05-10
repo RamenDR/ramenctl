@@ -40,6 +40,7 @@ type DRPCSummary struct {
 	Deleted            ValidatedBool        `json:"deleted"`
 	DRPolicy           string               `json:"drPolicy"`
 	SchedulingInterval ValidatedDuration    `json:"schedulingInterval"`
+	LastGroupSyncTime  ValidatedTime        `json:"lastGroupSyncTime"`
 	Action             ValidatedString      `json:"action"`
 	Phase              ValidatedString      `json:"phase"`
 	Progression        ValidatedString      `json:"progression"`
@@ -53,6 +54,7 @@ type VRGSummary struct {
 	ClusterTime        *time.Time            `json:"clusterTime,omitempty"`
 	Deleted            ValidatedBool         `json:"deleted"`
 	SchedulingInterval ValidatedDuration     `json:"schedulingInterval"`
+	LastGroupSyncTime  ValidatedTime         `json:"lastGroupSyncTime"`
 	State              ValidatedString       `json:"state"`
 	Conditions         []ValidatedCondition  `json:"conditions,omitempty"`
 	ProtectedPVCs      []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
@@ -169,6 +171,9 @@ func (d *DRPCSummary) Equal(o *DRPCSummary) bool {
 	if d.SchedulingInterval != o.SchedulingInterval {
 		return false
 	}
+	if !d.LastGroupSyncTime.Equal(&o.LastGroupSyncTime) {
+		return false
+	}
 	if d.Action != o.Action {
 		return false
 	}
@@ -208,6 +213,9 @@ func (v *VRGSummary) Equal(o *VRGSummary) bool {
 		return false
 	}
 	if v.SchedulingInterval != o.SchedulingInterval {
+		return false
+	}
+	if !v.LastGroupSyncTime.Equal(&o.LastGroupSyncTime) {
 		return false
 	}
 	if v.State != o.State {
