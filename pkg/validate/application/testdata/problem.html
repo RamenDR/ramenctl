@@ -8,7 +8,7 @@
   <body>
     <header>
       <h1>Validate Application <span class="subtitle">argocd / appset-deploy-rbd</span></h1>
-      <div class="result"><span class="status failed">failed</span><span class="summary">21 ok, 1 stale, 7 problem</span></div>
+      <div class="result"><span class="status failed">failed</span><span class="summary">23 ok, 1 stale, 8 problem</span></div>
       <footer><span>Created 2026-03-16T20:19:49&#43;02:00</span><span>Duration 2.30s</span></footer>
     </header>
     <main>
@@ -30,6 +30,8 @@
                 <dd>2025-07-29T17:25:30Z</dd>
               </dl>
               <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
                 <dt>Action</dt>
                 <dd><span class="value">Failover</span><span class="state">✅</span></dd>
                 <dt>Phase</dt>
@@ -72,6 +74,8 @@
                 <dd>2025-07-29T17:25:30Z</dd>
               </dl>
               <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
                 <dt>State</dt>
                 <dd><span class="value">Primary</span><span class="state">✅</span></dd>
               </dl>
@@ -133,6 +137,11 @@
                 <dd>2025-07-29T17:25:30Z</dd>
               </dl>
               <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd>
+                  <span class="value">5m0s</span><span class="state">❌</span>
+                  <p class="description">Does not match drpolicy &#34;dr-policy-1m&#34; interval 1m0s</p>
+                </dd>
                 <dt>State</dt>
                 <dd>
                   <span class="value">Unknown</span><span class="state">❌</span>

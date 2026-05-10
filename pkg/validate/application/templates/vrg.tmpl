@@ -10,6 +10,10 @@
     <dd>{{formatTime .ClusterTime}}</dd>
 </dl>
 <dl class="validation">
+    {{- if .SchedulingInterval.State}}
+        <dt>Scheduling Interval</dt>
+        <dd>{{template "validated" .SchedulingInterval}}</dd>
+    {{- end}}
     <dt>State</dt>
     <dd>{{template "validated" .State}}</dd>
     {{- if isProblem .Deleted.State}}

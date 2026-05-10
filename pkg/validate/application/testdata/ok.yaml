@@ -19,6 +19,9 @@ applicationStatus:
       drPolicy: dr-policy-1m
       name: appset-deploy-rbd
       namespace: argocd
+      schedulingInterval:
+        state: ok ✅
+        value: 1m0s
       phase:
         state: ok ✅
         value: Deployed
@@ -44,6 +47,9 @@ applicationStatus:
         state: ok ✅
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
+      schedulingInterval:
+        state: ok ✅
+        value: 1m0s
       protectedPVCs:
       - conditions:
         - state: ok ✅
@@ -84,6 +90,9 @@ applicationStatus:
         state: ok ✅
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
+      schedulingInterval:
+        state: ok ✅
+        value: 1m0s
       state:
         state: ok ✅
         value: Secondary
@@ -152,4 +161,4 @@ steps:
   name: validate application
   status: passed
 summary:
-  ok: 24
+  ok: 27

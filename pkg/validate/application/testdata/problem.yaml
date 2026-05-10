@@ -24,6 +24,9 @@ applicationStatus:
       drPolicy: dr-policy-1m
       name: appset-deploy-rbd
       namespace: argocd
+      schedulingInterval:
+        state: ok ✅
+        value: 1m0s
       phase:
         state: ok ✅
         value: FailedOver
@@ -50,6 +53,9 @@ applicationStatus:
         state: ok ✅
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
+      schedulingInterval:
+        state: ok ✅
+        value: 1m0s
       protectedPVCs:
       - conditions:
         - state: ok ✅
@@ -93,6 +99,10 @@ applicationStatus:
         state: ok ✅
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
+      schedulingInterval:
+        description: Does not match drpolicy "dr-policy-1m" interval 1m0s
+        state: problem ❌
+        value: 5m0s
       protectedPVCs:
       - conditions:
         - description: failed to demote volume
@@ -180,6 +190,6 @@ steps:
   name: validate application
   status: failed
 summary:
-  ok: 21
-  problem: 7
+  ok: 23
+  problem: 8
   stale: 1

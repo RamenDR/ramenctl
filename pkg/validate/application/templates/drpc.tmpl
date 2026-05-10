@@ -12,6 +12,8 @@
     <dd>{{formatTime .ClusterTime}}</dd>
 </dl>
 <dl class="validation">
+    <dt>Scheduling Interval</dt>
+    <dd>{{template "validated" .SchedulingInterval}}</dd>
     <dt>Action</dt>
     <dd>{{template "validated" .Action}}</dd>
     <dt>Phase</dt>
