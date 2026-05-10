@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	stdtime "time"
 
 	"github.com/yosssi/gohtml"
 	"sigs.k8s.io/yaml"
@@ -83,7 +84,7 @@ func formatTime(t *time.Time) string {
 		return ""
 	}
 
-	return t.Format("2006-01-02 15:04:05 -0700")
+	return t.Format(stdtime.RFC3339)
 }
 
 // formatDuration formats a duration in seconds for display.
