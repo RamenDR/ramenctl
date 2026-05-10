@@ -6,6 +6,7 @@ applicationStatus:
     drpc:
       action:
         state: ok ✅
+      clusterTime: "2025-07-29T17:24:30Z"
       conditions:
       - state: ok ✅
         type: Available
@@ -27,6 +28,7 @@ applicationStatus:
   primaryCluster:
     name: dr1
     vrg:
+      clusterTime: "2025-07-29T17:24:30Z"
       conditions:
       - state: ok ✅
         type: DataReady
@@ -74,6 +76,7 @@ applicationStatus:
   secondaryCluster:
     name: dr2
     vrg:
+      clusterTime: "2025-07-29T17:24:30Z"
       conditions:
       - state: ok ✅
         type: NoClusterDataConflict

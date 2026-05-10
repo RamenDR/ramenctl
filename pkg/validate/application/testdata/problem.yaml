@@ -7,6 +7,7 @@ applicationStatus:
       action:
         state: ok ✅
         value: Failover
+      clusterTime: "2025-07-29T17:25:30Z"
       conditions:
       - state: ok ✅
         type: Available
@@ -33,6 +34,7 @@ applicationStatus:
   primaryCluster:
     name: dr2
     vrg:
+      clusterTime: "2025-07-29T17:25:30Z"
       conditions:
       - state: ok ✅
         type: DataReady
@@ -80,6 +82,7 @@ applicationStatus:
   secondaryCluster:
     name: dr1
     vrg:
+      clusterTime: "2025-07-29T17:25:30Z"
       conditions:
       - description: All PVCs of the VolumeReplicationGroup are not ready
         state: problem ❌
