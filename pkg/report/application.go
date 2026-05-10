@@ -5,6 +5,8 @@ package report
 
 import (
 	"slices"
+
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 type ReplicationType string
@@ -34,6 +36,7 @@ type PVCGroupsSummary struct {
 type DRPCSummary struct {
 	Name        string               `json:"name"`
 	Namespace   string               `json:"namespace"`
+	ClusterTime *time.Time           `json:"clusterTime,omitempty"`
 	Deleted     ValidatedBool        `json:"deleted"`
 	DRPolicy    string               `json:"drPolicy"`
 	Action      ValidatedString      `json:"action"`
@@ -46,6 +49,7 @@ type DRPCSummary struct {
 type VRGSummary struct {
 	Name          string                `json:"name"`
 	Namespace     string                `json:"namespace"`
+	ClusterTime   *time.Time            `json:"clusterTime,omitempty"`
 	Deleted       ValidatedBool         `json:"deleted"`
 	State         ValidatedString       `json:"state"`
 	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
@@ -147,6 +151,13 @@ func (d *DRPCSummary) Equal(o *DRPCSummary) bool {
 	if d.Namespace != o.Namespace {
 		return false
 	}
+	if d.ClusterTime != nil && o.ClusterTime != nil {
+		if !d.ClusterTime.Equal(*o.ClusterTime) {
+			return false
+		}
+	} else if d.ClusterTime != o.ClusterTime {
+		return false
+	}
 	if d.Deleted != o.Deleted {
 		return false
 	}
@@ -179,6 +190,13 @@ func (v *VRGSummary) Equal(o *VRGSummary) bool {
 		return false
 	}
 	if v.Namespace != o.Namespace {
+		return false
+	}
+	if v.ClusterTime != nil && o.ClusterTime != nil {
+		if !v.ClusterTime.Equal(*o.ClusterTime) {
+			return false
+		}
+	} else if v.ClusterTime != o.ClusterTime {
 		return false
 	}
 	if v.Deleted != o.Deleted {

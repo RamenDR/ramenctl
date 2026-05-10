@@ -12,9 +12,11 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/time"
 )
 
 func TestReportApplicationStatusEqual(t *testing.T) {
+	helpers.FakeTime(t)
 	a1 := testApplicationStatus()
 	t.Run("equal to self", func(t *testing.T) {
 		a2 := a1
@@ -27,6 +29,7 @@ func TestReportApplicationStatusEqual(t *testing.T) {
 }
 
 func TestReportApplicationStatusNotEqual(t *testing.T) {
+	helpers.FakeTime(t)
 	a1 := testApplicationStatus()
 	t.Run("not equal to nil", func(t *testing.T) {
 		var a2 *report.ApplicationStatus
@@ -40,6 +43,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("hub drpc namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.Hub.DRPC.Namespace = helpers.Modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("hub drpc clusterTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		modified := time.Now().Add(-1)
+		a2.Hub.DRPC.ClusterTime = &modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("hub drpc deleted", func(t *testing.T) {
@@ -112,6 +121,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	t.Run("primary cluster vrg namespace", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.PrimaryCluster.VRG.Namespace = helpers.Modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("primary cluster vrg clusterTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		modified := time.Now().Add(-1)
+		a2.PrimaryCluster.VRG.ClusterTime = &modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg deleted", func(t *testing.T) {
@@ -223,6 +238,12 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.SecondaryCluster.VRG.Namespace = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("secondary cluster vrg clusterTime", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		modified := time.Now().Add(-1)
+		a2.SecondaryCluster.VRG.ClusterTime = &modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.SecondaryCluster.VRG.Deleted = report.ValidatedBool{
@@ -293,6 +314,7 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 }
 
 func TestReportApplicationStatusMarshaling(t *testing.T) {
+	helpers.FakeTime(t)
 	a1 := testApplicationStatus()
 	data, err := yaml.Marshal(a1)
 	if err != nil {
@@ -306,11 +328,13 @@ func TestReportApplicationStatusMarshaling(t *testing.T) {
 }
 
 func testApplicationStatus() *report.ApplicationStatus {
+	now := time.Now()
 	a := &report.ApplicationStatus{
 		Hub: report.ApplicationStatusHub{
 			DRPC: report.DRPCSummary{
-				Name:      "drpc-name",
-				Namespace: "drpc-namespace",
+				Name:        "drpc-name",
+				Namespace:   "drpc-namespace",
+				ClusterTime: &now,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,
@@ -359,8 +383,9 @@ func testApplicationStatus() *report.ApplicationStatus {
 		PrimaryCluster: report.ApplicationStatusCluster{
 			Name: "dr1",
 			VRG: report.VRGSummary{
-				Name:      "vrg-name",
-				Namespace: "vrg-namespace",
+				Name:        "vrg-name",
+				Namespace:   "vrg-namespace",
+				ClusterTime: &now,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,
@@ -458,8 +483,9 @@ func testApplicationStatus() *report.ApplicationStatus {
 		SecondaryCluster: report.ApplicationStatusCluster{
 			Name: "dr2",
 			VRG: report.VRGSummary{
-				Name:      "vrg-name",
-				Namespace: "vrg-namespace",
+				Name:        "vrg-name",
+				Namespace:   "vrg-namespace",
+				ClusterTime: &now,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,
