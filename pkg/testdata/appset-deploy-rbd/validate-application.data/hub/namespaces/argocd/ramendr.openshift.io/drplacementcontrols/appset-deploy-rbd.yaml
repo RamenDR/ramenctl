@@ -95,7 +95,7 @@ metadata:
   uid: 8283cb24-39a9-4ccd-b028-3807cdfed996
 spec:
   drPolicyRef:
-    name: dr-policy
+    name: dr-policy-1m
   placementRef:
     kind: Placement
     name: appset-deploy-rbd

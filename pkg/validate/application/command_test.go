@@ -132,7 +132,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 				},
-				DRPolicy: "dr-policy",
+				DRPolicy: "dr-policy-1m",
 				Phase: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
