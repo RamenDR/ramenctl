@@ -10,6 +10,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
@@ -437,6 +438,7 @@ func (c *Command) validateDRPC(
 
 	s.Deleted = c.ValidatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
+	s.SchedulingInterval = c.validatedDRPCSchedulingInterval(drpc)
 	s.Action = c.validatedDRPCAction(string(drpc.Spec.Action))
 	s.Phase = c.validatedDRPCPhase(drpc)
 	s.Progression = c.validatedDRPCProgression(drpc)
@@ -477,6 +479,10 @@ func (c *Command) validateVRG(
 	}
 
 	s.Deleted = c.ValidatedDeleted(vrg)
+	s.SchedulingInterval = c.validatedVRGSchedulingInterval(
+		vrg,
+		&c.Report.ApplicationStatus.Hub.DRPC,
+	)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
 	s.PVCGroups = c.pvcGroups(vrg)
@@ -575,6 +581,83 @@ func (c *Command) validatedDRPCAction(action string) report.ValidatedString {
 		validated.Description = fmt.Sprintf("Unknown action %q", action)
 	}
 	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedDRPCSchedulingInterval(
+	drpc *ramenapi.DRPlacementControl,
+) report.ValidatedDuration {
+	log := c.Logger()
+	reader := c.OutputReader(c.Env().Hub.Name)
+
+	drPolicy, err := ramen.ReadDRPolicy(reader, drpc.Spec.DRPolicyRef.Name)
+	if err != nil {
+		log.Warnf("Failed to read drpolicy %q: %s", drpc.Spec.DRPolicyRef.Name, err)
+
+		return c.validatedSchedulingInterval(0,
+			fmt.Sprintf("Could not read drpolicy %q", drpc.Spec.DRPolicyRef.Name))
+	}
+
+	if drPolicy.Spec.SchedulingInterval == "" {
+		return c.validatedSchedulingInterval(0,
+			fmt.Sprintf("Missing scheduling interval in drpolicy %q", drPolicy.Name))
+	}
+
+	duration, err := ramen.ParseSchedulingInterval(drPolicy.Spec.SchedulingInterval)
+	if err != nil {
+		log.Warnf("Invalid scheduling interval in drpolicy %q: %s", drPolicy.Name, err)
+
+		return c.validatedSchedulingInterval(0,
+			fmt.Sprintf("Invalid scheduling interval in drpolicy %q", drPolicy.Name))
+	}
+
+	return c.validatedSchedulingInterval(duration, "")
+}
+
+func (c *Command) validatedVRGSchedulingInterval(
+	vrg *ramenapi.VolumeReplicationGroup,
+	drpc *report.DRPCSummary,
+) report.ValidatedDuration {
+	// Metro DR does not use async replication.
+	if vrg.Spec.Async == nil {
+		return report.ValidatedDuration{}
+	}
+
+	if vrg.Spec.Async.SchedulingInterval == "" {
+		return c.validatedSchedulingInterval(0, "Missing scheduling interval in vrg")
+	}
+
+	duration, err := ramen.ParseSchedulingInterval(vrg.Spec.Async.SchedulingInterval)
+	if err != nil {
+		c.Logger().Warnf("Invalid scheduling interval in vrg: %s", err)
+
+		return c.validatedSchedulingInterval(0, "Invalid scheduling interval in vrg")
+	}
+
+	if drpc.SchedulingInterval.State == report.OK && duration != drpc.SchedulingInterval.Value {
+		return c.validatedSchedulingInterval(duration,
+			fmt.Sprintf("Does not match drpolicy %q interval %s",
+				drpc.DRPolicy, drpc.SchedulingInterval.Value))
+	}
+
+	return c.validatedSchedulingInterval(duration, "")
+}
+
+func (c *Command) validatedSchedulingInterval(
+	duration stdtime.Duration,
+	description string,
+) report.ValidatedDuration {
+	validated := report.ValidatedDuration{Value: duration}
+
+	if description != "" {
+		validated.State = report.Problem
+		validated.Description = description
+	} else {
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+
 	return validated
 }
 

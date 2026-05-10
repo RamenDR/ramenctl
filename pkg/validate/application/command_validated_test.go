@@ -5,10 +5,15 @@ package application
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
+	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
@@ -421,5 +426,271 @@ func TestValidatedProtectedPVCError(t *testing.T) {
 	expected := report.Summary{summary.Problem: len(cases)}
 	if !cmd.Report.Summary.Equal(&expected) {
 		t.Fatalf("expected summary %v, got %v", expected, *cmd.Report.Summary)
+	}
+}
+
+func TestValidatedDRPCSchedulingInterval(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+		writeDRPolicy(t, cmd.DataDir(), "dr-policy-5m", "5m")
+
+		drpc := &ramenapi.DRPlacementControl{
+			Spec: ramenapi.DRPlacementControlSpec{
+				DRPolicyRef: corev1.ObjectReference{Name: "dr-policy-5m"},
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{State: report.OK},
+			Value:     5 * stdtime.Minute,
+		}
+		validated := cmd.validatedDRPCSchedulingInterval(drpc)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("drpolicy not found", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		drpc := &ramenapi.DRPlacementControl{
+			Spec: ramenapi.DRPlacementControlSpec{
+				DRPolicyRef: corev1.ObjectReference{Name: "no-such-policy"},
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: `Could not read drpolicy "no-such-policy"`,
+			},
+		}
+		validated := cmd.validatedDRPCSchedulingInterval(drpc)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("empty scheduling interval", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+		writeDRPolicy(t, cmd.DataDir(), "dr-policy-empty", "")
+
+		drpc := &ramenapi.DRPlacementControl{
+			Spec: ramenapi.DRPlacementControlSpec{
+				DRPolicyRef: corev1.ObjectReference{Name: "dr-policy-empty"},
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: `Missing scheduling interval in drpolicy "dr-policy-empty"`,
+			},
+		}
+		validated := cmd.validatedDRPCSchedulingInterval(drpc)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("invalid scheduling interval", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+		writeDRPolicy(t, cmd.DataDir(), "dr-policy-bad", "invalid")
+
+		drpc := &ramenapi.DRPlacementControl{
+			Spec: ramenapi.DRPlacementControlSpec{
+				DRPolicyRef: corev1.ObjectReference{Name: "dr-policy-bad"},
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: `Invalid scheduling interval in drpolicy "dr-policy-bad"`,
+			},
+		}
+		validated := cmd.validatedDRPCSchedulingInterval(drpc)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+}
+
+func TestValidatedVRGSchedulingInterval(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			Spec: ramenapi.VolumeReplicationGroupSpec{
+				Async: &ramenapi.VRGAsyncSpec{
+					SchedulingInterval: "5m",
+				},
+			},
+		}
+		drpcSummary := &report.DRPCSummary{
+			DRPolicy: "dr-policy-5m",
+			SchedulingInterval: report.ValidatedDuration{
+				Validated: report.Validated{State: report.OK},
+				Value:     5 * stdtime.Minute,
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{State: report.OK},
+			Value:     5 * stdtime.Minute,
+		}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("metro dr", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{}
+		drpcSummary := &report.DRPCSummary{}
+
+		expected := report.ValidatedDuration{}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("empty scheduling interval", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			Spec: ramenapi.VolumeReplicationGroupSpec{
+				Async: &ramenapi.VRGAsyncSpec{
+					SchedulingInterval: "",
+				},
+			},
+		}
+		drpcSummary := &report.DRPCSummary{}
+
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Missing scheduling interval in vrg",
+			},
+		}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("invalid scheduling interval", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			Spec: ramenapi.VolumeReplicationGroupSpec{
+				Async: &ramenapi.VRGAsyncSpec{
+					SchedulingInterval: "invalid",
+				},
+			},
+		}
+		drpcSummary := &report.DRPCSummary{}
+
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Invalid scheduling interval in vrg",
+			},
+		}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("mismatch with drpolicy", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			Spec: ramenapi.VolumeReplicationGroupSpec{
+				Async: &ramenapi.VRGAsyncSpec{
+					SchedulingInterval: "1m",
+				},
+			},
+		}
+		drpcSummary := &report.DRPCSummary{
+			DRPolicy: "dr-policy-5m",
+			SchedulingInterval: report.ValidatedDuration{
+				Validated: report.Validated{State: report.OK},
+				Value:     5 * stdtime.Minute,
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{
+				State: report.Problem,
+				Description: fmt.Sprintf(
+					"Does not match drpolicy %q interval %s",
+					"dr-policy-5m", 5*stdtime.Minute,
+				),
+			},
+			Value: stdtime.Minute,
+		}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("drpc interval unknown", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			Spec: ramenapi.VolumeReplicationGroupSpec{
+				Async: &ramenapi.VRGAsyncSpec{
+					SchedulingInterval: "5m",
+				},
+			},
+		}
+		drpcSummary := &report.DRPCSummary{
+			SchedulingInterval: report.ValidatedDuration{
+				Validated: report.Validated{
+					State:       report.Problem,
+					Description: "failed to read drpolicy",
+				},
+			},
+		}
+		expected := report.ValidatedDuration{
+			Validated: report.Validated{State: report.OK},
+			Value:     5 * stdtime.Minute,
+		}
+		validated := cmd.validatedVRGSchedulingInterval(vrg, drpcSummary)
+		if validated != expected {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+}
+
+// writeDRPolicy writes a DRPolicy to the gathered hub data directory.
+func writeDRPolicy(t *testing.T, dataDir, name, schedulingInterval string) {
+	t.Helper()
+
+	drPolicy := &ramenapi.DRPolicy{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: ramenapi.GroupVersion.String(),
+			Kind:       "DRPolicy",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: ramenapi.DRPolicySpec{
+			SchedulingInterval: schedulingInterval,
+		},
+	}
+
+	data, err := yaml.Marshal(drPolicy)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir := filepath.Join(dataDir, "hub", "cluster", "ramendr.openshift.io", "drpolicies")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, name+".yaml"), data, 0o600); err != nil {
+		t.Fatal(err)
 	}
 }

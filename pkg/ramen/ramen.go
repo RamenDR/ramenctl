@@ -277,6 +277,12 @@ func ReadDRPolicy(reader gathering.OutputReader, name string) (*ramenapi.DRPolic
 	return drPolicy, nil
 }
 
+// ParseSchedulingInterval parses a scheduling interval string (e.g. "5m")
+// into a time.Duration.
+func ParseSchedulingInterval(interval string) (time.Duration, error) {
+	return time.ParseDuration(interval)
+}
+
 // ReadDRCluster reads a ramen DRCluster from the output directory.
 func ReadDRCluster(reader gathering.OutputReader, name string) (*ramenapi.DRCluster, error) {
 	resource := ramenapi.GroupVersion.Group + "/" + drClusterPlural

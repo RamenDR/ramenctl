@@ -133,6 +133,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 					},
 				},
 				DRPolicy: "dr-policy-1m",
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
+				},
 				Phase: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -177,6 +183,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 					Validated: report.Validated{
 						State: report.OK,
 					},
+				},
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
@@ -262,6 +274,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 				},
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
+				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -308,7 +326,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.Report, expectedStatus)
 
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 24})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 27})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -508,7 +526,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 22, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 25, summary.Problem: 2})
 }
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
@@ -541,7 +559,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 22, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 25, summary.Problem: 2})
 }
 
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
@@ -576,7 +594,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.Report,
-		report.Summary{summary.OK: 23, summary.Problem: 1},
+		report.Summary{summary.OK: 26, summary.Problem: 1},
 	)
 }
 
