@@ -5,6 +5,7 @@ package report_test
 
 import (
 	"testing"
+	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -77,6 +78,16 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.Hub.DRPC.DRPolicy = helpers.Modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("hub drpc schedulingInterval", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.Hub.DRPC.SchedulingInterval = report.ValidatedDuration{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: 2 * stdtime.Minute,
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("hub drpc phase", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.Hub.DRPC.Phase = report.ValidatedString{
@@ -127,6 +138,16 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2 := testApplicationStatus()
 		modified := time.Now().Add(-1)
 		a2.PrimaryCluster.VRG.ClusterTime = &modified
+		checkApplicationsNotEqual(t, a1, a2)
+	})
+	t.Run("primary cluster vrg schedulingInterval", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.PrimaryCluster.VRG.SchedulingInterval = report.ValidatedDuration{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: 2 * stdtime.Minute,
+		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
 	t.Run("primary cluster vrg deleted", func(t *testing.T) {
@@ -244,6 +265,16 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 		a2.SecondaryCluster.VRG.ClusterTime = &modified
 		checkApplicationsNotEqual(t, a1, a2)
 	})
+	t.Run("secondary cluster vrg schedulingInterval", func(t *testing.T) {
+		a2 := testApplicationStatus()
+		a2.SecondaryCluster.VRG.SchedulingInterval = report.ValidatedDuration{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: 2 * stdtime.Minute,
+		}
+		checkApplicationsNotEqual(t, a1, a2)
+	})
 	t.Run("secondary cluster vrg deleted", func(t *testing.T) {
 		a2 := testApplicationStatus()
 		a2.SecondaryCluster.VRG.Deleted = report.ValidatedBool{
@@ -341,6 +372,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 					},
 				},
 				DRPolicy: "dr-policy-1m",
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
+				},
 				Action: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -390,6 +427,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 					Validated: report.Validated{
 						State: report.OK,
 					},
+				},
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
@@ -490,6 +533,12 @@ func testApplicationStatus() *report.ApplicationStatus {
 					Validated: report.Validated{
 						State: report.OK,
 					},
+				},
+				SchedulingInterval: report.ValidatedDuration{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: stdtime.Minute,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{

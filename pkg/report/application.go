@@ -34,27 +34,29 @@ type PVCGroupsSummary struct {
 
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
-	Name        string               `json:"name"`
-	Namespace   string               `json:"namespace"`
-	ClusterTime *time.Time           `json:"clusterTime,omitempty"`
-	Deleted     ValidatedBool        `json:"deleted"`
-	DRPolicy    string               `json:"drPolicy"`
-	Action      ValidatedString      `json:"action"`
-	Phase       ValidatedString      `json:"phase"`
-	Progression ValidatedString      `json:"progression"`
-	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
+	Name               string               `json:"name"`
+	Namespace          string               `json:"namespace"`
+	ClusterTime        *time.Time           `json:"clusterTime,omitempty"`
+	Deleted            ValidatedBool        `json:"deleted"`
+	DRPolicy           string               `json:"drPolicy"`
+	SchedulingInterval ValidatedDuration    `json:"schedulingInterval"`
+	Action             ValidatedString      `json:"action"`
+	Phase              ValidatedString      `json:"phase"`
+	Progression        ValidatedString      `json:"progression"`
+	Conditions         []ValidatedCondition `json:"conditions,omitempty"`
 }
 
 // VRGSummary is the summary of a VRG.
 type VRGSummary struct {
-	Name          string                `json:"name"`
-	Namespace     string                `json:"namespace"`
-	ClusterTime   *time.Time            `json:"clusterTime,omitempty"`
-	Deleted       ValidatedBool         `json:"deleted"`
-	State         ValidatedString       `json:"state"`
-	Conditions    []ValidatedCondition  `json:"conditions,omitempty"`
-	ProtectedPVCs []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
-	PVCGroups     []PVCGroupsSummary    `json:"pvcGroups,omitempty"`
+	Name               string                `json:"name"`
+	Namespace          string                `json:"namespace"`
+	ClusterTime        *time.Time            `json:"clusterTime,omitempty"`
+	Deleted            ValidatedBool         `json:"deleted"`
+	SchedulingInterval ValidatedDuration     `json:"schedulingInterval"`
+	State              ValidatedString       `json:"state"`
+	Conditions         []ValidatedCondition  `json:"conditions,omitempty"`
+	ProtectedPVCs      []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
+	PVCGroups          []PVCGroupsSummary    `json:"pvcGroups,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.
@@ -164,6 +166,9 @@ func (d *DRPCSummary) Equal(o *DRPCSummary) bool {
 	if d.DRPolicy != o.DRPolicy {
 		return false
 	}
+	if d.SchedulingInterval != o.SchedulingInterval {
+		return false
+	}
 	if d.Action != o.Action {
 		return false
 	}
@@ -200,6 +205,9 @@ func (v *VRGSummary) Equal(o *VRGSummary) bool {
 		return false
 	}
 	if v.Deleted != o.Deleted {
+		return false
+	}
+	if v.SchedulingInterval != o.SchedulingInterval {
 		return false
 	}
 	if v.State != o.State {
