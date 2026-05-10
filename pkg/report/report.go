@@ -44,13 +44,13 @@ type Step struct {
 
 // Base report for ramenctl commands report.
 type Base struct {
-	Host     Host      `json:"host"`
-	Build    *Build    `json:"build,omitempty"`
-	Created  time.Time `json:"created"`
-	Name     string    `json:"name"`
-	Status   Status    `json:"status,omitempty"`
-	Duration float64   `json:"duration,omitempty"`
-	Steps    []*Step   `json:"steps"`
+	Host     Host       `json:"host"`
+	Build    *Build     `json:"build,omitempty"`
+	Created  *time.Time `json:"created"`
+	Name     string     `json:"name"`
+	Status   Status     `json:"status,omitempty"`
+	Duration float64    `json:"duration,omitempty"`
+	Steps    []*Step    `json:"steps"`
 
 	// Summary is set by `validate` and `test` commands.
 	Summary *Summary `json:"summary,omitempty"`
@@ -76,6 +76,8 @@ type Report struct {
 
 // NewBase create a new base report for ramenctl commands reports.
 func NewBase(commandName string) *Base {
+	// time value without monotonic clock reading
+	created := time.Now().Local()
 	r := &Base{
 		Name: commandName,
 		Host: Host{
@@ -83,8 +85,7 @@ func NewBase(commandName string) *Base {
 			Arch: runtime.GOARCH,
 			Cpus: runtime.NumCPU(),
 		},
-		// time value without monotonic clock reading
-		Created: time.Now().Local(),
+		Created: &created,
 	}
 	if build.Version != "" || build.Commit != "" {
 		r.Build = &Build{
@@ -106,7 +107,11 @@ func (r *Base) Equal(o *Base) bool {
 	if r.Host != o.Host {
 		return false
 	}
-	if !r.Created.Equal(o.Created) {
+	if r.Created != nil && o.Created != nil {
+		if !r.Created.Equal(*o.Created) {
+			return false
+		}
+	} else if r.Created != o.Created {
 		return false
 	}
 	if r.Build != nil && o.Build != nil {

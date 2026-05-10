@@ -75,8 +75,14 @@ func isTruncated(v any, n int) bool {
 	return len(fmt.Sprint(v)) > n
 }
 
-// formatTime formats a time value for display in reports.
-func formatTime(t time.Time) string {
+// formatTime formats a time value for display in reports using RFC3339,
+// matching the format used in Kubernetes resources. Returns an empty
+// string for nil values.
+func formatTime(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+
 	return t.Format("2006-01-02 15:04:05 -0700")
 }
 

@@ -66,8 +66,8 @@ func TestBuildInfo(t *testing.T) {
 func TestBaseCreatedTime(t *testing.T) {
 	helpers.FakeTime(t)
 	r := report.NewBase("name")
-	if r.Created != time.Now().Local() {
-		t.Fatalf("expected %v, got %v", time.Now().Local(), r.Created)
+	if !r.Created.Equal(time.Now().Local()) {
+		t.Fatalf("expected %v, got %v", time.Now().Local(), *r.Created)
 	}
 }
 
@@ -113,7 +113,8 @@ func TestBaseNotEqual(t *testing.T) {
 	})
 	t.Run("created", func(t *testing.T) {
 		r2 := report.NewBase("name")
-		r2.Created = r2.Created.Add(1)
+		modified := r2.Created.Add(1)
+		r2.Created = &modified
 		if r1.Equal(r2) {
 			t.Fatal("reports with different create time should not be equal")
 		}
