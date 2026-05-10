@@ -14,6 +14,8 @@
         <dt>Scheduling Interval</dt>
         <dd>{{template "validated" .SchedulingInterval}}</dd>
     {{- end}}
+    <dt>Last Group Sync Time</dt>
+    <dd>{{template "lastGroupSyncTime" .LastGroupSyncTime}}</dd>
     <dt>State</dt>
     <dd>{{template "validated" .State}}</dd>
     {{- if isProblem .Deleted.State}}

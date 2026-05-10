@@ -25,7 +25,7 @@ applicationStatus:
       name: appset-deploy-rbd
       namespace: argocd
       lastGroupSyncTime:
-        description: Syncing of volumes is exceeding 2x the scheduling interval
+        description: Replication is exceeding 2x the scheduling interval
         state: stale ⭕
         value: "2025-07-29T17:23:00Z"
       schedulingInterval:

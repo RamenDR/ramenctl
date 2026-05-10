@@ -30,6 +30,7 @@ func TestTemplate(t *testing.T) {
 		"drpc",
 		"pvc",
 		"s3",
+		"lastGroupSyncTime",
 		"vrg",
 	}
 	for _, name := range expected {
