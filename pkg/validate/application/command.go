@@ -439,6 +439,8 @@ func (c *Command) validateDRPC(
 	s.Deleted = c.ValidatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.SchedulingInterval = c.validatedDRPCSchedulingInterval(drpc)
+	s.LastGroupSyncTime = c.validateLastGroupSyncTime(
+		drpc.Status.LastGroupSyncTime, s.ClusterTime, s.SchedulingInterval, true)
 	s.Action = c.validatedDRPCAction(string(drpc.Spec.Action))
 	s.Phase = c.validatedDRPCPhase(drpc)
 	s.Progression = c.validatedDRPCProgression(drpc)
@@ -483,6 +485,9 @@ func (c *Command) validateVRG(
 		vrg,
 		&c.Report.ApplicationStatus.Hub.DRPC,
 	)
+	s.LastGroupSyncTime = c.validateLastGroupSyncTime(
+		vrg.Status.LastGroupSyncTime, s.ClusterTime, s.SchedulingInterval,
+		stableState == ramenapi.PrimaryState)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
 	s.PVCGroups = c.pvcGroups(vrg)
@@ -657,6 +662,70 @@ func (c *Command) validatedSchedulingInterval(
 	}
 
 	summary.AddValidation(c.Report.Summary, &validated)
+
+	return validated
+}
+
+// validateLastGroupSyncTime checks if replication is fresh by comparing
+// lastGroupSyncTime with clusterTime and schedulingInterval. This is the
+// shared logic for DRPC and VRG, matching the VolumeSynchronizationDelay
+// alert in ramen.
+func (c *Command) validateLastGroupSyncTime(
+	lastGroupSyncTime *metav1.Time,
+	clusterTime *stdtime.Time,
+	schedulingInterval report.ValidatedDuration,
+	primary bool,
+) report.ValidatedTime {
+	if lastGroupSyncTime == nil {
+		if primary {
+			return c.validatedLastGroupSyncTime(nil, report.Stale,
+				"Waiting for first volume synchronization")
+		}
+
+		return c.validatedLastGroupSyncTime(nil, report.OK, "")
+	}
+
+	// metav1.Time.UnmarshalJSON converts timestamps to local time. We convert to UTC
+	// for consistency with other timestamps in YAML and HTML reports.
+	// https://github.com/kubernetes/kubernetes/issues/102316
+	t := lastGroupSyncTime.UTC()
+
+	// Cannot validate without cluster time or valid scheduling interval - should not happen.
+	if clusterTime == nil ||
+		schedulingInterval.State != report.OK ||
+		schedulingInterval.Value == 0 {
+		return report.ValidatedTime{Value: &t}
+	}
+
+	// Thresholds match ramen VolumeSynchronizationDelay alert (>= 3 critical, > 2 warning).
+	intervals := float64(clusterTime.Sub(t)) / float64(schedulingInterval.Value)
+
+	if intervals >= 3 {
+		return c.validatedLastGroupSyncTime(&t, report.Problem,
+			"Replication is exceeding 3x the scheduling interval")
+	}
+
+	if intervals > 2 {
+		return c.validatedLastGroupSyncTime(&t, report.Stale,
+			"Replication is exceeding 2x the scheduling interval")
+	}
+
+	return c.validatedLastGroupSyncTime(&t, report.OK, "")
+}
+
+func (c *Command) validatedLastGroupSyncTime(
+	value *stdtime.Time,
+	state report.ValidationState,
+	description string,
+) report.ValidatedTime {
+	validated := report.ValidatedTime{
+		Validated: report.Validated{State: state, Description: description},
+		Value:     value,
+	}
+
+	if state != "" {
+		summary.AddValidation(c.Report.Summary, &validated)
+	}
 
 	return validated
 }

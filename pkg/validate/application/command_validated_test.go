@@ -663,6 +663,114 @@ func TestValidatedVRGSchedulingInterval(t *testing.T) {
 	})
 }
 
+func TestValidateLastGroupSyncTime(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+	clusterTime := stdtime.Date(2025, 7, 29, 17, 24, 30, 0, stdtime.UTC)
+	schedulingInterval := report.ValidatedDuration{
+		Validated: report.Validated{State: report.OK},
+		Value:     stdtime.Minute,
+	}
+
+	t.Run("nil on primary", func(t *testing.T) {
+		expected := report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Stale,
+				Description: "Waiting for first volume synchronization",
+			},
+		}
+		validated := cmd.validateLastGroupSyncTime(nil, &clusterTime, schedulingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("nil on secondary", func(t *testing.T) {
+		expected := report.ValidatedTime{
+			Validated: report.Validated{State: report.OK},
+		}
+		validated := cmd.validateLastGroupSyncTime(nil, &clusterTime, schedulingInterval, false)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("no cluster time", func(t *testing.T) {
+		syncTime := metav1.NewTime(clusterTime.Add(-5 * stdtime.Minute))
+		expected := report.ValidatedTime{Value: &syncTime.Time}
+		validated := cmd.validateLastGroupSyncTime(&syncTime, nil, schedulingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("no scheduling interval", func(t *testing.T) {
+		syncTime := metav1.NewTime(clusterTime.Add(-5 * stdtime.Minute))
+		missingInterval := report.ValidatedDuration{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Missing scheduling interval",
+			},
+		}
+		expected := report.ValidatedTime{Value: &syncTime.Time}
+		validated := cmd.validateLastGroupSyncTime(&syncTime, &clusterTime, missingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		maxOK := 2 * stdtime.Minute
+		// Simulate metav1.Time.UnmarshalJSON which converts to local time.
+		syncTime := metav1.NewTime(clusterTime.Add(-maxOK).Local())
+		expected := report.ValidatedTime{
+			Validated: report.Validated{State: report.OK},
+			Value:     &syncTime.Time,
+		}
+		validated := cmd.validateLastGroupSyncTime(
+			&syncTime, &clusterTime, schedulingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+		if validated.Value.Location() != stdtime.UTC {
+			t.Fatalf("expected UTC time, got %v", validated.Value)
+		}
+	})
+
+	t.Run("stale", func(t *testing.T) {
+		maxStale := 2*stdtime.Minute + 59*stdtime.Second
+		syncTime := metav1.NewTime(clusterTime.Add(-maxStale))
+		expected := report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Stale,
+				Description: "Replication is exceeding 2x the scheduling interval",
+			},
+			Value: &syncTime.Time,
+		}
+		validated := cmd.validateLastGroupSyncTime(
+			&syncTime, &clusterTime, schedulingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("problem", func(t *testing.T) {
+		minProblem := 3 * stdtime.Minute
+		syncTime := metav1.NewTime(clusterTime.Add(-minProblem))
+		expected := report.ValidatedTime{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "Replication is exceeding 3x the scheduling interval",
+			},
+			Value: &syncTime.Time,
+		}
+		validated := cmd.validateLastGroupSyncTime(
+			&syncTime, &clusterTime, schedulingInterval, true)
+		if !validated.Equal(&expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+}
+
 // writeDRPolicy writes a DRPolicy to the gathered hub data directory.
 func writeDRPolicy(t *testing.T, dataDir, name, schedulingInterval string) {
 	t.Helper()

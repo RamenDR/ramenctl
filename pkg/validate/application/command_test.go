@@ -20,8 +20,11 @@ import (
 
 const applicationTestdata = "../../testdata/appset-deploy-rbd"
 
-// Must match the cluster-time annotation in testdata.
-var testClusterTime = stdtime.Date(2025, 7, 29, 17, 24, 30, 0, stdtime.UTC)
+// Must match the cluster-time and lastGroupSyncTime in testdata.
+var (
+	testClusterTime       = stdtime.Date(2025, 7, 29, 17, 24, 30, 0, stdtime.UTC)
+	testLastGroupSyncTime = stdtime.Date(2025, 7, 29, 17, 23, 0, 0, stdtime.UTC)
+)
 
 var (
 	testApplication = &report.Application{
@@ -139,6 +142,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 					},
 					Value: stdtime.Minute,
 				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: &testLastGroupSyncTime,
+				},
 				Phase: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -189,6 +198,12 @@ func TestValidateApplicationPassed(t *testing.T) {
 						State: report.OK,
 					},
 					Value: stdtime.Minute,
+				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+					Value: &testLastGroupSyncTime,
 				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
@@ -280,6 +295,11 @@ func TestValidateApplicationPassed(t *testing.T) {
 					},
 					Value: stdtime.Minute,
 				},
+				LastGroupSyncTime: report.ValidatedTime{
+					Validated: report.Validated{
+						State: report.OK,
+					},
+				},
 				State: report.ValidatedString{
 					Validated: report.Validated{
 						State: report.OK,
@@ -326,7 +346,7 @@ func TestValidateApplicationPassed(t *testing.T) {
 	}
 	checkApplicationStatus(t, validate.Report, expectedStatus)
 
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 27})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 30})
 }
 
 func TestValidateApplicationValidateFailed(t *testing.T) {
@@ -526,7 +546,7 @@ func TestValidateApplicationGetSecretFailed(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 25, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 28, summary.Problem: 2})
 }
 
 func TestValidateApplicationGetSecretInvalid(t *testing.T) {
@@ -559,7 +579,7 @@ func TestValidateApplicationGetSecretInvalid(t *testing.T) {
 		{Name: "validate data", Status: report.Failed},
 	}
 	checkItems(t, validate.Report.Steps[1], items)
-	checkSummary(t, validate.Report, report.Summary{summary.OK: 25, summary.Problem: 2})
+	checkSummary(t, validate.Report, report.Summary{summary.OK: 28, summary.Problem: 2})
 }
 
 func TestValidateApplicationGatherS3Failed(t *testing.T) {
@@ -594,7 +614,7 @@ func TestValidateApplicationGatherS3Failed(t *testing.T) {
 	checkSummary(
 		t,
 		validate.Report,
-		report.Summary{summary.OK: 26, summary.Problem: 1},
+		report.Summary{summary.OK: 29, summary.Problem: 1},
 	)
 }
 

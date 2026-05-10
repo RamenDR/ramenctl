@@ -19,6 +19,9 @@ applicationStatus:
       drPolicy: dr-policy-1m
       name: appset-deploy-rbd
       namespace: argocd
+      lastGroupSyncTime:
+        state: ok ✅
+        value: "2025-07-29T17:23:00Z"
       schedulingInterval:
         state: ok ✅
         value: 1m0s
@@ -45,6 +48,9 @@ applicationStatus:
         type: NoClusterDataConflict
       deleted:
         state: ok ✅
+      lastGroupSyncTime:
+        state: ok ✅
+        value: "2025-07-29T17:23:00Z"
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
       schedulingInterval:
@@ -87,6 +93,8 @@ applicationStatus:
       - state: ok ✅
         type: NoClusterDataConflict
       deleted:
+        state: ok ✅
+      lastGroupSyncTime:
         state: ok ✅
       name: appset-deploy-rbd
       namespace: test-appset-deploy-rbd
@@ -161,4 +169,4 @@ steps:
   name: validate application
   status: passed
 summary:
-  ok: 27
+  ok: 30
