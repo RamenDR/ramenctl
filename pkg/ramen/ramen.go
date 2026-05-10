@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2etypes "github.com/ramendr/ramen/e2e/types"
@@ -72,6 +73,9 @@ const (
 )
 
 const (
+	// Annotation added by kubectl-gather with the API server time when the resource was gathered.
+	clusterTimeAnnotation = "kubectl-gather.nirs.github.com/cluster-time"
+
 	// Annotation for application namespace on the managed cluster
 	// from ramen/internal/controllers/drplacementcontrol.go
 	drpcAppNamespaceAnnotation = "drplacementcontrol.ramendr.openshift.io/app-namespace"
@@ -156,6 +160,27 @@ func ApplicationNamespaces(drpc *ramenapi.DRPlacementControl) []string {
 
 func VRGNamespace(drpc *ramenapi.DRPlacementControl) string {
 	return drpc.Annotations[drpcAppNamespaceAnnotation]
+}
+
+// ClusterTime returns the API server time when the resource was gathered,
+// from the annotation added by the gathering tool.
+func ClusterTime(annotations map[string]string) (*time.Time, error) {
+	value := annotations[clusterTimeAnnotation]
+	if value == "" {
+		return nil, fmt.Errorf("annotation %q is missing", clusterTimeAnnotation)
+	}
+
+	t, err := time.Parse(time.RFC3339, value)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"invalid annotation %q value %q: %w",
+			clusterTimeAnnotation,
+			value,
+			err,
+		)
+	}
+
+	return &t, nil
 }
 
 // PrimaryCluster returns the desired cluster for the application. During failover or relocate it

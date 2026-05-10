@@ -4,6 +4,7 @@ metadata:
   annotations:
     drplacementcontrol.ramendr.openshift.io/app-namespace: e2e-appset-deploy-rbd
     drplacementcontrol.ramendr.openshift.io/last-app-deployment-cluster: dr1
+    kubectl-gather.nirs.github.com/cluster-time: "2025-07-29T17:24:30Z"
   creationTimestamp: "2025-07-27T20:41:31Z"
   finalizers:
   - drpc.ramendr.openshift.io/finalizer

@@ -6,6 +6,7 @@ package application
 import (
 	"context"
 	"testing"
+	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -18,6 +19,9 @@ import (
 )
 
 const applicationTestdata = "../../testdata/appset-deploy-rbd"
+
+// Must match the cluster-time annotation in testdata.
+var testClusterTime = stdtime.Date(2025, 7, 29, 17, 24, 30, 0, stdtime.UTC)
 
 var (
 	testApplication = &report.Application{
@@ -115,8 +119,9 @@ func TestValidateApplicationPassed(t *testing.T) {
 	expectedStatus := &report.ApplicationStatus{
 		Hub: report.ApplicationStatusHub{
 			DRPC: report.DRPCSummary{
-				Name:      drpcName,
-				Namespace: drpcNamespace,
+				Name:        drpcName,
+				Namespace:   drpcNamespace,
+				ClusterTime: &testClusterTime,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,
@@ -165,8 +170,9 @@ func TestValidateApplicationPassed(t *testing.T) {
 		PrimaryCluster: report.ApplicationStatusCluster{
 			Name: "dr1",
 			VRG: report.VRGSummary{
-				Name:      drpcName,
-				Namespace: applicationNamespace,
+				Name:        drpcName,
+				Namespace:   applicationNamespace,
+				ClusterTime: &testClusterTime,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,
@@ -248,8 +254,9 @@ func TestValidateApplicationPassed(t *testing.T) {
 		SecondaryCluster: report.ApplicationStatusCluster{
 			Name: "dr2",
 			VRG: report.VRGSummary{
-				Name:      drpcName,
-				Namespace: applicationNamespace,
+				Name:        drpcName,
+				Namespace:   applicationNamespace,
+				ClusterTime: &testClusterTime,
 				Deleted: report.ValidatedBool{
 					Validated: report.Validated{
 						State: report.OK,

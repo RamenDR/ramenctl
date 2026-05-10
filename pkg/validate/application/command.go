@@ -427,6 +427,14 @@ func (c *Command) validateDRPC(
 ) {
 	s.Name = drpc.Name
 	s.Namespace = drpc.Namespace
+
+	var err error
+
+	s.ClusterTime, err = ramen.ClusterTime(drpc.Annotations)
+	if err != nil {
+		c.Logger().Warnf("drpc \"%s/%s\": %s", drpc.Namespace, drpc.Name, err)
+	}
+
 	s.Deleted = c.ValidatedDeleted(drpc)
 	s.DRPolicy = drpc.Spec.DRPolicyRef.Name
 	s.Action = c.validatedDRPCAction(string(drpc.Spec.Action))
@@ -462,6 +470,12 @@ func (c *Command) validateVRG(
 	log.Debugf("Read vrg \"%s/%s\" from cluster %q", vrgNamespace, vrgName, cluster.Name)
 	s.Name = vrgName
 	s.Namespace = vrgNamespace
+
+	s.ClusterTime, err = ramen.ClusterTime(vrg.Annotations)
+	if err != nil {
+		log.Warnf("vrg \"%s/%s\" on cluster %q: %s", vrgNamespace, vrgName, cluster.Name, err)
+	}
+
 	s.Deleted = c.ValidatedDeleted(vrg)
 	s.Conditions = c.validatedVRGConditions(vrg)
 	s.ProtectedPVCs = c.validatedProtectedPVCs(cluster, vrg)
