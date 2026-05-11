@@ -22,8 +22,20 @@ const (
 	Problem = ValidationState("problem ❌")
 )
 
+// IsIssue returns true if the state indicates a problem or staleness.
+func (s ValidationState) IsIssue() bool {
+	return s == Problem || s == Stale
+}
+
 type Validation interface {
 	GetState() ValidationState
+}
+
+// StateAggregator is implemented by types that can aggregate their validation state.
+// AggregateState returns the most significant validation state in the type's tree.
+// Compound types override this to traverse their children.
+type StateAggregator interface {
+	AggregateState() ValidationState
 }
 
 type Validated struct {
@@ -126,6 +138,14 @@ type ValidatedCondition struct {
 // ValidatedConditionList is a list of validated conditions.
 type ValidatedConditionList []ValidatedCondition
 
+func (c ValidatedConditionList) AggregateState() ValidationState {
+	state := ValidationState("")
+	for i := range c {
+		state = significantState(state, c[i].AggregateState())
+	}
+	return state
+}
+
 // ValidatedFingerprint is a validated fingerprint property.
 type ValidatedFingerprint struct {
 	Validated
@@ -136,6 +156,14 @@ type ValidatedFingerprint struct {
 type ValidatedS3StoreProfilesList struct {
 	Validated
 	Value []S3StoreProfilesSummary `json:"value,omitempty"`
+}
+
+func (l *ValidatedS3StoreProfilesList) AggregateState() ValidationState {
+	state := l.State
+	for i := range l.Value {
+		state = significantState(state, l.Value[i].AggregateState())
+	}
+	return state
 }
 
 // ValidatedApplicationS3ProfileStatusList is a validated list of S3 profile statuses.
@@ -170,6 +198,34 @@ type ValidatedPeerClassesList struct {
 
 func (v *Validated) GetState() ValidationState {
 	return v.State
+}
+
+func (v *Validated) AggregateState() ValidationState {
+	return v.State
+}
+
+// aggregateState returns the most significant validation state from a set of
+// StateAggregator values.
+func aggregateState(items ...StateAggregator) ValidationState {
+	state := ValidationState("")
+	for _, item := range items {
+		state = significantState(state, item.AggregateState())
+	}
+	return state
+}
+
+// significantState returns the more significant of two validation states.
+func significantState(a, b ValidationState) ValidationState {
+	switch {
+	case a == Problem || b == Problem:
+		return Problem
+	case a == Stale || b == Stale:
+		return Stale
+	case a == OK || b == OK:
+		return OK
+	default:
+		return a
+	}
 }
 
 // MaxLen returns the maximum display length for truncation.

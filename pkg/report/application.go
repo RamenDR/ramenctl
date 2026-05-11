@@ -27,8 +27,20 @@ type ProtectedPVCSummary struct {
 	Conditions  ValidatedConditionList `json:"conditions,omitempty"`
 }
 
+func (p *ProtectedPVCSummary) AggregateState() ValidationState {
+	return aggregateState(&p.Phase, &p.Deleted, p.Conditions)
+}
+
 // ProtectedPVCList is a list of protected PVC summaries.
 type ProtectedPVCList []ProtectedPVCSummary
+
+func (p ProtectedPVCList) AggregateState() ValidationState {
+	state := ValidationState("")
+	for i := range p {
+		state = significantState(state, p[i].AggregateState())
+	}
+	return state
+}
 
 // PVCGroupsSummary represents list of CGs that are protected by the VRG.
 type PVCGroupsSummary struct {

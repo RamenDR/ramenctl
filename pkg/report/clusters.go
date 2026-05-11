@@ -40,6 +40,16 @@ type S3StoreProfilesSummary struct {
 	S3SecretRef          S3SecretSummary      `json:"secret"`
 }
 
+func (p *S3StoreProfilesSummary) AggregateState() ValidationState {
+	return aggregateState(
+		&p.S3Bucket,
+		&p.S3CompatibleEndpoint,
+		&p.S3Region,
+		&p.CACertificate,
+		&p.S3SecretRef,
+	)
+}
+
 // S3SecretSummary is the summary of S3 Secret in the ConfigMap.
 type S3SecretSummary struct {
 	Name               ValidatedString      `json:"name"`
@@ -47,6 +57,16 @@ type S3SecretSummary struct {
 	Deleted            ValidatedBool        `json:"deleted"`
 	AWSAccessKeyID     ValidatedFingerprint `json:"awsAccessKeyID"`
 	AWSSecretAccessKey ValidatedFingerprint `json:"awsSecretAccessKey"`
+}
+
+func (s *S3SecretSummary) AggregateState() ValidationState {
+	return aggregateState(
+		&s.Name,
+		&s.Namespace,
+		&s.Deleted,
+		&s.AWSAccessKeyID,
+		&s.AWSSecretAccessKey,
+	)
 }
 
 // ConfigMapSummary is the summary of a Ramen ConfigMap.
