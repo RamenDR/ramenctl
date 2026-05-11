@@ -37,6 +37,7 @@ func Template() (*template.Template, error) {
 		"formatYAML":     formatYAML,
 		"icon":           icon,
 		"isProblem":      isProblem,
+		"shouldOpen":     shouldOpen,
 		"truncate":       truncate,
 		"isTruncated":    isTruncated,
 	}
@@ -46,6 +47,22 @@ func Template() (*template.Template, error) {
 // isProblem returns true if the validation state is Problem.
 func isProblem(s ValidationState) bool {
 	return s == Problem
+}
+
+// shouldOpen returns true if a foldable section should be expanded by default.
+// Sections are open only when they have issues.
+func shouldOpen(v any) bool {
+	switch list := v.(type) {
+	case ValidatedConditionList:
+		return list.AggregateState().IsIssue()
+	case ProtectedPVCList:
+		return list.AggregateState().IsIssue()
+	case ValidatedPeerClassesList:
+		return list.AggregateState().IsIssue()
+	case ValidatedS3StoreProfilesList:
+		return list.AggregateState().IsIssue()
+	}
+	panic(fmt.Sprintf("shouldOpen: unsupported type %T", v))
 }
 
 // icon returns the icon for a validation state.
