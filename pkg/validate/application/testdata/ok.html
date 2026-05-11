@@ -42,15 +42,20 @@
                 <dd><span class="value">Completed</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>Available</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>PeerReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>Protected</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>PeerReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Protected</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
               </section>
             </section>
           </section>
@@ -75,47 +80,62 @@
                 <dd><span class="value">Primary</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>DataReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>ClusterDataReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>ClusterDataProtected</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>KubeObjectsReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>NoClusterDataConflict</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>DataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataProtected</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>KubeObjectsReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
               </section>
               <section>
-                <h5>Protected PVCs</h5>
-                <ul>
-                  <li>
-                    <dl class="metadata">
-                      <dt>Name</dt>
-                      <dd>busybox-pvc</dd>
-                      <dt>Namespace</dt>
-                      <dd>test-appset-deploy-rbd</dd>
-                      <dt>Replication</dt>
-                      <dd>volrep</dd>
-                    </dl>
-                    <dl class="validation">
-                      <dt>Phase</dt>
-                      <dd><span class="value">Bound</span><span class="state">✅</span></dd>
-                    </dl>
-                    <section>
-                      <h6>Conditions</h6>
-                      <dl class="validation">
-                        <dt>DataReady</dt>
-                        <dd><span class="state">✅</span></dd>
-                        <dt>ClusterDataProtected</dt>
-                        <dd><span class="state">✅</span></dd>
+                <details>
+                  <summary>
+                    <h5>Protected PVCs</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Name</dt>
+                        <dd>busybox-pvc</dd>
+                        <dt>Namespace</dt>
+                        <dd>test-appset-deploy-rbd</dd>
+                        <dt>Replication</dt>
+                        <dd>volrep</dd>
                       </dl>
-                    </section>
-                  </li>
-                </ul>
+                      <dl class="validation">
+                        <dt>Phase</dt>
+                        <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                      </dl>
+                      <section>
+                        <details>
+                          <summary>
+                            <h6>Conditions</h6>
+                            <span class="state">✅</span>
+                          </summary>
+                          <dl class="validation">
+                            <dt>DataReady</dt>
+                            <dd><span class="state">✅</span></dd>
+                            <dt>ClusterDataProtected</dt>
+                            <dd><span class="state">✅</span></dd>
+                          </dl>
+                        </details>
+                      </section>
+                    </li>
+                  </ul>
+                </details>
               </section>
             </section>
           </section>
@@ -140,11 +160,16 @@
                 <dd><span class="value">Secondary</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>NoClusterDataConflict</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
               </section>
             </section>
           </section>

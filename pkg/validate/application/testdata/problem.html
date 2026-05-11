@@ -48,21 +48,26 @@
                 </dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>Available</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>PeerReady</dt>
-                  <dd>
+                <details open>
+                  <summary>
+                    <h5>Conditions</h5>
                     <span class="state">❌</span>
-                    <p class="description">Started failover to cluster &#34;dr2&#34;</p>
-                  </dd>
-                  <dt>Protected</dt>
-                  <dd>
-                    <span class="state">❌</span>
-                    <p class="description">VolumeReplicationGroup (test-appset-deploy-rbd/appset-deploy-rbd) on cluster dr2 is not reporting any lastGroupSyncTime as primary, retrying till status is met</p>
-                  </dd>
-                </dl>
+                  </summary>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>PeerReady</dt>
+                    <dd>
+                      <span class="state">❌</span>
+                      <p class="description">Started failover to cluster &#34;dr2&#34;</p>
+                    </dd>
+                    <dt>Protected</dt>
+                    <dd>
+                      <span class="state">❌</span>
+                      <p class="description">VolumeReplicationGroup (test-appset-deploy-rbd/appset-deploy-rbd) on cluster dr2 is not reporting any lastGroupSyncTime as primary, retrying till status is met</p>
+                    </dd>
+                  </dl>
+                </details>
               </section>
             </section>
           </section>
@@ -87,47 +92,62 @@
                 <dd><span class="value">Primary</span><span class="state">✅</span></dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>DataReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>ClusterDataReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>ClusterDataProtected</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>KubeObjectsReady</dt>
-                  <dd><span class="state">✅</span></dd>
-                  <dt>NoClusterDataConflict</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>DataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataProtected</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>KubeObjectsReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
               </section>
               <section>
-                <h5>Protected PVCs</h5>
-                <ul>
-                  <li>
-                    <dl class="metadata">
-                      <dt>Name</dt>
-                      <dd>busybox-pvc</dd>
-                      <dt>Namespace</dt>
-                      <dd>test-appset-deploy-rbd</dd>
-                      <dt>Replication</dt>
-                      <dd>volrep</dd>
-                    </dl>
-                    <dl class="validation">
-                      <dt>Phase</dt>
-                      <dd><span class="value">Bound</span><span class="state">✅</span></dd>
-                    </dl>
-                    <section>
-                      <h6>Conditions</h6>
-                      <dl class="validation">
-                        <dt>DataReady</dt>
-                        <dd><span class="state">✅</span></dd>
-                        <dt>ClusterDataProtected</dt>
-                        <dd><span class="state">✅</span></dd>
+                <details>
+                  <summary>
+                    <h5>Protected PVCs</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Name</dt>
+                        <dd>busybox-pvc</dd>
+                        <dt>Namespace</dt>
+                        <dd>test-appset-deploy-rbd</dd>
+                        <dt>Replication</dt>
+                        <dd>volrep</dd>
                       </dl>
-                    </section>
-                  </li>
-                </ul>
+                      <dl class="validation">
+                        <dt>Phase</dt>
+                        <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                      </dl>
+                      <section>
+                        <details>
+                          <summary>
+                            <h6>Conditions</h6>
+                            <span class="state">✅</span>
+                          </summary>
+                          <dl class="validation">
+                            <dt>DataReady</dt>
+                            <dd><span class="state">✅</span></dd>
+                            <dt>ClusterDataProtected</dt>
+                            <dd><span class="state">✅</span></dd>
+                          </dl>
+                        </details>
+                      </section>
+                    </li>
+                  </ul>
+                </details>
               </section>
             </section>
           </section>
@@ -158,55 +178,70 @@
                 </dd>
               </dl>
               <section>
-                <h5>Conditions</h5>
-                <dl class="validation">
-                  <dt>DataReady</dt>
-                  <dd>
+                <details open>
+                  <summary>
+                    <h5>Conditions</h5>
                     <span class="state">❌</span>
-                    <p class="description">All PVCs of the VolumeReplicationGroup are not ready</p>
-                  </dd>
-                  <dt>NoClusterDataConflict</dt>
-                  <dd><span class="state">✅</span></dd>
-                </dl>
+                  </summary>
+                  <dl class="validation">
+                    <dt>DataReady</dt>
+                    <dd>
+                      <span class="state">❌</span>
+                      <p class="description">All PVCs of the VolumeReplicationGroup are not ready</p>
+                    </dd>
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
               </section>
               <section>
-                <h5>Protected PVCs</h5>
-                <ul>
-                  <li>
-                    <dl class="metadata">
-                      <dt>Name</dt>
-                      <dd>busybox-pvc</dd>
-                      <dt>Namespace</dt>
-                      <dd>test-appset-deploy-rbd</dd>
-                      <dt>Replication</dt>
-                      <dd>volrep</dd>
-                    </dl>
-                    <dl class="validation">
-                      <dt>Phase</dt>
-                      <dd><span class="value">Bound</span><span class="state">✅</span></dd>
-                      <dt>Deleted</dt>
-                      <dd>
-                        <span class="value">true</span><span class="state">❌</span>
-                        <p class="description">Resource was deleted</p>
-                      </dd>
-                    </dl>
-                    <section>
-                      <h6>Conditions</h6>
+                <details open>
+                  <summary>
+                    <h5>Protected PVCs</h5>
+                    <span class="state">❌</span>
+                  </summary>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Name</dt>
+                        <dd>busybox-pvc</dd>
+                        <dt>Namespace</dt>
+                        <dd>test-appset-deploy-rbd</dd>
+                        <dt>Replication</dt>
+                        <dd>volrep</dd>
+                      </dl>
                       <dl class="validation">
-                        <dt>DataReady</dt>
+                        <dt>Phase</dt>
+                        <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                        <dt>Deleted</dt>
                         <dd>
-                          <span class="state">❌</span>
-                          <p class="description">failed to demote volume</p>
-                        </dd>
-                        <dt>ClusterDataProtected</dt>
-                        <dd>
-                          <span class="state">⭕</span>
-                          <p class="description">Observed generation 1 does not match object generation 2</p>
+                          <span class="value">true</span><span class="state">❌</span>
+                          <p class="description">Resource was deleted</p>
                         </dd>
                       </dl>
-                    </section>
-                  </li>
-                </ul>
+                      <section>
+                        <details open>
+                          <summary>
+                            <h6>Conditions</h6>
+                            <span class="state">❌</span>
+                          </summary>
+                          <dl class="validation">
+                            <dt>DataReady</dt>
+                            <dd>
+                              <span class="state">❌</span>
+                              <p class="description">failed to demote volume</p>
+                            </dd>
+                            <dt>ClusterDataProtected</dt>
+                            <dd>
+                              <span class="state">⭕</span>
+                              <p class="description">Observed generation 1 does not match object generation 2</p>
+                            </dd>
+                          </dl>
+                        </details>
+                      </section>
+                    </li>
+                  </ul>
+                </details>
               </section>
             </section>
           </section>

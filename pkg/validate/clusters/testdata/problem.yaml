@@ -17,7 +17,9 @@ clustersStatus:
         conditions:
         - state: ok ✅
           type: Available
-        - state: ok ✅
+        - description: 'ReplicaFailure: replica set "ramen-dr-cluster-operator-abc" has
+            timed out progressing'
+          state: problem ❌
           type: Progressing
         deleted:
           state: ok ✅

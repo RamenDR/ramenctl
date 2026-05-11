@@ -21,8 +21,10 @@
         {{- end}}
     </dl>
     <section>
-        <h6>Conditions</h6>
-        {{template "conditions" .Conditions}}
+        <details{{if shouldOpen .Conditions}} open{{end}}>
+            <summary><h6>Conditions</h6><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+            {{template "conditions" .Conditions}}
+        </details>
     </section>
 </section>
 {{- end}}
@@ -47,20 +49,22 @@
     </dl>
     {{- if .S3StoreProfiles.State}}
     <section>
-        <h6>S3 Store Profiles</h6>
-        <dl class="validation">
-            <dt>Profiles</dt>
-            <dd>
-                <span class="value">{{len .S3StoreProfiles.Value}}</span>
-                <span class="state">{{icon .S3StoreProfiles.State}}</span>
-                {{- if .S3StoreProfiles.Description}}
-                    <p class="description">{{.S3StoreProfiles.Description}}</p>
-                {{- end}}
-            </dd>
-        </dl>
-        {{- range .S3StoreProfiles.Value}}
-            {{template "s3profile" .}}
-        {{- end}}
+        <details{{if shouldOpen .S3StoreProfiles}} open{{end}}>
+            <summary><h6>S3 Store Profiles</h6><span class="state">{{icon .S3StoreProfiles.AggregateState}}</span></summary>
+            <dl class="validation">
+                <dt>Profiles</dt>
+                <dd>
+                    <span class="value">{{len .S3StoreProfiles.Value}}</span>
+                    <span class="state">{{icon .S3StoreProfiles.State}}</span>
+                    {{- if .S3StoreProfiles.Description}}
+                        <p class="description">{{.S3StoreProfiles.Description}}</p>
+                    {{- end}}
+                </dd>
+            </dl>
+            {{- range .S3StoreProfiles.Value}}
+                {{template "s3profile" .}}
+            {{- end}}
+        </details>
     </section>
     {{- end}}
 </section>

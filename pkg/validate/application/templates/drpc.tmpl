@@ -28,7 +28,9 @@
     {{- end}}
 </dl>
 <section>
-    <h5>Conditions</h5>
-    {{template "conditions" .Conditions}}
+    <details{{if shouldOpen .Conditions}} open{{end}}>
+        <summary><h5>Conditions</h5><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+        {{template "conditions" .Conditions}}
+    </details>
 </section>
 {{- end}}

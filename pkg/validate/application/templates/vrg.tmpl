@@ -24,17 +24,21 @@
     {{- end}}
 </dl>
 <section>
-    <h5>Conditions</h5>
-    {{template "conditions" .Conditions}}
+    <details{{if shouldOpen .Conditions}} open{{end}}>
+        <summary><h5>Conditions</h5><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+        {{template "conditions" .Conditions}}
+    </details>
 </section>
 {{- with .ProtectedPVCs}}
 <section>
-    <h5>Protected PVCs</h5>
-    <ul>
-        {{- range .}}
-        <li>{{template "pvc" .}}</li>
-        {{- end}}
-    </ul>
+    <details{{if shouldOpen .}} open{{end}}>
+        <summary><h5>Protected PVCs</h5><span class="state">{{icon .AggregateState}}</span></summary>
+        <ul>
+            {{- range .}}
+            <li>{{template "pvc" .}}</li>
+            {{- end}}
+        </ul>
+    </details>
 </section>
 {{- end}}
 {{- end}}

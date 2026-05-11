@@ -315,3 +315,19 @@ dd>ul {
     list-style: none;
     padding: 0;
 }
+
+details > summary {
+    cursor: pointer;
+    margin-left: -12px;
+    color: #666;
+}
+
+details > summary > h4,
+details > summary > h5,
+details > summary > h6 {
+    display: inline;
+}
+
+details > summary > .state {
+    float: right;
+}

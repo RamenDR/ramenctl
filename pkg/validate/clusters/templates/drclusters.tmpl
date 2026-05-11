@@ -19,8 +19,10 @@
         <dd>{{.Phase}}</dd>
     </dl>
     <section>
-        <h6>Conditions</h6>
-        {{template "conditions" .Conditions}}
+        <details{{if shouldOpen .Conditions}} open{{end}}>
+            <summary><h6>Conditions</h6><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+            {{template "conditions" .Conditions}}
+        </details>
     </section>
 </section>
 {{- end}}
