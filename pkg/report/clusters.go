@@ -9,9 +9,9 @@ import (
 
 // DRClusterSummary is the summary of a DRCluster.
 type DRClusterSummary struct {
-	Name       string               `json:"name"`
-	Phase      string               `json:"phase,omitempty"`
-	Conditions []ValidatedCondition `json:"conditions,omitempty"`
+	Name       string                 `json:"name"`
+	Phase      string                 `json:"phase,omitempty"`
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // DRPolicySummary is the summary of a DRPolicy.
@@ -20,7 +20,7 @@ type DRPolicySummary struct {
 	DRClusters         []string                 `json:"drClusters"`
 	SchedulingInterval string                   `json:"schedulingInterval"`
 	PeerClasses        ValidatedPeerClassesList `json:"peerClasses"`
-	Conditions         []ValidatedCondition     `json:"conditions,omitempty"`
+	Conditions         ValidatedConditionList   `json:"conditions,omitempty"`
 }
 
 // PeerClassesSummary is the summary of peerClasses in a DRPolicy.
@@ -60,12 +60,12 @@ type ConfigMapSummary struct {
 
 // DeploymentSummary is the summary of a Deployment
 type DeploymentSummary struct {
-	Name                string               `json:"name"`
-	Namespace           string               `json:"namespace"`
-	Deleted             ValidatedBool        `json:"deleted"`
-	RamenControllerType ValidatedString      `json:"ramenControllerType"`
-	Replicas            ValidatedInteger     `json:"replicas"`
-	Conditions          []ValidatedCondition `json:"conditions,omitempty"`
+	Name                string                 `json:"name"`
+	Namespace           string                 `json:"namespace"`
+	Deleted             ValidatedBool          `json:"deleted"`
+	RamenControllerType ValidatedString        `json:"ramenControllerType"`
+	Replicas            ValidatedInteger       `json:"replicas"`
+	Conditions          ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // RamenSummary is the summary of Ramen components.

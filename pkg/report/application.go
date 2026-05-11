@@ -19,13 +19,16 @@ const (
 
 // ProtectedPVCSummary is the summary of a protected PVC.
 type ProtectedPVCSummary struct {
-	Name        string               `json:"name"`
-	Namespace   string               `json:"namespace"`
-	Replication ReplicationType      `json:"replication,omitempty"`
-	Deleted     ValidatedBool        `json:"deleted"`
-	Phase       ValidatedString      `json:"phase"`
-	Conditions  []ValidatedCondition `json:"conditions,omitempty"`
+	Name        string                 `json:"name"`
+	Namespace   string                 `json:"namespace"`
+	Replication ReplicationType        `json:"replication,omitempty"`
+	Deleted     ValidatedBool          `json:"deleted"`
+	Phase       ValidatedString        `json:"phase"`
+	Conditions  ValidatedConditionList `json:"conditions,omitempty"`
 }
+
+// ProtectedPVCList is a list of protected PVC summaries.
+type ProtectedPVCList []ProtectedPVCSummary
 
 // PVCGroupsSummary represents list of CGs that are protected by the VRG.
 type PVCGroupsSummary struct {
@@ -34,31 +37,31 @@ type PVCGroupsSummary struct {
 
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
-	Name               string               `json:"name"`
-	Namespace          string               `json:"namespace"`
-	ClusterTime        *time.Time           `json:"clusterTime,omitempty"`
-	Deleted            ValidatedBool        `json:"deleted"`
-	DRPolicy           string               `json:"drPolicy"`
-	SchedulingInterval ValidatedDuration    `json:"schedulingInterval"`
-	LastGroupSyncTime  ValidatedTime        `json:"lastGroupSyncTime"`
-	Action             ValidatedString      `json:"action"`
-	Phase              ValidatedString      `json:"phase"`
-	Progression        ValidatedString      `json:"progression"`
-	Conditions         []ValidatedCondition `json:"conditions,omitempty"`
+	Name               string                 `json:"name"`
+	Namespace          string                 `json:"namespace"`
+	ClusterTime        *time.Time             `json:"clusterTime,omitempty"`
+	Deleted            ValidatedBool          `json:"deleted"`
+	DRPolicy           string                 `json:"drPolicy"`
+	SchedulingInterval ValidatedDuration      `json:"schedulingInterval"`
+	LastGroupSyncTime  ValidatedTime          `json:"lastGroupSyncTime"`
+	Action             ValidatedString        `json:"action"`
+	Phase              ValidatedString        `json:"phase"`
+	Progression        ValidatedString        `json:"progression"`
+	Conditions         ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // VRGSummary is the summary of a VRG.
 type VRGSummary struct {
-	Name               string                `json:"name"`
-	Namespace          string                `json:"namespace"`
-	ClusterTime        *time.Time            `json:"clusterTime,omitempty"`
-	Deleted            ValidatedBool         `json:"deleted"`
-	SchedulingInterval ValidatedDuration     `json:"schedulingInterval"`
-	LastGroupSyncTime  ValidatedTime         `json:"lastGroupSyncTime"`
-	State              ValidatedString       `json:"state"`
-	Conditions         []ValidatedCondition  `json:"conditions,omitempty"`
-	ProtectedPVCs      []ProtectedPVCSummary `json:"protectedPVCs,omitempty"`
-	PVCGroups          []PVCGroupsSummary    `json:"pvcGroups,omitempty"`
+	Name               string                 `json:"name"`
+	Namespace          string                 `json:"namespace"`
+	ClusterTime        *time.Time             `json:"clusterTime,omitempty"`
+	Deleted            ValidatedBool          `json:"deleted"`
+	SchedulingInterval ValidatedDuration      `json:"schedulingInterval"`
+	LastGroupSyncTime  ValidatedTime          `json:"lastGroupSyncTime"`
+	State              ValidatedString        `json:"state"`
+	Conditions         ValidatedConditionList `json:"conditions,omitempty"`
+	ProtectedPVCs      ProtectedPVCList       `json:"protectedPVCs,omitempty"`
+	PVCGroups          []PVCGroupsSummary     `json:"pvcGroups,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.

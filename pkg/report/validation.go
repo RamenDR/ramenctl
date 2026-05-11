@@ -123,6 +123,9 @@ type ValidatedCondition struct {
 	Type string `json:"type"`
 }
 
+// ValidatedConditionList is a list of validated conditions.
+type ValidatedConditionList []ValidatedCondition
+
 // ValidatedFingerprint is a validated fingerprint property.
 type ValidatedFingerprint struct {
 	Validated
