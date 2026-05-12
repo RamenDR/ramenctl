@@ -8,7 +8,7 @@
   <body>
     <header>
       <h1>Validate Application <span class="subtitle">argocd / appset-deploy-rbd</span></h1>
-      <div class="result"><span class="status failed">failed</span><span class="summary">25 ok, 2 stale, 8 problem</span></div>
+      <div class="result"><span class="status failed">failed</span><span class="summary">25 ok, 2 warning, 8 problem</span></div>
       <footer><span>Created 2026-03-16T20:19:49&#43;02:00</span><span>Duration 2.30s</span></footer>
     </header>
     <main>
@@ -34,7 +34,7 @@
                 <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
                 <dt>Last Group Sync Time</dt>
                 <dd>
-                  <span class="value">2025-07-29T17:23:00Z</span><span class="state">⭕</span>
+                  <span class="value">2025-07-29T17:23:00Z</span><span class="state">⚠️</span>
                   <p class="description">Replication is exceeding 2x the scheduling interval</p>
                 </dd>
                 <dt>Action</dt>
@@ -233,7 +233,7 @@
                             </dd>
                             <dt>ClusterDataProtected</dt>
                             <dd>
-                              <span class="state">⭕</span>
+                              <span class="state">⚠️</span>
                               <p class="description">Observed generation 1 does not match object generation 2</p>
                             </dd>
                           </dl>

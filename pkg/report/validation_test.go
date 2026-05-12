@@ -21,7 +21,7 @@ func TestEmojiRoundtrip(t *testing.T) {
 	}{
 		{"ok", report.OK},
 		{"problem", report.Problem},
-		{"stale", report.Stale},
+		{"warning", report.Warning},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

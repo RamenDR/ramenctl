@@ -26,7 +26,7 @@ applicationStatus:
       namespace: argocd
       lastGroupSyncTime:
         description: Replication is exceeding 2x the scheduling interval
-        state: stale ⭕
+        state: warning ⚠️
         value: "2025-07-29T17:23:00Z"
       schedulingInterval:
         state: ok ✅
@@ -118,7 +118,7 @@ applicationStatus:
           state: problem ❌
           type: DataReady
         - description: Observed generation 1 does not match object generation 2
-          state: stale ⭕
+          state: warning ⚠️
           type: ClusterDataProtected
         deleted:
           description: Resource was deleted
@@ -201,4 +201,4 @@ steps:
 summary:
   ok: 25
   problem: 8
-  stale: 2
+  warning: 2

@@ -12,7 +12,7 @@ import (
 // Summary keys for validation reports.
 const (
 	OK      = report.SummaryKey("ok")
-	Stale   = report.SummaryKey("stale")
+	Warning = report.SummaryKey("warning")
 	Problem = report.SummaryKey("problem")
 )
 
@@ -21,20 +21,20 @@ func AddValidation(s *report.Summary, v report.Validation) {
 	switch v.GetState() {
 	case report.OK:
 		s.Add(OK)
-	case report.Stale:
-		s.Add(Stale)
+	case report.Warning:
+		s.Add(Warning)
 	case report.Problem:
 		s.Add(Problem)
 	}
 }
 
-// HasIssues returns true if there are any problems or stale results.
+// HasIssues returns true if there are any problems or warning results.
 func HasIssues(s *report.Summary) bool {
-	return s.Get(Stale) > 0 || s.Get(Problem) > 0
+	return s.Get(Warning) > 0 || s.Get(Problem) > 0
 }
 
 // String returns a string representation of a validation summary.
 func String(s *report.Summary) string {
-	return fmt.Sprintf("%d ok, %d stale, %d problem",
-		s.Get(OK), s.Get(Stale), s.Get(Problem))
+	return fmt.Sprintf("%d ok, %d warning, %d problem",
+		s.Get(OK), s.Get(Warning), s.Get(Problem))
 }

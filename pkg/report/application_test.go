@@ -90,13 +90,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("hub drpc lastGroupSyncTime", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		warningTime := time.Now().Add(-2 * stdtime.Hour)
 		a2.Hub.DRPC.LastGroupSyncTime = report.ValidatedTime{
 			Validated: report.Validated{
 				State:       report.Problem,
-				Description: "Replication is stale",
+				Description: "Replication is lagging",
 			},
-			Value: &staleTime,
+			Value: &warningTime,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -164,13 +164,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("primary cluster vrg lastGroupSyncTime", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		warningTime := time.Now().Add(-2 * stdtime.Hour)
 		a2.PrimaryCluster.VRG.LastGroupSyncTime = report.ValidatedTime{
 			Validated: report.Validated{
 				State:       report.Problem,
-				Description: "Replication is stale",
+				Description: "Replication is lagging",
 			},
-			Value: &staleTime,
+			Value: &warningTime,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})
@@ -301,13 +301,13 @@ func TestReportApplicationStatusNotEqual(t *testing.T) {
 	})
 	t.Run("secondary cluster vrg lastGroupSyncTime", func(t *testing.T) {
 		a2 := testApplicationStatus()
-		staleTime := time.Now().Add(-2 * stdtime.Hour)
+		warningTime := time.Now().Add(-2 * stdtime.Hour)
 		a2.SecondaryCluster.VRG.LastGroupSyncTime = report.ValidatedTime{
 			Validated: report.Validated{
 				State:       report.Problem,
-				Description: "Replication is stale",
+				Description: "Replication is lagging",
 			},
-			Value: &staleTime,
+			Value: &warningTime,
 		}
 		checkApplicationsNotEqual(t, a1, a2)
 	})

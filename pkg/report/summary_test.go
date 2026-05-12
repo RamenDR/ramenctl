@@ -38,7 +38,7 @@ func TestTestSummaryYAMLRoundtrip(t *testing.T) {
 func TestValidationSummaryYAMLRoundtrip(t *testing.T) {
 	s1 := report.Summary{
 		report.SummaryKey("ok"):      10,
-		report.SummaryKey("stale"):   1,
+		report.SummaryKey("warning"): 1,
 		report.SummaryKey("problem"): 2,
 	}
 

@@ -24,7 +24,7 @@ func ValidatedCondition(
 	validated := report.ValidatedCondition{Type: condition.Type}
 
 	if condition.ObservedGeneration != obj.GetGeneration() {
-		validated.State = report.Stale
+		validated.State = report.Warning
 		validated.Description = fmt.Sprintf(
 			"Observed generation %d does not match object generation %d",
 			condition.ObservedGeneration,

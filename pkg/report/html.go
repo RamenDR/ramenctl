@@ -70,8 +70,8 @@ func icon(s ValidationState) string {
 	switch s {
 	case OK:
 		return "✅"
-	case Stale:
-		return "⭕"
+	case Warning:
+		return "⚠️"
 	case Problem:
 		return "❌"
 	default:

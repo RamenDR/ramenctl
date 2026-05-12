@@ -78,7 +78,7 @@ $ ramenctl validate application --name appset-deploy-rbd --namespace argocd -o o
    ✅ Gathered S3 profile "minio-on-dr2"
    ✅ Application validated
 
-✅ Validation completed (24 ok, 0 stale, 0 problem)
+✅ Validation completed (24 ok, 0 warning, 0 problem)
 ```
 
 The command gathered related namespaced from all clusters, inspected the
@@ -261,7 +261,7 @@ $ ramenctl validate clusters -o out
    ✅ Checked S3 profile "minio-on-dr1"
    ✅ Clusters validated
 
-✅ Validation completed (90 ok, 0 stale, 0 problem)
+✅ Validation completed (90 ok, 0 warning, 0 problem)
 ```
 
 The command gathered cluster scoped and ramen resources from all clusters,

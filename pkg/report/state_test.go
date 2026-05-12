@@ -13,7 +13,7 @@ func TestIsIssue(t *testing.T) {
 		want  bool
 	}{
 		{OK, false},
-		{Stale, true},
+		{Warning, true},
 		{Problem, true},
 		{ValidationState(""), false},
 	}
@@ -36,13 +36,13 @@ func TestSignificantState(t *testing.T) {
 		{"empty+ok", "", OK, OK},
 		{"ok+empty", OK, "", OK},
 		{"ok+ok", OK, OK, OK},
-		{"ok+stale", OK, Stale, Stale},
-		{"stale+ok", Stale, OK, Stale},
+		{"ok+warning", OK, Warning, Warning},
+		{"warning+ok", Warning, OK, Warning},
 		{"ok+problem", OK, Problem, Problem},
 		{"problem+ok", Problem, OK, Problem},
-		{"stale+problem", Stale, Problem, Problem},
-		{"problem+stale", Problem, Stale, Problem},
-		{"stale+stale", Stale, Stale, Stale},
+		{"warning+problem", Warning, Problem, Problem},
+		{"problem+warning", Problem, Warning, Problem},
+		{"warning+warning", Warning, Warning, Warning},
 		{"problem+problem", Problem, Problem, Problem},
 	}
 	for _, tc := range cases {
@@ -57,7 +57,7 @@ func TestSignificantState(t *testing.T) {
 func TestAggregateState(t *testing.T) {
 	empty := Validated{}
 	ok := Validated{State: OK}
-	stale := Validated{State: Stale}
+	warning := Validated{State: Warning}
 	problem := Validated{State: Problem}
 
 	cases := []struct {
@@ -68,14 +68,14 @@ func TestAggregateState(t *testing.T) {
 		{"nil", nil, ""},
 		{"some empty", []StateAggregator{&empty, &empty}, ""},
 		{"empty and ok", []StateAggregator{&empty, &ok}, OK},
-		{"ok and stale", []StateAggregator{&ok, &ok, &stale}, Stale},
+		{"ok and warning", []StateAggregator{&ok, &ok, &warning}, Warning},
 		{"ok and problem", []StateAggregator{&ok, &ok, &problem}, Problem},
-		{"ok stale and problem", []StateAggregator{&ok, &stale, &problem}, Problem},
+		{"ok warning and problem", []StateAggregator{&ok, &warning, &problem}, Problem},
 		// Ensure earlier significant state is not overridden by later ok.
 		{"problem then ok", []StateAggregator{&problem, &ok}, Problem},
-		{"stale then ok", []StateAggregator{&stale, &ok}, Stale},
-		// Ensure earlier significant state is not overridden by later stale.
-		{"problem then stale", []StateAggregator{&problem, &stale}, Problem},
+		{"warning then ok", []StateAggregator{&warning, &ok}, Warning},
+		// Ensure earlier significant state is not overridden by later warning.
+		{"problem then warning", []StateAggregator{&problem, &warning}, Problem},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -97,10 +97,10 @@ func TestValidatedConditionListAggregateState(t *testing.T) {
 			{Validated: Validated{State: OK}, Type: "Ready"},
 			{Validated: Validated{State: OK}, Type: "Available"},
 		}, OK},
-		{"one stale", ValidatedConditionList{
+		{"one warning", ValidatedConditionList{
 			{Validated: Validated{State: OK}, Type: "Ready"},
-			{Validated: Validated{State: Stale}, Type: "Available"},
-		}, Stale},
+			{Validated: Validated{State: Warning}, Type: "Available"},
+		}, Warning},
 		{"one problem", ValidatedConditionList{
 			{Validated: Validated{State: OK}, Type: "Ready"},
 			{Validated: Validated{State: Problem}, Type: "Available"},

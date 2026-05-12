@@ -15,16 +15,16 @@ const (
 	// OK is an expected value.
 	OK = ValidationState("ok ✅")
 
-	// Condition Generation does not match object generation.
-	Stale = ValidationState("stale ⭕")
+	// Warning indicates a potential issue that needs investigation.
+	Warning = ValidationState("warning ⚠️")
 
-	// Problem state such as missing or unexpected value.
+	// Problem indicates an unexpected state that likely needs action.
 	Problem = ValidationState("problem ❌")
 )
 
-// IsIssue returns true if the state indicates a problem or staleness.
+// IsIssue returns true if the state indicates a problem or a warning.
 func (s ValidationState) IsIssue() bool {
-	return s == Problem || s == Stale
+	return s == Problem || s == Warning
 }
 
 type Validation interface {
@@ -39,7 +39,7 @@ type StateAggregator interface {
 }
 
 type Validated struct {
-	// State is the validation state (one of OK, Stale, Error).
+	// State is the validation state (one of OK, Warning, Problem).
 	State ValidationState `json:"state"`
 	// Description explains why the value is not OK.
 	Description string `json:"description,omitempty"`
@@ -219,8 +219,8 @@ func significantState(a, b ValidationState) ValidationState {
 	switch {
 	case a == Problem || b == Problem:
 		return Problem
-	case a == Stale || b == Stale:
-		return Stale
+	case a == Warning || b == Warning:
+		return Warning
 	case a == OK || b == OK:
 		return OK
 	default:

@@ -678,7 +678,7 @@ func (c *Command) validateLastGroupSyncTime(
 ) report.ValidatedTime {
 	if lastGroupSyncTime == nil {
 		if primary {
-			return c.validatedLastGroupSyncTime(nil, report.Stale,
+			return c.validatedLastGroupSyncTime(nil, report.Warning,
 				"Waiting for first volume synchronization")
 		}
 
@@ -706,7 +706,7 @@ func (c *Command) validateLastGroupSyncTime(
 	}
 
 	if intervals > 2 {
-		return c.validatedLastGroupSyncTime(&t, report.Stale,
+		return c.validatedLastGroupSyncTime(&t, report.Warning,
 			"Replication is exceeding 2x the scheduling interval")
 	}
 

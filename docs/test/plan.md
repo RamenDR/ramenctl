@@ -266,7 +266,7 @@ odf dr validate clusters -o out/validate-clusters
 **Expected result:**
 - Console output shows progress with checkmarks for each cluster and S3
   profile.
-- Final line: `Validation completed (N ok, 0 stale, 0 problem)`.
+- Final line: `Validation completed (N ok, 0 warning, 0 problem)`.
 - Exits with code 0.
 
 **Output files:**
@@ -300,7 +300,7 @@ The YAML report contains common fields and command-specific data.
 - `status` - overall result (`passed` or `failed`)
 - `duration` - total duration in seconds
 - `steps` - list of steps with individual status and duration
-- `summary` - counts of ok, stale, and problem validations
+- `summary` - counts of ok, warning, and problem validations
 
 **Command-specific field** (`clustersStatus`):
 
@@ -502,7 +502,7 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/va
 **Expected result:**
 - Console output shows progress: inspected application, gathered data from
   each cluster, inspected S3 profiles.
-- Final line: `Validation completed (N ok, 0 stale, 0 problem)`.
+- Final line: `Validation completed (N ok, 0 warning, 0 problem)`.
 - Exits with code 0.
 
 **YAML report content:**
@@ -525,7 +525,7 @@ The YAML report contains common fields and command-specific data.
 - `status` - overall result (`passed` or `failed`)
 - `duration` - total duration in seconds
 - `steps` - list of steps with individual status and duration
-- `summary` - counts of ok, stale, and problem validations
+- `summary` - counts of ok, warning, and problem validations
 
 **Command-specific field** (`applicationStatus`):
 

@@ -674,7 +674,7 @@ func TestValidateLastGroupSyncTime(t *testing.T) {
 	t.Run("nil on primary", func(t *testing.T) {
 		expected := report.ValidatedTime{
 			Validated: report.Validated{
-				State:       report.Stale,
+				State:       report.Warning,
 				Description: "Waiting for first volume synchronization",
 			},
 		}
@@ -736,12 +736,12 @@ func TestValidateLastGroupSyncTime(t *testing.T) {
 		}
 	})
 
-	t.Run("stale", func(t *testing.T) {
-		maxStale := 2*stdtime.Minute + 59*stdtime.Second
-		syncTime := metav1.NewTime(clusterTime.Add(-maxStale))
+	t.Run("warning", func(t *testing.T) {
+		maxWarning := 2*stdtime.Minute + 59*stdtime.Second
+		syncTime := metav1.NewTime(clusterTime.Add(-maxWarning))
 		expected := report.ValidatedTime{
 			Validated: report.Validated{
-				State:       report.Stale,
+				State:       report.Warning,
 				Description: "Replication is exceeding 2x the scheduling interval",
 			},
 			Value: &syncTime.Time,

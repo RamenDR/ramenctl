@@ -14,14 +14,14 @@ func TestSummaryAdd(t *testing.T) {
 
 	AddValidation(s, &report.Validated{State: report.OK})
 	AddValidation(s, &report.Validated{State: report.OK})
-	AddValidation(s, &report.Validated{State: report.Stale})
+	AddValidation(s, &report.Validated{State: report.Warning})
 	AddValidation(s, &report.Validated{State: report.OK})
-	AddValidation(s, &report.Validated{State: report.Stale})
+	AddValidation(s, &report.Validated{State: report.Warning})
 	AddValidation(s, &report.Validated{State: report.Problem})
 
 	expected := report.Summary{
 		OK:      3,
-		Stale:   2,
+		Warning: 2,
 		Problem: 1,
 	}
 	if !s.Equal(&expected) {
@@ -37,11 +37,11 @@ func TestSummaryHasProblems(t *testing.T) {
 	}{
 		{"empty", &report.Summary{}, false},
 		{"ok", &report.Summary{OK: 5}, false},
-		{"only stale", &report.Summary{Stale: 2}, true},
+		{"only warning", &report.Summary{Warning: 2}, true},
 		{"only problem", &report.Summary{Problem: 4}, true},
 		{
-			"problem and stale",
-			&report.Summary{Stale: 2, Problem: 3},
+			"problem and warning",
+			&report.Summary{Warning: 2, Problem: 3},
 			true,
 		},
 	}
@@ -57,7 +57,7 @@ func TestSummaryString(t *testing.T) {
 		OK:      1,
 		Problem: 2,
 	}
-	expected := "1 ok, 0 stale, 2 problem"
+	expected := "1 ok, 0 warning, 2 problem"
 	if String(s) != expected {
 		t.Fatalf("expected %q, got %q", expected, String(s))
 	}
