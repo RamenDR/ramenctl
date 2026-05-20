@@ -63,7 +63,7 @@ func (c *Command) passed() {
 
 func (c *Command) failed() error {
 	c.WriteReport(c.Report)
-	return fmt.Errorf("validation %s (%s)", c.Report.Status, summary.String(c.Report.Summary))
+	return errors.New(c.Report.Error())
 }
 
 func (c *Command) Run() error {

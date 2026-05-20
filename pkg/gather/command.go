@@ -334,7 +334,7 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("Gather %s", c.report.Status)
+	return errors.New(c.report.Error())
 }
 
 func (c *Command) passed() {

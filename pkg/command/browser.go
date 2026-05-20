@@ -5,6 +5,7 @@ package command
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,7 +19,9 @@ import (
 func (c *Command) BrowseReport() {
 	path := c.ReportFile("html")
 	if _, err := os.Stat(path); err != nil {
-		c.log.Warnf("Skipping browse %q: %s", path, err)
+		if !errors.Is(err, os.ErrNotExist) {
+			c.log.Warnf("Skipping browse %q: %s", path, err)
+		}
 		return
 	}
 

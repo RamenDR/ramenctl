@@ -154,13 +154,20 @@ func checkSummary(t *testing.T, r *Report, expected report.Summary) {
 }
 
 func checkOutputFiles(t *testing.T, cmd *Command) {
+	if _, err := os.Stat(cmd.ReportFile("yaml")); err != nil {
+		t.Errorf("output file %q not found: %s", cmd.ReportFile("yaml"), err)
+	}
+	hasHTML := len(*cmd.Report.Summary) > 0
 	for _, path := range []string{
-		cmd.ReportFile("yaml"),
 		cmd.ReportFile("html"),
 		filepath.Join(cmd.OutputDir(), "style.css"),
 	} {
-		if _, err := os.Stat(path); err != nil {
+		_, err := os.Stat(path)
+		if hasHTML && err != nil {
 			t.Errorf("output file %q not found: %s", path, err)
+		}
+		if !hasHTML && err == nil {
+			t.Errorf("unexpected output file %q", path)
 		}
 	}
 }

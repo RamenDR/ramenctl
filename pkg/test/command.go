@@ -308,12 +308,12 @@ func (c *Command) displayName() string {
 
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
-	return fmt.Errorf("%s (%s)", c.report.Status, summaryString(c.report.Summary))
+	return errors.New(c.report.Error())
 }
 
 func (c *Command) passed() {
 	c.command.WriteYAMLReport(c.report)
-	console.Completed("%s (%s)", c.report.Status, summaryString(c.report.Summary))
+	console.Completed("%s passed (%s)", c.displayName(), summaryString(c.report.Summary))
 }
 
 func (c *Command) startStep(name string) {

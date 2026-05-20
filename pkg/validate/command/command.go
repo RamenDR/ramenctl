@@ -211,10 +211,15 @@ func (c *Command) ReportFile(format string) string {
 	return c.cmd.ReportFile(format)
 }
 
-// WriteReport writes YAML, HTML, and CSS reports to the command output directory.
+// WriteReport writes YAML report, and HTML + CSS reports when validation ran.
 func (c *Command) WriteReport(r HTMLWriter) {
 	c.cmd.WriteYAMLReport(r)
+	if len(*c.Report.Summary) > 0 {
+		c.writeHTMLReport(r)
+	}
+}
 
+func (c *Command) writeHTMLReport(r HTMLWriter) {
 	file, err := c.cmd.OpenReport("html")
 	if err != nil {
 		console.Error("Failed to open HTML report: %s", err)
