@@ -735,6 +735,14 @@ func TestStepEqual(t *testing.T) {
 		}
 	})
 
+	t.Run("different error", func(t *testing.T) {
+		s2 := s1
+		s2.Err = "something went wrong"
+		if s1.Equal(&s2) {
+			t.Fatalf("steps with different errors should not be equal")
+		}
+	})
+
 	t.Run("equal subitems", func(t *testing.T) {
 		s1 := report.Step{
 			Name:     "parent",

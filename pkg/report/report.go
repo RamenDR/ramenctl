@@ -39,7 +39,13 @@ type Step struct {
 	Name     string  `json:"name"`
 	Status   Status  `json:"status,omitempty"`
 	Duration float64 `json:"duration,omitempty"`
-	Items    []*Step `json:"items,omitempty"`
+
+	// Err describes why the step failed. For parallel steps (e.g., gather),
+	// the parent sets Err to summarize child failures, shadowing individual
+	// item errors.
+	Err string `json:"error,omitempty"`
+
+	Items []*Step `json:"items,omitempty"`
 }
 
 // Base report for ramenctl commands report.
@@ -240,6 +246,9 @@ func (s *Step) Equal(o *Step) bool {
 		return false
 	}
 	if s.Duration != o.Duration {
+		return false
+	}
+	if s.Err != o.Err {
 		return false
 	}
 	return slices.EqualFunc(s.Items, o.Items, func(a *Step, b *Step) bool {
