@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 	stdtime "time"
 
 	"github.com/nirs/kubectl-gather/pkg/gather"
@@ -159,6 +160,7 @@ func (c *Command) GatherNamespaces(options gathering.Options) bool {
 	c.Logger().Infof("Gathering from clusters %q with options %+v",
 		logging.ClusterNames(clusters), options)
 
+	var failedClusters []string
 	for r := range c.Backend.Gather(c, clusters, options) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
@@ -166,6 +168,8 @@ func (c *Command) GatherNamespaces(options gathering.Options) bool {
 			console.Error(msg)
 			c.Logger().Errorf("%s: %s", msg, r.Err)
 			step.Status = report.Failed
+			step.Err = fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
+			failedClusters = append(failedClusters, r.Name)
 		} else {
 			console.Pass("Gathered data from cluster %q", r.Name)
 			step.Status = report.Passed
@@ -175,7 +179,19 @@ func (c *Command) GatherNamespaces(options gathering.Options) bool {
 
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
 
-	return c.Current.Status == report.Passed
+	switch c.Current.Status {
+	case report.Canceled:
+		c.Current.Err = "Canceled gather data from clusters"
+		return false
+	case report.Failed:
+		c.Current.Err = fmt.Sprintf(
+			"Failed to gather data from clusters %s",
+			strings.Join(failedClusters, ", "),
+		)
+		return false
+	default:
+		return true
+	}
 }
 
 func (c *Command) OutputReader(cluster string) gathering.OutputReader {
@@ -238,9 +254,11 @@ func (c *Command) FailStep(err error) bool {
 	c.Current.Duration = time.Since(c.currentStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
 		c.Current.Status = report.Canceled
+		c.Current.Err = fmt.Sprintf("Canceled %s", c.Current.Name)
 		console.Error("Canceled %s", c.Current.Name)
 	} else {
 		c.Current.Status = report.Failed
+		c.Current.Err = fmt.Sprintf("Failed to %s", c.Current.Name)
 		console.Error("Failed to %s", c.Current.Name)
 	}
 	c.Logger().Errorf("Step %q %s: %s", c.Current.Name, c.Current.Status, err)
