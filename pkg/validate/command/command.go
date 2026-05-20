@@ -217,19 +217,19 @@ func (c *Command) WriteReport(r HTMLWriter) {
 
 	file, err := c.cmd.OpenReport("html")
 	if err != nil {
-		console.Error("failed to open HTML report: %s", err)
+		console.Error("Failed to open HTML report: %s", err)
 		return
 	}
 	defer file.Close()
 	if err := r.WriteHTML(file); err != nil {
-		console.Error("failed to write HTML report: %s", err)
+		console.Error("Failed to write HTML report: %s", err)
 	}
 	if err := file.Close(); err != nil {
-		console.Error("failed to close HTML report: %s", err)
+		console.Error("Failed to close HTML report: %s", err)
 	}
 
 	if err := report.WriteCSS(c.cmd.OutputDir()); err != nil {
-		console.Error("failed to write report CSS: %s", err)
+		console.Error("Failed to write report CSS: %s", err)
 	}
 }
 

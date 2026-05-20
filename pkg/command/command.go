@@ -167,17 +167,17 @@ func (c *Command) OpenReport(format string) (*os.File, error) {
 func (c *Command) WriteYAMLReport(r any) {
 	file, err := c.OpenReport("yaml")
 	if err != nil {
-		console.Error("failed to open report file: %s", err)
+		console.Error("Failed to open report file: %s", err)
 		return
 	}
 	defer file.Close()
 
 	if err := report.WriteYAML(file, r); err != nil {
-		console.Error("failed to write report: %s", err)
+		console.Error("Failed to write report: %s", err)
 		return
 	}
 
 	if err := file.Close(); err != nil {
-		console.Error("failed to close report file: %s", err)
+		console.Error("Failed to close report file: %s", err)
 	}
 }
