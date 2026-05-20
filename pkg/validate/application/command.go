@@ -10,6 +10,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strings"
 	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
@@ -120,9 +121,14 @@ func (c *Command) inspectApplication() ([]string, bool) {
 		if errors.Is(err, context.Canceled) {
 			console.Error("Canceled %s", step.Name)
 			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
 		} else {
 			console.Error("Failed to %s", step.Name)
 			step.Status = report.Failed
+			step.Err = fmt.Sprintf(
+				"Failed to inspect application %q in namespace %q",
+				c.opts.DRPCName, c.opts.DRPCNamespace,
+			)
 		}
 		c.Logger().Errorf("Step %q %s: %s", c.Current.Name, step.Status, err)
 		c.Current.AddStep(step)
@@ -162,9 +168,11 @@ func (c *Command) inspectS3Profiles() ([]*s3.Profile, string, error) {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
 			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
 			console.Error("Canceled %s", step.Name)
 		} else {
 			step.Status = report.Failed
+			step.Err = "Failed to read S3 profiles from hub"
 			console.Error("Failed to %s", step.Name)
 		}
 		c.Logger().Errorf("Step %q %s: %s", c.Current.Name, step.Status, err)
@@ -192,6 +200,7 @@ func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
 		logging.ProfileNames(profiles), prefix)
 
+	var failedProfiles []string
 	for r := range c.Backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
 		// Store the s3 gather result for validation.
 		c.S3Results = append(c.S3Results, r)
@@ -206,11 +215,14 @@ func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Canceled
+				step.Err = msg
 			} else {
 				msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Failed
+				step.Err = fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+				failedProfiles = append(failedProfiles, r.ProfileName)
 			}
 		} else {
 			step.Status = report.Passed
@@ -221,7 +233,19 @@ func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 
 	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
 
-	return c.Current.Status != report.Canceled
+	switch c.Current.Status {
+	case report.Canceled:
+		c.Current.Err = "Canceled gather S3 profiles"
+		return false
+	case report.Failed:
+		c.Current.Err = fmt.Sprintf(
+			"Failed to gather S3 profiles %s",
+			strings.Join(failedProfiles, ", "),
+		)
+		return true
+	default:
+		return true
+	}
 }
 
 func (c *Command) namespacesToGather() ([]string, error) {
@@ -296,6 +320,7 @@ func (c *Command) validateGatheredData() bool {
 	drpc, err := c.validateHub(&s.Hub)
 	if err != nil {
 		step.Status = report.Failed
+		step.Err = "Failed to validate hub"
 		msg := "Failed to validate hub"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, err)
@@ -304,6 +329,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if err := c.validatePrimaryCluster(&s.PrimaryCluster, drpc); err != nil {
 		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Failed to validate primary cluster %q", s.PrimaryCluster.Name)
 		msg := "Failed to validate primary cluster"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, err)
@@ -312,6 +338,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if err := c.validateSecondaryCluster(&s.SecondaryCluster, drpc); err != nil {
 		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Failed to validate secondary cluster %q", s.SecondaryCluster.Name)
 		msg := "Failed to validate secondary cluster"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, err)
@@ -322,6 +349,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Validation failed (%s)", summary.String(c.Report.Summary))
 		msg := "Issues found during validation"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, summary.String(c.Report.Summary))
