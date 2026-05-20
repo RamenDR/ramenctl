@@ -48,6 +48,19 @@ type Step struct {
 	Items []*Step `json:"items,omitempty"`
 }
 
+// Error returns the error that stopped the step. A step's own Err shadows
+// its children, so parallel code can summarize child failures. If a step has
+// no Err, it drills into the last child.
+func (s *Step) Error() string {
+	if s.Err != "" {
+		return s.Err
+	}
+	if len(s.Items) > 0 {
+		return s.Items[len(s.Items)-1].Error()
+	}
+	return ""
+}
+
 // Base report for ramenctl commands report.
 type Base struct {
 	Host     Host       `json:"host"`
@@ -60,6 +73,14 @@ type Base struct {
 
 	// Summary is set by `validate` and `test` commands.
 	Summary *Summary `json:"summary,omitempty"`
+}
+
+// Error returns the error from the report by walking the step tree.
+func (r *Base) Error() string {
+	if len(r.Steps) == 0 {
+		return ""
+	}
+	return r.Steps[len(r.Steps)-1].Error()
 }
 
 // Application is application info.

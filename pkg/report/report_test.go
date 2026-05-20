@@ -671,6 +671,156 @@ func TestStepAddSkippedStep(t *testing.T) {
 	})
 }
 
+func TestStepError(t *testing.T) {
+	t.Run("passed", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Passed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Passed},
+				{Name: "item2", Status: report.Passed},
+				{Name: "item3", Status: report.Passed},
+			},
+		}
+		if got := step.Error(); got != "" {
+			t.Fatalf("expected empty error, got %q", got)
+		}
+	})
+
+	t.Run("leaf error", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Failed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Passed},
+				{Name: "item2", Status: report.Passed},
+				{Name: "item3", Status: report.Failed, Err: "leaf error"},
+			},
+		}
+		if got := step.Error(); got != "leaf error" {
+			t.Fatalf("expected %q, got %q", "leaf error", got)
+		}
+	})
+
+	t.Run("drills to last child", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Failed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Passed},
+				{Name: "item2", Status: report.Failed, Err: "child error"},
+			},
+		}
+		if got := step.Error(); got != "child error" {
+			t.Fatalf("expected %q, got %q", "child error", got)
+		}
+	})
+
+	t.Run("first child failed last passed", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Failed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Failed, Err: "non-fatal error"},
+				{Name: "item2", Status: report.Passed},
+				{Name: "item3", Status: report.Passed},
+			},
+		}
+		if got := step.Error(); got != "" {
+			t.Fatalf("expected empty error, got %q", got)
+		}
+	})
+
+	t.Run("parent error shadows children", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Failed,
+			Err:    "parent error",
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Failed, Err: "child error"},
+				{Name: "item2", Status: report.Passed},
+			},
+		}
+		if got := step.Error(); got != "parent error" {
+			t.Fatalf("expected %q, got %q", "parent error", got)
+		}
+	})
+
+	t.Run("drills to nested child", func(t *testing.T) {
+		step := &report.Step{
+			Name:   "step1",
+			Status: report.Failed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Passed},
+				{
+					Name:   "item2",
+					Status: report.Failed,
+					Items: []*report.Step{
+						{Name: "sub1", Status: report.Passed},
+						{Name: "sub2", Status: report.Failed, Err: "nested error"},
+					},
+				},
+			},
+		}
+		if got := step.Error(); got != "nested error" {
+			t.Fatalf("expected %q, got %q", "nested error", got)
+		}
+	})
+}
+
+func TestBaseError(t *testing.T) {
+	t.Run("no steps", func(t *testing.T) {
+		r := report.NewBase("name")
+		if got := r.Error(); got != "" {
+			t.Fatalf("expected empty error, got %q", got)
+		}
+	})
+
+	t.Run("all passed", func(t *testing.T) {
+		r := report.NewBase("name")
+		r.AddStep(&report.Step{Name: "step1", Status: report.Passed})
+		r.AddStep(&report.Step{Name: "step2", Status: report.Passed})
+		if got := r.Error(); got != "" {
+			t.Fatalf("expected empty error, got %q", got)
+		}
+	})
+
+	t.Run("last step failed", func(t *testing.T) {
+		r := report.NewBase("name")
+		r.AddStep(&report.Step{Name: "step1", Status: report.Passed})
+		r.AddStep(&report.Step{Name: "step2", Status: report.Failed, Err: "step error"})
+		if got := r.Error(); got != "step error" {
+			t.Fatalf("expected %q, got %q", "step error", got)
+		}
+	})
+
+	t.Run("drills to last step child", func(t *testing.T) {
+		r := report.NewBase("name")
+		r.AddStep(&report.Step{Name: "step1", Status: report.Passed})
+		r.AddStep(&report.Step{
+			Name:   "step2",
+			Status: report.Failed,
+			Items: []*report.Step{
+				{Name: "item1", Status: report.Passed},
+				{Name: "item2", Status: report.Failed, Err: "child error"},
+			},
+		})
+		if got := r.Error(); got != "child error" {
+			t.Fatalf("expected %q, got %q", "child error", got)
+		}
+	})
+
+	t.Run("first step failed last passed", func(t *testing.T) {
+		r := report.NewBase("name")
+		r.AddStep(&report.Step{Name: "step1", Status: report.Failed, Err: "non-fatal error"})
+		r.AddStep(&report.Step{Name: "step2", Status: report.Passed})
+		if got := r.Error(); got != "" {
+			t.Fatalf("expected empty error, got %q", got)
+		}
+	})
+
+}
+
 func TestStepMarshal(t *testing.T) {
 	step := &report.Step{
 		Name:     "test",
