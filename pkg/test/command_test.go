@@ -162,15 +162,16 @@ func TestRunPassed(t *testing.T) {
 		report.Passed,
 		report.Summary{Passed: len(testConfig.Tests)},
 	)
+	checkError(t, test.report, "")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Passed)
+	checkStep(t, setup, &report.Step{Name: SetupStep, Status: report.Passed})
 	tests := test.report.Steps[2]
-	checkStep(t, tests, TestsStep, report.Passed)
+	checkStep(t, tests, &report.Step{Name: TestsStep, Status: report.Passed})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Passed, runFlow...)
@@ -185,11 +186,16 @@ func TestRunValidateFailed(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Failed, report.Summary{})
+	checkError(t, test.report, "Failed to validate")
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Failed)
+	checkStep(t, validate, &report.Step{
+		Name:   ValidateStep,
+		Status: report.Failed,
+		Err:    "Failed to validate",
+	})
 }
 
 func TestRunValidateCanceled(t *testing.T) {
@@ -200,11 +206,16 @@ func TestRunValidateCanceled(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Canceled, report.Summary{})
+	checkError(t, test.report, "Canceled validate")
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Canceled)
+	checkStep(t, validate, &report.Step{
+		Name:   ValidateStep,
+		Status: report.Canceled,
+		Err:    "Canceled validate",
+	})
 }
 
 func TestRunSetupFailed(t *testing.T) {
@@ -215,13 +226,18 @@ func TestRunSetupFailed(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Failed, report.Summary{})
+	checkError(t, test.report, "Failed to setup")
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Failed)
+	checkStep(t, setup, &report.Step{
+		Name:   SetupStep,
+		Status: report.Failed,
+		Err:    "Failed to setup",
+	})
 }
 
 func TestRunSetupCanceled(t *testing.T) {
@@ -232,13 +248,18 @@ func TestRunSetupCanceled(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Canceled, report.Summary{})
+	checkError(t, test.report, "Canceled setup")
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Canceled)
+	checkStep(t, setup, &report.Step{
+		Name:   SetupStep,
+		Status: report.Canceled,
+		Err:    "Canceled setup",
+	})
 }
 
 func TestRunTestsFailed(t *testing.T) {
@@ -254,15 +275,21 @@ func TestRunTestsFailed(t *testing.T) {
 		report.Failed,
 		report.Summary{Failed: len(testConfig.Tests)},
 	)
+	checkError(t, test.report,
+		"Test run failed (0 passed, 14 failed, 0 skipped, 0 canceled)")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Passed)
+	checkStep(t, setup, &report.Step{Name: SetupStep, Status: report.Passed})
 	tests := test.report.Steps[2]
-	checkStep(t, tests, TestsStep, report.Failed)
+	checkStep(t, tests, &report.Step{
+		Name:   TestsStep,
+		Status: report.Failed,
+		Err:    "Test run failed (0 passed, 14 failed, 0 skipped, 0 canceled)",
+	})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Failed, "deploy", "protect", "failover")
@@ -282,15 +309,21 @@ func TestRunDisappFailed(t *testing.T) {
 		report.Failed,
 		report.Summary{Passed: 4, Failed: 10},
 	)
+	checkError(t, test.report,
+		"Test run failed (4 passed, 10 failed, 0 skipped, 0 canceled)")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Passed)
+	checkStep(t, setup, &report.Step{Name: SetupStep, Status: report.Passed})
 	tests := test.report.Steps[2]
-	checkStep(t, tests, TestsStep, report.Failed)
+	checkStep(t, tests, &report.Step{
+		Name:   TestsStep,
+		Status: report.Failed,
+		Err:    "Test run failed (4 passed, 10 failed, 0 skipped, 0 canceled)",
+	})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		if strings.HasPrefix(tc.Deployer, "disapp") {
@@ -314,15 +347,20 @@ func TestRunTestsCanceled(t *testing.T) {
 		report.Canceled,
 		report.Summary{Canceled: len(testConfig.Tests)},
 	)
+	checkError(t, test.report, "Test run canceled")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	setup := test.report.Steps[1]
-	checkStep(t, setup, SetupStep, report.Passed)
+	checkStep(t, setup, &report.Step{Name: SetupStep, Status: report.Passed})
 	tests := test.report.Steps[2]
-	checkStep(t, tests, TestsStep, report.Canceled)
+	checkStep(t, tests, &report.Step{
+		Name:   TestsStep,
+		Status: report.Canceled,
+		Err:    "Test run canceled",
+	})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Canceled, "deploy", "protect", "failover")
@@ -337,19 +375,20 @@ func TestCleanPassed(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Passed, report.Summary{Passed: 14})
+	checkError(t, test.report, "")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Passed)
+	checkStep(t, tests, &report.Step{Name: TestsStep, Status: report.Passed})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
-	checkStep(t, cleanup, CleanupStep, report.Passed)
+	checkStep(t, cleanup, &report.Step{Name: CleanupStep, Status: report.Passed})
 }
 
 func TestCleanValidateFailed(t *testing.T) {
@@ -360,11 +399,16 @@ func TestCleanValidateFailed(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Failed, report.Summary{})
+	checkError(t, test.report, "Failed to validate")
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Failed)
+	checkStep(t, validate, &report.Step{
+		Name:   ValidateStep,
+		Status: report.Failed,
+		Err:    "Failed to validate",
+	})
 }
 
 func TestCleanValidateCanceled(t *testing.T) {
@@ -375,11 +419,16 @@ func TestCleanValidateCanceled(t *testing.T) {
 	}
 
 	checkReport(t, test.report, report.Canceled, report.Summary{})
+	checkError(t, test.report, "Canceled validate")
 	if len(test.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Canceled)
+	checkStep(t, validate, &report.Step{
+		Name:   ValidateStep,
+		Status: report.Canceled,
+		Err:    "Canceled validate",
+	})
 }
 
 func TestCleanPurgeFailed(t *testing.T) {
@@ -395,13 +444,19 @@ func TestCleanPurgeFailed(t *testing.T) {
 		report.Failed,
 		report.Summary{Failed: len(testConfig.Tests)},
 	)
+	checkError(t, test.report,
+		"Test clean failed (0 passed, 14 failed, 0 skipped, 0 canceled)")
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Failed)
+	checkStep(t, tests, &report.Step{
+		Name:   TestsStep,
+		Status: report.Failed,
+		Err:    "Test clean failed (0 passed, 14 failed, 0 skipped, 0 canceled)",
+	})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Failed, "purge")
@@ -421,13 +476,18 @@ func TestCleanPurgeCanceled(t *testing.T) {
 		report.Canceled,
 		report.Summary{Canceled: len(testConfig.Tests)},
 	)
+	checkError(t, test.report, "Test clean canceled")
 	if len(test.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Canceled)
+	checkStep(t, tests, &report.Step{
+		Name:   TestsStep,
+		Status: report.Canceled,
+		Err:    "Test clean canceled",
+	})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Canceled, "purge")
@@ -447,19 +507,24 @@ func TestCleanCleanupFailed(t *testing.T) {
 		report.Failed,
 		report.Summary{Passed: len(testConfig.Tests)},
 	)
+	checkError(t, test.report, "Failed to cleanup")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Passed)
+	checkStep(t, tests, &report.Step{Name: TestsStep, Status: report.Passed})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
-	checkStep(t, cleanup, CleanupStep, report.Failed)
+	checkStep(t, cleanup, &report.Step{
+		Name:   CleanupStep,
+		Status: report.Failed,
+		Err:    "Failed to cleanup",
+	})
 }
 
 func TestCleanCleanupCanceled(t *testing.T) {
@@ -475,19 +540,24 @@ func TestCleanCleanupCanceled(t *testing.T) {
 		report.Canceled,
 		report.Summary{Passed: len(testConfig.Tests)},
 	)
+	checkError(t, test.report, "Canceled cleanup")
 	if len(test.report.Steps) != 3 {
 		t.Fatalf("unexpected steps %+v", test.report.Steps)
 	}
 	validate := test.report.Steps[0]
-	checkStep(t, validate, ValidateStep, report.Passed)
+	checkStep(t, validate, &report.Step{Name: ValidateStep, Status: report.Passed})
 	tests := test.report.Steps[1]
-	checkStep(t, tests, TestsStep, report.Passed)
+	checkStep(t, tests, &report.Step{Name: TestsStep, Status: report.Passed})
 	for i, tc := range testConfig.Tests {
 		result := tests.Items[i]
 		checkTest(t, result, tc, report.Passed, "purge")
 	}
 	cleanup := test.report.Steps[2]
-	checkStep(t, cleanup, CleanupStep, report.Canceled)
+	checkStep(t, cleanup, &report.Step{
+		Name:   CleanupStep,
+		Status: report.Canceled,
+		Err:    "Canceled cleanup",
+	})
 }
 
 // Test helpers.
@@ -516,14 +586,23 @@ func checkReport(t *testing.T, r *Report, status report.Status, summary report.S
 	}
 }
 
-func checkStep(t *testing.T, step *report.Step, name string, status report.Status) {
-	if name != step.Name {
-		t.Fatalf("expected step %q, got %q", name, step.Name)
+// We cannot check duration since it may be zero on windows.
+func checkStep(t *testing.T, got *report.Step, expected *report.Step) {
+	if got.Name != expected.Name {
+		t.Fatalf("expected step %q, got %q", expected.Name, got.Name)
 	}
-	if status != step.Status {
-		t.Fatalf("expected status %q, got %q", status, step.Status)
+	if got.Status != expected.Status {
+		t.Fatalf("expected step %q status %q, got %q", expected.Name, expected.Status, got.Status)
 	}
-	// We cannot check duration since it may be zero on windows.
+	if got.Err != expected.Err {
+		t.Fatalf("expected step %q error %q, got %q", expected.Name, expected.Err, got.Err)
+	}
+}
+
+func checkError(t *testing.T, r *Report, expected string) {
+	if got := r.Error(); got != expected {
+		t.Fatalf("expected error %q, got %q", expected, got)
+	}
 }
 
 func checkTest(
@@ -538,7 +617,7 @@ func checkTest(
 		t.Fatalf("expected step %q, got %q", name, test.Name)
 	}
 	if status != test.Status {
-		t.Fatalf("expected status %q, got %q", status, test.Status)
+		t.Fatalf("expected step %q status %q, got %q", name, status, test.Status)
 	}
 	duration := totalDuration(test.Items)
 	if test.Duration != duration {
@@ -549,9 +628,16 @@ func checkTest(
 	}
 	last := len(flow) - 1
 	for i, name := range flow[:last] {
-		checkStep(t, test.Items[i], name, report.Passed)
+		checkStep(t, test.Items[i], &report.Step{Name: name, Status: report.Passed})
 	}
-	checkStep(t, test.Items[last], flow[last], test.Status)
+	lastStep := &report.Step{Name: flow[last], Status: test.Status}
+	switch test.Status {
+	case report.Failed:
+		lastStep.Err = fmt.Sprintf("Failed to %s application %q", flow[last], name)
+	case report.Canceled:
+		lastStep.Err = fmt.Sprintf("Canceled %s application %q", flow[last], name)
+	}
+	checkStep(t, test.Items[last], lastStep)
 }
 
 func totalDuration(steps []*report.Step) float64 {

@@ -148,9 +148,11 @@ func (t *Test) failStep(err error) bool {
 	t.Duration += step.Duration
 	if errors.Is(err, context.Canceled) {
 		step.Status = report.Canceled
+		step.Err = fmt.Sprintf("Canceled %s application %q", step.Name, t.Name())
 		console.Error("Canceled application %q %s", t.Name(), step.Name)
 	} else {
 		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Failed to %s application %q", step.Name, t.Name())
 		console.Error("Failed to %s application %q", step.Name, t.Name())
 	}
 	t.Status = step.Status

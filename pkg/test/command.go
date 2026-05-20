@@ -10,6 +10,7 @@ import (
 	"maps"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	stdtime "time"
 
@@ -299,6 +300,12 @@ func (c *Command) gatherS3Data() {
 	c.Logger().Infof("Gathered S3 data in %.2f seconds", time.Since(start).Seconds())
 }
 
+// displayName returns a display name from the command name (e.g., "test-run" -> "Test run").
+func (c *Command) displayName() string {
+	name := strings.ReplaceAll(c.report.Name, "-", " ")
+	return strings.ToUpper(name[:1]) + name[1:]
+}
+
 func (c *Command) failed() error {
 	c.command.WriteYAMLReport(c.report)
 	return fmt.Errorf("%s (%s)", c.report.Status, summaryString(c.report.Summary))
@@ -319,9 +326,11 @@ func (c *Command) failStep(err error) bool {
 	c.current.Duration = time.Since(c.currentStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
 		c.current.Status = report.Canceled
+		c.current.Err = fmt.Sprintf("Canceled %s", c.current.Name)
 		console.Error("Canceled %s", c.current.Name)
 	} else {
 		c.current.Status = report.Failed
+		c.current.Err = fmt.Sprintf("Failed to %s", c.current.Name)
 		console.Error("Failed to %s", c.current.Name)
 	}
 	c.Logger().Errorf("Step %q %s: %s", c.current.Name, c.current.Status, err)
@@ -371,10 +380,24 @@ func (c *Command) runFlowFunc(f flowFunc) bool {
 	}
 
 	res := c.finishStep()
+
+	testsStep := c.report.Steps[len(c.report.Steps)-1]
+	switch testsStep.Status {
+	case report.Canceled:
+		testsStep.Err = fmt.Sprintf("%s canceled", c.displayName())
+	case report.Failed:
+		testsStep.Err = fmt.Sprintf(
+			"%s failed (%s)",
+			c.displayName(),
+			summaryString(c.report.Summary),
+		)
+	}
+
 	if c.report.Status == report.Failed {
 		c.gatherData()
 		c.gatherS3Data()
 	}
+
 	return res
 }
 
