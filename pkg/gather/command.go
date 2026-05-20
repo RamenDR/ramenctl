@@ -10,6 +10,7 @@ import (
 	"maps"
 	"path/filepath"
 	"slices"
+	"strings"
 	stdtime "time"
 
 	"github.com/nirs/kubectl-gather/pkg/gather"
@@ -168,9 +169,14 @@ func (c *Command) inspectApplication() ([]string, bool) {
 		if errors.Is(err, context.Canceled) {
 			console.Error("Canceled %s", step.Name)
 			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
 		} else {
 			console.Error("Failed to %s", step.Name)
 			step.Status = report.Failed
+			step.Err = fmt.Sprintf(
+				"Failed to inspect application %q in namespace %q",
+				c.opts.DRPCName, c.opts.DRPCNamespace,
+			)
 		}
 		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
 		c.current.AddStep(step)
@@ -196,6 +202,7 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 	c.Logger().Infof("Gathering from clusters %q with options %+v",
 		logging.ClusterNames(clusters), options)
 
+	var failedClusters []string
 	for r := range c.backend.Gather(c, clusters, options) {
 		step := &report.Step{Name: fmt.Sprintf("gather %q", r.Name), Duration: r.Duration}
 		if r.Err != nil {
@@ -203,6 +210,8 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 			console.Error(msg)
 			c.Logger().Errorf("%s: %s", msg, r.Err)
 			step.Status = report.Failed
+			step.Err = fmt.Sprintf("Failed to gather data from cluster %q", r.Name)
+			failedClusters = append(failedClusters, r.Name)
 			c.current.AddStep(step)
 		} else {
 			step.Status = report.Passed
@@ -213,7 +222,19 @@ func (c *Command) gatherApplication(options gathering.Options) bool {
 
 	c.Logger().Infof("Gathered clusters in %.2f seconds", time.Since(start).Seconds())
 
-	return c.current.Status == report.Passed
+	switch c.current.Status {
+	case report.Canceled:
+		c.current.Err = "Canceled gather data from clusters"
+		return false
+	case report.Failed:
+		c.current.Err = fmt.Sprintf(
+			"Failed to gather data from clusters %s",
+			strings.Join(failedClusters, ", "),
+		)
+		return false
+	default:
+		return true
+	}
 }
 
 func (c *Command) inspectS3Profiles() ([]*s3.Profile, string, bool) {
@@ -227,9 +248,11 @@ func (c *Command) inspectS3Profiles() ([]*s3.Profile, string, bool) {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
 			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
 			console.Error("Canceled %s", step.Name)
 		} else {
 			step.Status = report.Failed
+			step.Err = "Failed to read S3 profiles from hub"
 			console.Error("Failed to %s", step.Name)
 		}
 		c.Logger().Errorf("Step %q %s: %s", c.current.Name, step.Status, err)
@@ -256,6 +279,7 @@ func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string)
 	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
 		logging.ProfileNames(profiles), prefix)
 
+	var failedProfiles []string
 	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
 		step := &report.Step{
 			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
@@ -267,11 +291,14 @@ func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string)
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Canceled
+				step.Err = msg
 			} else {
 				msg := fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Failed
+				step.Err = fmt.Sprintf("Failed to gather S3 profile %q", r.ProfileName)
+				failedProfiles = append(failedProfiles, r.ProfileName)
 			}
 		} else {
 			step.Status = report.Passed
@@ -282,7 +309,19 @@ func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string)
 
 	c.Logger().Infof("Gathered application S3 data in %.2f seconds", time.Since(start).Seconds())
 
-	return c.current.Status == report.Passed
+	switch c.current.Status {
+	case report.Canceled:
+		c.current.Err = "Canceled gather S3 profiles"
+		return false
+	case report.Failed:
+		c.current.Err = fmt.Sprintf(
+			"Failed to gather S3 profiles %s",
+			strings.Join(failedProfiles, ", "),
+		)
+		return false
+	default:
+		return true
+	}
 }
 
 // withTimeout returns a derived command with a deadline. Call cancel to release resources
@@ -381,9 +420,11 @@ func (c *Command) failStep(err error) bool {
 	c.current.Duration = time.Since(c.currentStarted).Seconds()
 	if errors.Is(err, context.Canceled) {
 		c.current.Status = report.Canceled
+		c.current.Err = fmt.Sprintf("Canceled %s", c.current.Name)
 		console.Error("Canceled %s", c.current.Name)
 	} else {
 		c.current.Status = report.Failed
+		c.current.Err = fmt.Sprintf("Failed to %s", c.current.Name)
 		console.Error("Failed to %s", c.current.Name)
 	}
 	c.command.Logger().Errorf("Step %q %s: %s", c.current.Name, c.current.Status, err)

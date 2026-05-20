@@ -75,13 +75,14 @@ func TestGatherApplicationPassed(t *testing.T) {
 		t.Fatal(err)
 	}
 	checkReport(t, cmd.report, report.Passed)
+	checkError(t, cmd.report, "")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Passed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{Name: "gather data", Status: report.Passed})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
@@ -101,12 +102,17 @@ func TestGatherApplicationValidateFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report, "Failed to validate config")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{
+		Name:   "validate config",
+		Status: report.Failed,
+		Err:    "Failed to validate config",
+	})
 }
 
 func TestGatherApplicationValidateCanceled(t *testing.T) {
@@ -115,12 +121,17 @@ func TestGatherApplicationValidateCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
+	checkError(t, cmd.report, "Canceled validate config")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 1 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Canceled)
+	checkStep(t, cmd.report.Steps[0], &report.Step{
+		Name:   "validate config",
+		Status: report.Canceled,
+		Err:    "Canceled validate config",
+	})
 }
 
 func TestGatherApplicationInspectFailed(t *testing.T) {
@@ -129,16 +140,22 @@ func TestGatherApplicationInspectFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report,
+		`Failed to inspect application "appset-deploy-rbd" in namespace "argocd"`)
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{Name: "gather data", Status: report.Failed})
 
 	items := []*report.Step{
-		{Name: "inspect application", Status: report.Failed},
+		{
+			Name:   "inspect application",
+			Status: report.Failed,
+			Err:    `Failed to inspect application "appset-deploy-rbd" in namespace "argocd"`,
+		},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -149,17 +166,26 @@ func TestGatherApplicationGatherClusterFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report, "Failed to gather data from clusters hub")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{
+		Name:   "gather data",
+		Status: report.Failed,
+		Err:    "Failed to gather data from clusters hub",
+	})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
-		{Name: "gather \"hub\"", Status: report.Failed},
+		{
+			Name:   "gather \"hub\"",
+			Status: report.Failed,
+			Err:    `Failed to gather data from cluster "hub"`,
+		},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 	}
@@ -195,20 +221,25 @@ func TestGatherApplicationInspectS3ProfilesFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report, "Failed to read S3 profiles from hub")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{Name: "gather data", Status: report.Failed})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
-		{Name: "inspect S3 profiles", Status: report.Failed},
+		{
+			Name:   "inspect S3 profiles",
+			Status: report.Failed,
+			Err:    "Failed to read S3 profiles from hub",
+		},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -220,20 +251,25 @@ func TestGatherApplicationInspectS3ProfilesCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
+	checkError(t, cmd.report, "Canceled inspect S3 profiles")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Canceled)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{Name: "gather data", Status: report.Canceled})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
 		{Name: "gather \"hub\"", Status: report.Passed},
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
-		{Name: "inspect S3 profiles", Status: report.Canceled},
+		{
+			Name:   "inspect S3 profiles",
+			Status: report.Canceled,
+			Err:    "Canceled inspect S3 profiles",
+		},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -245,13 +281,19 @@ func TestGatherApplicationGetSecretFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report,
+		"Failed to gather S3 profiles minio-on-dr1, minio-on-dr2")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{
+		Name:   "gather data",
+		Status: report.Failed,
+		Err:    "Failed to gather S3 profiles minio-on-dr1, minio-on-dr2",
+	})
 
 	// When GetSecret returns an error. The profile will have empty credentials
 	// causing S3 gather to fail.
@@ -261,8 +303,16 @@ func TestGatherApplicationGetSecretFailed(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Passed},
-		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
-		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
+		{
+			Name:   "gather S3 profile \"minio-on-dr1\"",
+			Status: report.Failed,
+			Err:    `Failed to gather S3 profile "minio-on-dr1"`,
+		},
+		{
+			Name:   "gather S3 profile \"minio-on-dr2\"",
+			Status: report.Failed,
+			Err:    `Failed to gather S3 profile "minio-on-dr2"`,
+		},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -274,13 +324,19 @@ func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report,
+		"Failed to gather S3 profiles minio-on-dr1, minio-on-dr2")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{
+		Name:   "gather data",
+		Status: report.Failed,
+		Err:    "Failed to gather S3 profiles minio-on-dr1, minio-on-dr2",
+	})
 
 	// When GetSecret returns a secret with invalid value, causing S3 gather to fail.
 	items := []*report.Step{
@@ -289,8 +345,16 @@ func TestGatherApplicationGetSecretInvalid(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Passed},
-		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
-		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Failed},
+		{
+			Name:   "gather S3 profile \"minio-on-dr1\"",
+			Status: report.Failed,
+			Err:    `Failed to gather S3 profile "minio-on-dr1"`,
+		},
+		{
+			Name:   "gather S3 profile \"minio-on-dr2\"",
+			Status: report.Failed,
+			Err:    `Failed to gather S3 profile "minio-on-dr2"`,
+		},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
 }
@@ -302,13 +366,18 @@ func TestGatherApplicationS3DataFailed(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Failed)
+	checkError(t, cmd.report, "Failed to gather S3 profiles minio-on-dr1")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Failed)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{
+		Name:   "gather data",
+		Status: report.Failed,
+		Err:    "Failed to gather S3 profiles minio-on-dr1",
+	})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
@@ -316,7 +385,11 @@ func TestGatherApplicationS3DataFailed(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Passed},
-		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Failed},
+		{
+			Name:   "gather S3 profile \"minio-on-dr1\"",
+			Status: report.Failed,
+			Err:    `Failed to gather S3 profile "minio-on-dr1"`,
+		},
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
@@ -329,13 +402,18 @@ func TestGatherApplicationS3DataCanceled(t *testing.T) {
 		t.Fatal("command did not fail")
 	}
 	checkReport(t, cmd.report, report.Canceled)
+	checkError(t, cmd.report, "Canceled gather S3 profiles")
 	checkApplication(t, cmd.report, testApplication)
 
 	if len(cmd.report.Steps) != 2 {
 		t.Fatalf("unexpected steps %+v", cmd.report.Steps)
 	}
-	checkStep(t, cmd.report.Steps[0], "validate config", report.Passed)
-	checkStep(t, cmd.report.Steps[1], "gather data", report.Canceled)
+	checkStep(t, cmd.report.Steps[0], &report.Step{Name: "validate config", Status: report.Passed})
+	checkStep(t, cmd.report.Steps[1], &report.Step{
+		Name:   "gather data",
+		Status: report.Canceled,
+		Err:    "Canceled gather S3 profiles",
+	})
 
 	items := []*report.Step{
 		{Name: "inspect application", Status: report.Passed},
@@ -343,7 +421,11 @@ func TestGatherApplicationS3DataCanceled(t *testing.T) {
 		{Name: "gather \"dr1\"", Status: report.Passed},
 		{Name: "gather \"dr2\"", Status: report.Passed},
 		{Name: "inspect S3 profiles", Status: report.Passed},
-		{Name: "gather S3 profile \"minio-on-dr1\"", Status: report.Canceled},
+		{
+			Name:   "gather S3 profile \"minio-on-dr1\"",
+			Status: report.Canceled,
+			Err:    "Canceled gather S3 profile \"minio-on-dr1\"",
+		},
 		{Name: "gather S3 profile \"minio-on-dr2\"", Status: report.Passed},
 	}
 	checkItems(t, cmd.report.Steps[1], items)
@@ -386,12 +468,22 @@ func checkApplication(t *testing.T, report *report.Report, expected *report.Appl
 	}
 }
 
-func checkStep(t *testing.T, step *report.Step, name string, status report.Status) {
-	if name != step.Name {
-		t.Fatalf("expected step %q, got %q", name, step.Name)
+// We cannot check duration since it may be zero on windows.
+func checkStep(t *testing.T, got *report.Step, expected *report.Step) {
+	if got.Name != expected.Name {
+		t.Fatalf("expected step %q, got %q", expected.Name, got.Name)
 	}
-	if status != step.Status {
-		t.Fatalf("expected status %q, got %q", status, step.Status)
+	if got.Status != expected.Status {
+		t.Fatalf("expected step %q status %q, got %q", expected.Name, expected.Status, got.Status)
+	}
+	if got.Err != expected.Err {
+		t.Fatalf("expected step %q error %q, got %q", expected.Name, expected.Err, got.Err)
+	}
+}
+
+func checkError(t *testing.T, r *report.Report, expected string) {
+	if got := r.Error(); got != expected {
+		t.Fatalf("expected error %q, got %q", expected, got)
 	}
 }
 
@@ -400,7 +492,7 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 		t.Fatalf("expected %d items, got %d", len(expected), len(step.Items))
 	}
 	for i, item := range expected {
-		checkStep(t, step.Items[i], item.Name, item.Status)
+		checkStep(t, step.Items[i], item)
 	}
 }
 
