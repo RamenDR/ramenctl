@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	"github.com/ramendr/ramen/e2e/types"
@@ -132,9 +133,11 @@ func (c *Command) inspectS3Profiles() ([]*s3.Profile, error) {
 		step.Duration = time.Since(start).Seconds()
 		if errors.Is(err, context.Canceled) {
 			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
 			console.Error("Canceled %s", step.Name)
 		} else {
 			step.Status = report.Failed
+			step.Err = "Failed to read S3 profiles from hub"
 			console.Error("Failed to %s", step.Name)
 		}
 		c.Logger().Errorf("Step %q %s: %s", step.Name, step.Status, err)
@@ -199,6 +202,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if err := c.validateHub(&s.Hub); err != nil {
 		step.Status = report.Failed
+		step.Err = "Failed to validate hub"
 		msg := "Failed to validate hub"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, err)
@@ -207,6 +211,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if err := c.validateManagedClusters(&s.Clusters); err != nil {
 		step.Status = report.Failed
+		step.Err = "Failed to validate managed clusters"
 		msg := "Failed to validate managed clusters"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, err)
@@ -217,6 +222,7 @@ func (c *Command) validateGatheredData() bool {
 
 	if summary.HasIssues(c.Report.Summary) {
 		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Validation failed (%s)", summary.String(c.Report.Summary))
 		msg := "Issues found during validation"
 		console.Error(msg)
 		log.Errorf("%s: %s", msg, summary.String(c.Report.Summary))
@@ -1079,6 +1085,7 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 
 	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
 
+	var failedProfiles []string
 	for r := range c.Backend.CheckS3(c, profiles) {
 		// Collect results to validate and report S3 status in validateS3Status.
 		c.S3Results = append(c.S3Results, r)
@@ -1093,11 +1100,14 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Canceled
+				step.Err = msg
 			} else {
 				msg := fmt.Sprintf("Failed to check S3 profile %q", r.ProfileName)
 				console.Error(msg)
 				c.Logger().Errorf("%s: %s", msg, r.Err)
 				step.Status = report.Failed
+				step.Err = fmt.Sprintf("Failed to check S3 profile %q", r.ProfileName)
+				failedProfiles = append(failedProfiles, r.ProfileName)
 			}
 		} else {
 			step.Status = report.Passed
@@ -1108,7 +1118,19 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 
 	c.Logger().Infof("Checked S3 profiles in %.2f seconds", time.Since(start).Seconds())
 
-	return c.Current.Status != report.Canceled
+	switch c.Current.Status {
+	case report.Canceled:
+		c.Current.Err = "Canceled check S3 profiles"
+		return false
+	case report.Failed:
+		c.Current.Err = fmt.Sprintf(
+			"Failed to check S3 profiles %s",
+			strings.Join(failedProfiles, ", "),
+		)
+		return true
+	default:
+		return true
+	}
 }
 
 func (c *Command) validateS3Status(s *report.ClustersS3Status) {

@@ -108,14 +108,23 @@ func checkNamespaces(t *testing.T, r *Report, expected []string) {
 	}
 }
 
-func checkStep(t *testing.T, step *report.Step, name string, status report.Status) {
-	if name != step.Name {
-		t.Fatalf("expected step %q, got %q", name, step.Name)
+// We cannot check duration since it may be zero on windows.
+func checkStep(t *testing.T, got *report.Step, expected *report.Step) {
+	if got.Name != expected.Name {
+		t.Fatalf("expected step %q, got %q", expected.Name, got.Name)
 	}
-	if status != step.Status {
-		t.Fatalf("expected status %q, got %q", status, step.Status)
+	if got.Status != expected.Status {
+		t.Fatalf("expected step %q status %q, got %q", expected.Name, expected.Status, got.Status)
 	}
-	// We cannot check duration since it may be zero on windows.
+	if got.Err != expected.Err {
+		t.Fatalf("expected step %q error %q, got %q", expected.Name, expected.Err, got.Err)
+	}
+}
+
+func checkError(t *testing.T, r *Report, expected string) {
+	if got := r.Error(); got != expected {
+		t.Fatalf("expected error %q, got %q", expected, got)
+	}
 }
 
 func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
@@ -123,7 +132,7 @@ func checkItems(t *testing.T, step *report.Step, expected []*report.Step) {
 		t.Fatalf("expected items %+v, got %+v", expected, step.Items)
 	}
 	for i, item := range expected {
-		checkStep(t, step.Items[i], item.Name, item.Status)
+		checkStep(t, step.Items[i], item)
 	}
 }
 
