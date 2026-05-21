@@ -70,12 +70,20 @@ func TestFindNextSuffix(t *testing.T) {
 			suffix: "-2",
 		},
 		{
-			name: "gap in sequence numbers",
+			name: "gap in middle",
 			files: []string{
 				"validate-clusters.log",
 				"validate-clusters-3.log",
 			},
 			suffix: "-4",
+		},
+		{
+			name: "gap in front",
+			files: []string{
+				"validate-clusters-4.yaml",
+				"validate-clusters-5.log",
+			},
+			suffix: "-6",
 		},
 	}
 
