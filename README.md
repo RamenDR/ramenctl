@@ -5,6 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 
 # ramenctl
 
+[![Actions Status](https://github.com/ramendr/ramenctl/workflows/Test/badge.svg)](https://github.com/ramendr/ramenctl/actions)
+[![GoReport Status](https://goreportcard.com/badge/github.com/ramendr/ramenctl)](https://goreportcard.com/report/github.com/ramendr/ramenctl)
+[![GitHub All Releases](https://img.shields.io/github/downloads/ramendr/ramenctl/total.svg)](https://github.com/ramendr/ramenctl/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/ramendr/ramenctl)](https://github.com/ramendr/ramenctl/releases/latest)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ramendr/ramenctl.svg)](https://pkg.go.dev/github.com/ramendr/ramenctl)
+
 Command line tool and Go module for managing and troubleshooting Ramen.
 
 ## Overview
