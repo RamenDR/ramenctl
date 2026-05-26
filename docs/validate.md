@@ -38,6 +38,10 @@ The command supports the following sub-commands:
 > [Configuring common options](docs/init.md#configuring-common-options)
 > to learn how to create one.
 
+> [!TIP]
+> Your AI agent can look up applications and run validate commands for
+> you using the skills installed by `ramenctl init`.
+
 ## validate application
 
 The validate application command validates a specific DR-protected application

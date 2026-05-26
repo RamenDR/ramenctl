@@ -1,0 +1,121 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+---
+name: {{.Command.Slug}}-{{.Skill.Name}}
+description: >-
+  Validate disaster recovery cluster configuration using
+  {{.Command.Name}} validate clusters. Use when the user wants to check
+  clusters are ok, verify DR setup, check cluster health, or troubleshoot
+  cluster-level DR problems.
+---
+
+# {{.Command.Name}} validate clusters
+
+Validate disaster recovery clusters by gathering cluster-scoped and ramen
+resources from all clusters, and checking that S3 endpoints are accessible.
+
+## Requirements
+
+- A configuration file with cluster kubeconfigs. If `config.yaml` exists,
+  use it. If not, ask the user to create one with `{{.Command.Name}} init`.
+
+## Workflow
+
+### Step 1: Pick an output directory
+
+Ask the user where to store the report. Suggest `out/clusters`. If the
+directory already exists, suggest a new name like `out/clusters-2`,
+`out/clusters-3`, etc.
+
+### Step 2: Run validate clusters
+
+```console
+$ {{.Command.Name}} validate clusters -o <output-dir> --interactive=false
+```
+
+`--interactive=false` prevents {{.Command.Name}} from opening a browser—you open the
+report yourself in Step 4.
+
+The command takes a few seconds on local clusters and about a minute on
+remote clusters.
+
+### Step 3: Check the result
+
+**On success** the last line shows:
+
+```console
+✅ Validation completed (N ok, 0 warning, 0 problem)
+```
+
+**On problems** the summary includes warning or problem counts and the
+command exits with a non-zero exit code:
+
+```console
+❌ Validation completed (N ok, M warning, P problem)
+```
+
+When validation **finishes and writes a report**, a non-zero exit always means
+there are problems **in** that report. If the command **fails before** a
+report is written (early error), there may be no HTML—use the log and console
+output instead.
+
+### Step 4: Open the HTML report
+
+If `<output-dir>/validate-clusters.html` exists, open it in the
+browser using `open <path>` (macOS), `xdg-open <path>` (Linux), or
+`cmd /c start "" <path>` (Windows). Do not skip unless the user asks
+to skip.
+
+The report may not exist if the command failed before writing it.
+
+### Step 5: Inspect the report
+
+The output directory contains:
+
+| File | Purpose |
+|------|---------|
+| `validate-clusters.yaml` | Machine and human readable report |
+| `validate-clusters.html` | HTML report |
+| `validate-clusters.log` | Detailed log for troubleshooting |
+| `validate-clusters.data/` | Raw resources gathered from all clusters |
+
+Read the YAML report to understand the status:
+
+```console
+$ yq '.clustersStatus' < <output-dir>/validate-clusters.yaml
+```
+
+#### Gathered data structure
+
+```console
+$ tree -L3 <output-dir>/validate-clusters.data
+validate-clusters.data/
+├── <cluster>/
+│   ├── cluster/
+│   │   ├── apiextensions.k8s.io/
+│   │   ├── namespaces/
+│   │   ├── nodes/
+│   │   ├── ramendr.openshift.io/
+│   │   ├── storage.k8s.io/
+│   │   └── ...
+│   └── namespaces/
+│       └── ramen-system/
+└── ...
+```
+
+### Step 6: Troubleshoot problems
+
+This section is an **initial draft** — DR troubleshooting is hard and
+needs more playbooks over time (for example a future analyze skill).
+
+If problems were found, help the user understand them:
+
+1. Read the YAML report — look for `state:` values that are not `ok ✅`
+2. Check the log file for error details
+3. Inspect raw resources in `validate-clusters.data/`
+4. Summarize the findings and suggest what the user should look at
+
+## Notes
+
+- To report DR issues, archive the entire output directory and upload it
+  to the issue tracker.

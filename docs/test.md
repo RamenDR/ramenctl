@@ -37,6 +37,10 @@ The command supports the following sub-commands:
 > The test command requires a configuration file. See [init](docs/init.md) to
 > learn how to create one.
 
+> [!TIP]
+> Your AI agent can configure tests and run them for you using the
+> skills installed by `ramenctl init`.
+
 ## test run
 
 The run command runs a disaster recovery flow with one or more tiny applications

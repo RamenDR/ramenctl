@@ -21,7 +21,12 @@
       1. [Create default config](#create-default-config)
       1. [Create named config](#create-named-config)
       1. [Create config from envfile (upstream only)](#create-config-from-envfile-upstream-only)
+      1. [Init with --agent cursor](#init-with---agent-cursor)
+      1. [Init with --agent claude](#init-with---agent-claude)
+      1. [Init with --agent bob](#init-with---agent-bob)
+      1. [Init with invalid --agent](#init-with-invalid---agent)
       1. [Config already exists](#config-already-exists)
+      1. [Re-init is safe](#re-init-is-safe)
    1. [Validate clusters command](#validate-clusters-command)
       1. [Validate fully configured clusters](#validate-fully-configured-clusters)
       1. [Validate clusters ramen not deployed](#validate-clusters-ramen-not-deployed)
@@ -190,7 +195,7 @@ non-zero code.
 
 #### Create default config
 
-**Preconditions:** No `config.yaml` in current directory.
+**Preconditions:** No `config.yaml` or `.agents/skills/` in current directory.
 
 **Steps:**
 
@@ -199,11 +204,26 @@ odf dr init
 ```
 
 **Expected result:**
-- Prints `Created config file "config.yaml" - please modify for your clusters`.
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills in ".agents/skills/"
+   ✅ Created context file "AGENTS.md"
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
+```
+
 - File `config.yaml` is created with documented sections: `clusters`, `repo`,
   `drPolicy`, `clusterSet`, `pvcSpecs`, `deployers`, `tests`.
 - File contains helpful comments explaining each section.
-- File includes notes about options that user may need to modify
+- File includes notes about options that user may need to modify.
+- Directory `.agents/skills/` is created with one subdirectory per subcommand,
+  each containing a `SKILL.md` file.
+- File `AGENTS.md` is created with project overview and skill index.
 
 #### Create named config
 
@@ -218,6 +238,7 @@ odf dr init --config myenv.yaml
 **Expected result:**
 - Prints `Created config file "myenv.yaml" - please modify for your clusters`.
 - File `myenv.yaml` is created.
+- Skills are installed in `.agents/skills/` and `AGENTS.md` is created.
 
 #### Create config from envfile (upstream only)
 
@@ -231,7 +252,113 @@ ramenctl init --envfile ../ramen/test/envs/regional-dr.yaml
 
 **Expected result:**
 - Prints the envfile path and success message.
-- `config.yaml` is populated with cluster names, storage class names and distro relevant to ramen testing environment.
+- `config.yaml` is populated with cluster names, storage class names and
+  distro relevant to ramen testing environment.
+- Skills are installed in `.agents/skills/` and `AGENTS.md` is created.
+
+#### Init with --agent cursor
+
+**Preconditions:** No `config.yaml` or `.cursor/skills/` in current directory.
+
+**Steps:**
+
+```bash
+odf dr init -a cursor
+```
+
+**Expected result:**
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills for Cursor in ".cursor/skills/"
+   ✅ Created context file ".cursor/rules/ramenctl.mdc"
+
+✅ Init completed
+```
+
+- Skills are installed in `.cursor/skills/` with one subdirectory per
+  subcommand (e.g., `odf-dr-init/SKILL.md`).
+- Each skill file contains YAML frontmatter with Cursor metadata.
+- Skill content uses `odf dr` as the command name.
+- Context file `.cursor/rules/ramenctl.mdc` is created with `alwaysApply: true`.
+
+#### Init with --agent claude
+
+**Preconditions:** No `config.yaml` or `.claude/skills/` in current directory.
+
+**Steps:**
+
+```bash
+odf dr init -a claude
+```
+
+**Expected result:**
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills for Claude Code in ".claude/skills/"
+   ✅ Created context file "CLAUDE.md"
+
+✅ Init completed
+```
+
+- Skills are installed in `.claude/skills/` with one subdirectory per
+  subcommand, each containing a `SKILL.md` file.
+- File `CLAUDE.md` is created with project overview.
+
+#### Init with --agent bob
+
+**Preconditions:** No `config.yaml` or `.bob/skills/` in current directory.
+
+**Steps:**
+
+```bash
+odf dr init -a bob
+```
+
+**Expected result:**
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills for Bob in ".bob/skills/"
+   ✅ Created context file "AGENTS.md"
+      Use "/mode advanced" in Bob to enable skills
+
+✅ Init completed
+```
+
+- Skills are installed in `.bob/skills/` with one subdirectory per
+  subcommand, each containing a `SKILL.md` file.
+- File `AGENTS.md` is created with project overview.
+
+#### Init with invalid --agent
+
+**Steps:**
+
+```bash
+odf dr init -a vim
+```
+
+**Expected result:**
+
+```
+Error: unknown agent tool "vim" (choose from: bob, claude, cursor, generic)
+Usage:
+  odf dr init [flags]
+...
+```
+
+- Command fails immediately with usage help.
+- No config file or skills are created.
 
 #### Config already exists
 
@@ -243,8 +370,53 @@ ramenctl init --envfile ../ramen/test/envs/regional-dr.yaml
 odf dr init
 ```
 
-**Expected result:** Error indicating the file already exists. Does not
-overwrite the existing file.
+**Expected result:**
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ⚠️ Configuration file "config.yaml" already exists
+   ✅ Created skills in ".agents/skills/"
+   ✅ Created context file "AGENTS.md"
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
+```
+
+- Existing config file is not overwritten.
+- Skills and context file are installed.
+- Command succeeds.
+
+#### Re-init is safe
+
+**Preconditions:** `odf dr init` was already run. Config file, skills,
+and context file all exist.
+
+**Steps:**
+
+```bash
+odf dr init
+```
+
+**Expected result:**
+
+```
+⭐ Using config "config.yaml"
+
+🔎 Initializing ...
+   ⚠️ Configuration file "config.yaml" already exists
+   ⚠️ Skills already exist in ".agents/skills/"
+   ⚠️ Context file "AGENTS.md" already exists
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
+```
+
+- Existing files are not overwritten, preserving user modifications.
+- Command succeeds with warnings.
+- To update skills after upgrading, delete the skills directory and
+  re-run `init`.
 
 
 ### Validate clusters command

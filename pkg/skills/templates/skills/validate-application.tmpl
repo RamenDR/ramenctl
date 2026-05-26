@@ -1,0 +1,167 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+---
+name: {{.Command.Slug}}-{{.Skill.Name}}
+description: >-
+  Validate a DR-protected application using {{.Command.Name}} validate
+  application. Use when the user wants to check an application is ok,
+  check application DR health, troubleshoot a protected application, or
+  verify application status after failover/relocate. When triaging or
+  reporting bugs, also suggest {{.Command.Name}} validate clusters so the
+  user has both the app report and the cluster-wide DR report.
+---
+
+# {{.Command.Name}} validate application
+
+Validate a specific DR-protected application by gathering related namespaces
+from all clusters and S3 data, and inspecting the gathered resources.
+
+## Requirements
+
+- A configuration file with cluster kubeconfigs. If `config.yaml` exists,
+  use it. If not, ask the user to create one with `{{.Command.Name}} init`.
+- At least one DR-protected application in the clusters
+
+## Workflow
+
+### Step 1: Look up protected applications
+
+List DRPCs on the hub using the hub kubeconfig from the {{.Command.Name}} config file:
+
+```console
+$ kubectl get drpc -A --kubeconfig <hub-kubeconfig>
+NAMESPACE          NAME       AGE   PREFERREDCLUSTER   FAILOVERCLUSTER   DESIREDSTATE   CURRENTSTATE
+openshift-dr-ops   app1       18d   c1                 c2                Failover       FailedOver
+openshift-gitops   app2       22d   c1                                                  Deployed
+```
+
+Present the list and let the user choose which application to validate.
+The `NAME` and `NAMESPACE` columns map to the `--name` and `--namespace`
+flags.
+
+If the user wants to validate multiple applications, validate them one
+at a time. Do not run validations in parallel — it overloads the server
+and makes error reporting harder.
+
+### Step 2: Run validate application
+
+Ask the user where to store the report. Suggest `out/<namespace>-<app-name>`,
+e.g., `out/myns-myapp`. If the directory already exists, suggest a new
+name like `out/myns-myapp-2`, `out/myns-myapp-3`, etc.
+
+```console
+$ {{.Command.Name}} validate application --name <drpc-name> --namespace <namespace> -o <output-dir> --interactive=false
+```
+
+`--interactive=false` prevents {{.Command.Name}} from opening a browser—you open the
+report yourself in Step 4.
+
+The command takes a few seconds on local clusters and about a minute on
+remote clusters.
+
+### Step 3: Check the result
+
+**On success:**
+
+```console
+✅ Validation completed (N ok, 0 warning, 0 problem)
+```
+
+**On problems** the command exits with a non-zero exit code:
+
+```console
+❌ Validation completed (N ok, M warning, P problem)
+```
+
+When validation **finishes and writes a report**, a non-zero exit always means
+there are problems **in** that report. If the command **fails before** a
+report is written (early error), there may be no HTML—use the log and console
+output instead.
+
+### Step 4: Open the HTML report
+
+If `<output-dir>/validate-application.html` exists, open it in the
+browser using `open <path>` (macOS), `xdg-open <path>` (Linux), or
+`cmd /c start "" <path>` (Windows). Do not skip unless the user asks
+to skip.
+
+The report may not exist if the command failed before writing it.
+
+### Step 5: Inspect the report
+
+The output directory contains:
+
+| File | Purpose |
+|------|---------|
+| `validate-application.yaml` | Machine and human readable report |
+| `validate-application.html` | HTML report |
+| `validate-application.log` | Detailed log |
+| `validate-application.data/` | Raw resources from all clusters + S3 |
+
+Read the application status:
+
+```console
+$ yq '.applicationStatus' < <output-dir>/validate-application.yaml
+```
+
+#### Gathered data structure
+
+```console
+$ tree -L3 <output-dir>/validate-application.data
+validate-application.data/
+├── <cluster>/
+│   ├── cluster/
+│   │   ├── namespaces/
+│   │   ├── persistentvolumes/
+│   │   └── storage.k8s.io/
+│   └── namespaces/
+│       └── <app-namespace>/
+├── ...
+└── s3/
+    └── <profile-name>/
+        └── <app-namespace>/
+```
+
+### Step 6: Troubleshoot problems
+
+This section is an **initial draft** — DR troubleshooting is hard and
+needs more playbooks over time (for example a future analyze skill).
+
+If problems were found, help the user understand them:
+
+1. Read the YAML report — look for `state:` values that are not `ok ✅`
+2. Check the log file for error details
+3. Inspect raw resources in `validate-application.data/`
+4. Summarize the findings and suggest what the user should look at
+
+Useful commands for inspecting gathered data:
+
+Check VRG status:
+
+```console
+$ yq '.status' < <output-dir>/validate-application.data/<cluster>/namespaces/<ns>/ramendr.openshift.io/volumereplicationgroups/<name>.yaml
+```
+
+Search ramen operator logs for errors related to the app:
+
+```console
+$ grep -E 'ERROR.+<app-name>' <output-dir>/validate-application.data/<cluster>/namespaces/ramen-system/pods/*/manager/current.log
+```
+
+### Step 7: Suggest validate clusters
+
+After completing the application validation, suggest also running
+`{{.Command.Name}} validate clusters` into a sibling output directory such as
+`out/clusters`.
+
+Why this helps: the application report covers one DRPC, its namespaces, and
+S3 data (S3 reachability is already tested by the gather step). The cluster
+report adds hub and managed-cluster DR plumbing (operators, DRClusters,
+DRPolicies, ramen configmaps) that the application report does not cover.
+Having both makes it easier to see whether a problem is app-specific or
+infrastructure-wide. If the user already has a fresh cluster validation in
+the same environment, they can skip this.
+
+## Notes
+
+- To report DR issues, archive the entire output directory.

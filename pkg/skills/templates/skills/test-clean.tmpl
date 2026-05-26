@@ -1,0 +1,61 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+---
+name: {{.Command.Slug}}-{{.Skill.Name}}
+description: >-
+  Clean up after {{.Command.Name}} test run using {{.Command.Name}} test clean.
+  Use when the user wants to clean up test resources, remove test artifacts,
+  or reset after a test run.
+---
+
+# {{.Command.Name}} test clean
+
+Delete resources created by `{{.Command.Name}} test run`.
+
+**Never run this command without an explicit request from the user.**
+Test artifacts are evidence for debugging that the user may need to
+inspect.
+
+## Requirements
+
+- A previous `{{.Command.Name}} test run` was executed
+- `{{.Command.Name}} validate clusters` passes without problems. If
+  validation fails there is no point in cleaning tests.
+- If the test failed due to an infrastructure issue (e.g., rbd-mirror
+  down), **restore the infrastructure first** before cleaning. Cleaning
+  before restoring may fail or leave leftovers.
+
+## Workflow
+
+### Step 1: Run test clean
+
+Use the same output directory and config file as the test run, e.g.,
+`out/test`:
+
+```console
+$ {{.Command.Name}} test clean -o out/test
+```
+
+The command unprotects and undeploys test applications, then cleans the
+test environment (channels, namespaces). **This typically takes up to 5
+minutes.**
+
+### Step 2: Check the result
+
+**On success:**
+
+```console
+✅ passed (N passed, 0 failed, 0 skipped)
+```
+
+The output directory gains additional files after clean:
+
+| File | Purpose |
+|------|---------|
+| `test-clean.yaml` | Clean operation report |
+| `test-clean.log` | Detailed log |
+
+## Notes
+
+- If clean fails, check the log for details. You may need to manually
+  delete stuck resources.

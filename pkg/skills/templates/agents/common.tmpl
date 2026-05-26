@@ -1,0 +1,25 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+
+{{- define "common" -}}
+# {{.Command.Name}}
+
+`{{.Command.Name}}` manages disaster recovery for OpenShift and Kubernetes
+clusters. When the user asks for help with a `{{.Command.Name}}` task,
+read the matching skill file before responding.
+
+The user typically runs `{{.Command.Name}} init` to create a configuration
+file. You can help with editing the configuration and running `validate`,
+`gather`, and `test` commands.
+
+## Command execution rules
+
+- Run every command in the foreground with enough timeout for it to
+  complete. Check the skill for expected duration and set the timeout
+  accordingly.
+- Never run commands in parallel. Always wait for one command to finish
+  before starting another.
+- If a command times out or is still running, report to the user and
+  wait for instructions. Never kill, stop, or restart a command on your
+  own.
+{{- end -}}

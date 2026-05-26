@@ -1,0 +1,14 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{template "common" .}}
+
+## Critical workflow rule
+
+BEFORE taking ANY action on a {{.Command.Name}} task, you MUST:
+1. Identify which ramenctl command the user needs (init, validate, gather, test)
+2. Read the corresponding skill file from {{.Agent.SkillsDir}}/{{.Command.Slug}}-COMMAND/SKILL.md
+3. Follow the exact steps, flags, and workflow documented in the skill
+
+## Important
+
+Switch to advanced mode to discover the {{.Command.Name}} skills.

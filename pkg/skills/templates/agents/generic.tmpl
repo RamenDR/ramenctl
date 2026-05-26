@@ -1,0 +1,11 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{template "common" .}}
+
+## Skills
+
+Skills are detailed guides stored in `{{.Agent.SkillsDir}}/`. When a task
+matches a skill below, read the corresponding `SKILL.md` file.
+{{range .Skills}}
+- `{{$.Agent.SkillsDir}}/{{$.Command.Slug}}-{{.Name}}/SKILL.md` - {{.Description}}
+{{- end}}

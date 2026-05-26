@@ -83,6 +83,18 @@ Your system is ready for disaster recovery!
 
 Please see [Documentation](#documentation) to learn more.
 
+## Agentic usage
+
+*ramenctl* is agentic-ready out of the box. Running `ramenctl init`
+installs AI skills that teach your coding assistant how to configure,
+validate, gather diagnostics, and test disaster recovery flows.
+
+```console
+$ ramenctl init -a cursor
+```
+
+See [AI Skills](docs/skills.md) for details.
+
 ## Documentation
 
 Visit the docs below to learn about *ramenctl* commands:
@@ -94,6 +106,7 @@ Visit the docs below to learn about *ramenctl* commands:
 
 Check the guides below to learn more:
 
+- [Using ramenctl with AI agents](docs/skills.md)
 - [Testing disaster recovery with ramenctl](docs/testing.md)
 
 ## Contributing

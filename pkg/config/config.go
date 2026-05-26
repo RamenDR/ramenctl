@@ -32,9 +32,25 @@ type Config struct {
 	Namespaces config.Namespaces `json:"namespaces"`
 }
 
-// CreateSampleConfig create a sample config that can be used by all commands. The file can be
+// Install creates a sample config file. Returns true on success or if the file
+// already exists.
+func Install(filename, commandName, envFile string) bool {
+	err := createSampleConfig(filename, commandName, envFile)
+	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			console.Warn("Configuration file %q already exists", filename)
+			return true
+		}
+		console.Error("%s", err)
+		return false
+	}
+	console.Pass("Created config file %q - please modify for your clusters", filename)
+	return true
+}
+
+// createSampleConfig creates a sample config that can be used by all commands. The file can be
 // parsed using ReadConfig() or test.readConfig().
-func CreateSampleConfig(filename, commandName, envFile string) error {
+func createSampleConfig(filename, commandName, envFile string) error {
 	var sample *Sample
 	if envFile != "" {
 		console.Info("Using envfile %q", envFile)
@@ -54,14 +70,14 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 
 	if err := createFile(filename, content); err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return fmt.Errorf("configuration file %q already exists", filename)
+			return fmt.Errorf("configuration file %q already exists: %w", filename, err)
 		}
 		return fmt.Errorf("failed to create %q: %w", filename, err)
 	}
 	return nil
 }
 
-// ReadConfig reads the configuration file created by CreateSampleConfig, ignoring the test only
+// ReadConfig reads the configuration file created by Install, ignoring the test only
 // configuration.
 func ReadConfig(filename string) (*Config, error) {
 	viper.SetDefault("ClusterSet", config.DefaultClusterSetName)
