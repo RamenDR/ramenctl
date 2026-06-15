@@ -1,0 +1,5 @@
+# Force LF line endings for templates and test golden files to ensure
+# consistent behavior across platforms (Windows CI was failing due to
+# CRLF conversion).
+*.tmpl text eol=lf
+*.html text eol=lf

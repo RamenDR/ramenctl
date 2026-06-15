@@ -1,0 +1,36 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
+package commands
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/console"
+)
+
+var envFile string
+
+var InitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Create configuration file for your clusters",
+	Run: func(c *cobra.Command, args []string) {
+		if err := config.CreateSampleConfig(
+			configFile,
+			RootCmd.DisplayName(),
+			envFile,
+		); err != nil {
+			_ = console.Failed(err)
+			os.Exit(1)
+		}
+		console.Completed("Created config file %q - please modify for your clusters", configFile)
+	},
+}
+
+func init() {
+	// Register the --envfile flag
+	InitCmd.Flags().StringVar(&envFile, "envfile", "", "ramen testing environment file")
+}

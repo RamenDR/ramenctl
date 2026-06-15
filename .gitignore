@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Artifacts
+/ramenctl
+/examples/odf
+/config.yaml
+cover.out
+
+# Editor files
+/.zed
+/.vscode
+
+# Output directory
+/out
+
+# macOS junk
+.DS_Store

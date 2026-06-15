@@ -1,0 +1,26 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "pvc" -}}
+<dl class="metadata">
+    <dt>Name</dt>
+    <dd>{{.Name}}</dd>
+    <dt>Namespace</dt>
+    <dd>{{.Namespace}}</dd>
+    <dt>Replication</dt>
+    <dd>{{.Replication}}</dd>
+</dl>
+<dl class="validation">
+    <dt>Phase</dt>
+    <dd>{{template "validated" .Phase}}</dd>
+    {{- if isProblem .Deleted.State}}
+        <dt>Deleted</dt>
+        <dd>{{template "validated" .Deleted}}</dd>
+    {{- end}}
+</dl>
+<section>
+    <details{{if shouldOpen .Conditions}} open{{end}}>
+        <summary><h6>Conditions</h6><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+        {{template "conditions" .Conditions}}
+    </details>
+</section>
+{{- end}}

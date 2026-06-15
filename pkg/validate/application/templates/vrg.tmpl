@@ -1,0 +1,44 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "vrg" -}}
+<dl class="metadata">
+    <dt>Name</dt>
+    <dd>{{.Name}}</dd>
+    <dt>Namespace</dt>
+    <dd>{{.Namespace}}</dd>
+    <dt>Cluster Time</dt>
+    <dd>{{formatTime .ClusterTime}}</dd>
+</dl>
+<dl class="validation">
+    {{- if .SchedulingInterval.State}}
+        <dt>Scheduling Interval</dt>
+        <dd>{{template "validated" .SchedulingInterval}}</dd>
+    {{- end}}
+    <dt>Last Group Sync Time</dt>
+    <dd>{{template "lastGroupSyncTime" .LastGroupSyncTime}}</dd>
+    <dt>State</dt>
+    <dd>{{template "validated" .State}}</dd>
+    {{- if isProblem .Deleted.State}}
+        <dt>Deleted</dt>
+        <dd>{{template "validated" .Deleted}}</dd>
+    {{- end}}
+</dl>
+<section>
+    <details{{if shouldOpen .Conditions}} open{{end}}>
+        <summary><h5>Conditions</h5><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+        {{template "conditions" .Conditions}}
+    </details>
+</section>
+{{- with .ProtectedPVCs}}
+<section>
+    <details{{if shouldOpen .}} open{{end}}>
+        <summary><h5>Protected PVCs</h5><span class="state">{{icon .AggregateState}}</span></summary>
+        <ul>
+            {{- range .}}
+            <li>{{template "pvc" .}}</li>
+            {{- end}}
+        </ul>
+    </details>
+</section>
+{{- end}}
+{{- end}}

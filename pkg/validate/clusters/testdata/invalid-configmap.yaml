@@ -1,0 +1,174 @@
+build:
+  commit: c306e20340a666f0124ad7e1c50cf0cd0531b094
+  version: v0.17.0-15-gc306e20
+clustersStatus:
+  clusters:
+  - name: dr1
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        parsed:
+          description: 'failed to parse "ramen_manager_config.yaml": error converting
+            YAML to JSON: yaml: mapping values are not allowed in this context'
+          state: problem ❌
+        s3StoreProfiles:
+          state: ""
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        replicas:
+          state: ok ✅
+          value: 1
+  - name: dr2
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator-config
+        namespace: ramen-system
+        parsed:
+          description: 'failed to parse "ramen_manager_config.yaml": error converting
+            YAML to JSON: yaml: mapping values are not allowed in this context'
+          state: problem ❌
+        s3StoreProfiles:
+          state: ""
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-dr-cluster-operator
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-cluster
+        replicas:
+          state: ok ✅
+          value: 1
+  hub:
+    drClusters:
+      state: ok ✅
+      value:
+      - name: dr1
+        state: ok ✅
+      - name: dr2
+        state: ok ✅
+    drPolicies:
+      state: ok ✅
+      value:
+      - name: dr-policy
+        clusters:
+          state: ok ✅
+          value:
+          - dr1
+          - dr2
+        conditions:
+        - state: ok ✅
+          type: Validated
+    ramen:
+      configmap:
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator-config
+        namespace: ramen-system
+        parsed:
+          description: 'failed to parse "ramen_manager_config.yaml": error converting
+            YAML to JSON: yaml: mapping values are not allowed in this context'
+          state: problem ❌
+        s3StoreProfiles:
+          state: ""
+      deployment:
+        conditions:
+        - state: ok ✅
+          type: Available
+        - state: ok ✅
+          type: Progressing
+        deleted:
+          state: ok ✅
+        name: ramen-hub-operator
+        namespace: ramen-system
+        ramenControllerType:
+          state: ok ✅
+          value: dr-hub
+        replicas:
+          state: ok ✅
+          value: 1
+  s3:
+    profiles:
+      state: ok ✅
+      value:
+      - name: minio-on-dr1
+        status:
+          state: ok ✅
+      - name: minio-on-dr2
+        status:
+          state: ok ✅
+config:
+  clusterSet: default
+  clusters:
+    c1:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+    c2:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+    hub:
+      kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+    passive-hub:
+      kubeconfig: ""
+  distro: k8s
+  namespaces:
+    argocdNamespace: argocd
+    ramenDRClusterNamespace: ramen-system
+    ramenHubNamespace: ramen-system
+    ramenOpsNamespace: ramen-ops
+created: "2026-03-23T18:20:41.492824+02:00"
+duration: 1.0514195
+host:
+  arch: arm64
+  cpus: 12
+  os: darwin
+name: validate-clusters
+namespaces:
+- ramen-system
+status: failed
+steps:
+- duration: 0.01470725
+  name: validate config
+  status: passed
+- duration: 1.03671225
+  items:
+  - duration: 0.400634917
+    name: gather "hub"
+    status: passed
+  - duration: 1.031236542
+    name: gather "dr1"
+    status: passed
+  - duration: 1.031572667
+    name: gather "dr2"
+    status: passed
+  - duration: 0.000656625
+    name: inspect S3 profiles
+    status: passed
+  - duration: 0.003252208
+    name: validate clusters data
+    status: failed
+  name: validate clusters
+  status: failed
+summary:
+  ok: 18
+  problem: 3

@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
+package commands
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/gather"
+)
+
+var GatherCmd = &cobra.Command{
+	Use:   "gather",
+	Short: "Collect diagnostic data from your clusters",
+}
+
+var GatherApplicationCmd = &cobra.Command{
+	Use:   "application",
+	Short: "Collect data for a protected application",
+	Run: func(c *cobra.Command, args []string) {
+		if err := gather.Gather(command.ApplicationOptions{
+			Options: command.Options{
+				ConfigFile: configFile,
+				OutputDir:  outputDir,
+			},
+			DRPCName:      drpcName,
+			DRPCNamespace: drpcNamespace,
+		}); err != nil {
+			os.Exit(1)
+		}
+	},
+}
+
+func init() {
+	addOutputFlags(GatherCmd)
+	addDRPCFlags(GatherApplicationCmd)
+	GatherCmd.AddCommand(GatherApplicationCmd)
+}

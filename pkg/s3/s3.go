@@ -1,0 +1,395 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
+package s3
+
+import (
+	"bytes"
+	"compress/gzip"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go/logging"
+	"go.uber.org/zap"
+
+	"github.com/ramendr/ramenctl/pkg/time"
+)
+
+const (
+	// S3 output directory name
+	dirName = "s3"
+
+	// S3 output directory permission
+	dirPerm = 0o750
+)
+
+// Profile contains S3 connection and authentication information.
+type Profile struct {
+	Name               string
+	Bucket             string
+	Region             string
+	Endpoint           string
+	CACertificate      []byte
+	AWSAccessKeyID     []byte
+	AWSSecretAccessKey []byte
+}
+
+// Result represents the result of gathering from an S3 profile.
+type Result struct {
+	ProfileName string
+	Err         error
+	Duration    float64
+}
+
+// objectStore wraps an S3 client with profile information and log.
+type objectStore struct {
+	client  *s3.Client
+	profile *Profile
+	log     *zap.SugaredLogger
+}
+
+// Gather gathers S3 data from all profiles in parallel. Returns a channel for
+// getting gather results.
+func Gather(
+	ctx context.Context,
+	profiles []*Profile,
+	prefixes []string,
+	outputDir string,
+	log *zap.SugaredLogger,
+) <-chan Result {
+	results := make(chan Result)
+	var wg sync.WaitGroup
+
+	// Gather S3 data in parallel for all profiles.
+	for _, profile := range profiles {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			start := time.Now()
+			err := gatherData(ctx, profile, prefixes, outputDir, log)
+			results <- Result{
+				ProfileName: profile.Name,
+				Err:         err,
+				Duration:    time.Since(start).Seconds(),
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	return results
+}
+
+// Check verifies S3 bucket accessibility for all profiles in parallel. Returns a
+// channel for getting check results.
+func Check(
+	ctx context.Context,
+	profiles []*Profile,
+	log *zap.SugaredLogger,
+) <-chan Result {
+	results := make(chan Result)
+	var wg sync.WaitGroup
+
+	for _, profile := range profiles {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			start := time.Now()
+			err := checkBucket(ctx, profile, log)
+			results <- Result{
+				ProfileName: profile.Name,
+				Err:         err,
+				Duration:    time.Since(start).Seconds(),
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	return results
+}
+
+// gatherData creates client for the given profile and downloads objects from S3
+// using the provided prefixes.
+func gatherData(
+	ctx context.Context,
+	profile *Profile,
+	prefixes []string,
+	outputDir string,
+	log *zap.SugaredLogger,
+) error {
+	objectStore, err := newObjectStore(ctx, profile, log)
+	if err != nil {
+		return fmt.Errorf("failed to create S3 client for profile %q: %w",
+			profile.Name, err)
+	}
+
+	var errs []error
+	for _, prefix := range prefixes {
+		if err := objectStore.downloadObjects(ctx, prefix, outputDir); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to download objects from profile %q: %w",
+			profile.Name, errors.Join(errs...))
+	}
+
+	return nil
+}
+
+// checkBucket creates client for the given profile and checks if the bucket is accessible.
+func checkBucket(
+	ctx context.Context,
+	profile *Profile,
+	log *zap.SugaredLogger,
+) error {
+	objectStore, err := newObjectStore(ctx, profile, log)
+	if err != nil {
+		return fmt.Errorf("failed to create S3 client for profile %q: %w",
+			profile.Name, err)
+	}
+
+	// HeadBucket response is dropped since it contains optional location metadata (usually nil)
+	// and internal SDK result metadata with no useful debugging information.
+	_, err = objectStore.client.HeadBucket(ctx, &s3.HeadBucketInput{
+		Bucket: aws.String(profile.Bucket),
+	})
+	if err != nil {
+		log.Warnf("Failed to access bucket %q for profile %q: %v",
+			profile.Bucket, profile.Name, err)
+		return fmt.Errorf("failed to access bucket %q for profile %q",
+			profile.Bucket, profile.Name)
+	}
+
+	return nil
+}
+
+// newObjectStore creates an S3 client for the given profile.
+func newObjectStore(
+	ctx context.Context,
+	profile *Profile,
+	log *zap.SugaredLogger,
+) (*objectStore, error) {
+	configOptions := []func(*config.LoadOptions) error{
+		config.WithRegion(profile.Region),
+		config.WithBaseEndpoint(profile.Endpoint),
+		config.WithCredentialsProvider(
+			// AWS credentials are always ASCII text, safe to convert to string.
+			credentials.NewStaticCredentialsProvider(
+				string(profile.AWSAccessKeyID),
+				string(profile.AWSSecretAccessKey),
+				"",
+			),
+		),
+		// Add zap logger to the config to redirect AWS SDK logs.
+		config.WithLogger(awsSDKLogger(log)),
+	}
+
+	// Add CA certificate to the client config if provided in the profile.
+	if len(profile.CACertificate) > 0 {
+		log.Debugf("Using custom CA certificate for S3 profile %q", profile.Name)
+		configOptions = append(
+			configOptions,
+			config.WithCustomCABundle(bytes.NewReader(profile.CACertificate)),
+		)
+	}
+
+	config, err := config.LoadDefaultConfig(ctx, configOptions...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load s3 config for profile %q: %w",
+			profile.Name, err)
+	}
+
+	s3Client := s3.NewFromConfig(config, func(o *s3.Options) {
+		// Use path-style addressing(https://endpoint/bucket/key) instead of
+		// virtual-hosted style(https://bucket.endpoint/key).
+		o.UsePathStyle = true
+	})
+
+	return &objectStore{
+		client:  s3Client,
+		profile: profile,
+		log:     log,
+	}, nil
+}
+
+// downloadObjects downloads all objects with the given prefix to the output directory.
+func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir string) error {
+	start := time.Now()
+
+	keys, err := s.listObjects(ctx, prefix)
+	if err != nil {
+		return err
+	}
+
+	if len(keys) == 0 {
+		return fmt.Errorf("no objects found in bucket %q for prefix %q",
+			s.profile.Bucket, prefix)
+	}
+
+	profileDir := filepath.Join(outputDir, dirName, s.profile.Name)
+	if err := os.MkdirAll(profileDir, dirPerm); err != nil {
+		return fmt.Errorf("failed to create directory %q for prefix %q: %w",
+			profileDir, prefix, err)
+	}
+
+	var failed int
+	for _, key := range keys {
+		if err := s.downloadObject(ctx, key, profileDir); err != nil {
+			s.log.Warnf("Failed to download object %q from bucket %q: %v",
+				key, s.profile.Bucket, err)
+			failed++
+			continue
+		}
+	}
+
+	if failed > 0 {
+		return fmt.Errorf("failed to download %d of %d objects from bucket %q",
+			failed, len(keys), s.profile.Bucket)
+	}
+
+	s.log.Debugf("Downloaded %d objects from bucket %q in %.3f seconds",
+		len(keys), s.profile.Bucket, time.Since(start).Seconds())
+
+	return nil
+}
+
+// listObjects returns all object keys under the given prefix.
+func (s *objectStore) listObjects(ctx context.Context, prefix string) ([]string, error) {
+	start := time.Now()
+
+	input := &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.profile.Bucket),
+	}
+
+	// Only set prefix if it's not empty.
+	if prefix != "" {
+		input.Prefix = aws.String(prefix)
+	}
+
+	paginator := s3.NewListObjectsV2Paginator(s.client, input)
+
+	var keys []string
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			s.log.Warnf("Failed to list objects in bucket %q with prefix %q: %v",
+				s.profile.Bucket, prefix, err)
+			return nil, fmt.Errorf("failed to list objects in bucket %q with prefix %q",
+				s.profile.Bucket, prefix)
+		}
+		for _, obj := range page.Contents {
+			keys = append(keys, *obj.Key)
+		}
+	}
+
+	s.log.Debugf("Listed %d objects in bucket %q with prefix %q in %.3f seconds",
+		len(keys), s.profile.Bucket, prefix, time.Since(start).Seconds())
+
+	return keys, nil
+}
+
+// downloadObject downloads and decompresses an object from S3 store.
+func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string) error {
+	start := time.Now()
+
+	result, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.profile.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get object %q from bucket %q: %w",
+			key, s.profile.Bucket, err)
+	}
+	defer result.Body.Close()
+
+	fileName := key
+	encoding := "none"
+
+	// Detect gzip body format. Bytes consumed during detection are kept in buf.
+	// Always reads 4 KiB, can read up to 66 KiB.
+	var buf bytes.Buffer
+	tee := io.TeeReader(result.Body, &buf)
+	gzipReader, err := gzip.NewReader(tee)
+
+	// Create a reader exposing the entire response, including bytes consumed during detection.
+	reader := io.MultiReader(bytes.NewReader(buf.Bytes()), result.Body)
+
+	if err == nil {
+		// Detected gzip format.
+
+		defer gzipReader.Close()
+
+		// Reset the reader to read the entire response without copying the data.
+		// Should never fail since we just created a reader with this stream.
+		if err := gzipReader.Reset(reader); err != nil {
+			return fmt.Errorf("failed to reset reader for object %q: %w", key, err)
+		}
+
+		reader = gzipReader
+		encoding = "gzip"
+		fileName = strings.TrimSuffix(key, ".gz")
+	}
+
+	filePath := filepath.Join(profileDir, fileName)
+
+	if err := os.MkdirAll(filepath.Dir(filePath), dirPerm); err != nil {
+		return err
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err := io.Copy(file, reader); err != nil {
+		return fmt.Errorf("failed to copy %q to %q: %w", key, filePath, err)
+	}
+
+	// Close the file explicitly after copy.
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("failed to close %q: %w", filePath, err)
+	}
+
+	s.log.Debugf("Downloaded object %q (encoding: %s) in %.3f seconds",
+		key, encoding, time.Since(start).Seconds())
+
+	return nil
+}
+
+// awsSDKLogger creates an AWS SDK logger that redirects logs to zap logger.
+func awsSDKLogger(log *zap.SugaredLogger) logging.LoggerFunc {
+	s3Logger := log.Named("aws-sdk")
+
+	return logging.LoggerFunc(
+		func(classification logging.Classification, format string, v ...any) {
+			switch classification {
+			case logging.Debug:
+				s3Logger.Debugf(format, v...)
+			case logging.Warn:
+				s3Logger.Warnf(format, v...)
+			default:
+				s3Logger.Warnf(format, v...)
+			}
+		},
+	)
+}

@@ -1,0 +1,36 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "drpc" -}}
+<dl class="metadata">
+    <dt>Name</dt>
+    <dd>{{.Name}}</dd>
+    <dt>Namespace</dt>
+    <dd>{{.Namespace}}</dd>
+    <dt>DRPolicy</dt>
+    <dd>{{.DRPolicy}}</dd>
+    <dt>Cluster Time</dt>
+    <dd>{{formatTime .ClusterTime}}</dd>
+</dl>
+<dl class="validation">
+    <dt>Scheduling Interval</dt>
+    <dd>{{template "validated" .SchedulingInterval}}</dd>
+    <dt>Last Group Sync Time</dt>
+    <dd>{{template "lastGroupSyncTime" .LastGroupSyncTime}}</dd>
+    <dt>Action</dt>
+    <dd>{{template "validated" .Action}}</dd>
+    <dt>Phase</dt>
+    <dd>{{template "validated" .Phase}}</dd>
+    <dt>Progression</dt>
+    <dd>{{template "validated" .Progression}}</dd>
+    {{- if isProblem .Deleted.State}}
+        <dt>Deleted</dt>
+        <dd>{{template "validated" .Deleted}}</dd>
+    {{- end}}
+</dl>
+<section>
+    <details{{if shouldOpen .Conditions}} open{{end}}>
+        <summary><h5>Conditions</h5><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+        {{template "conditions" .Conditions}}
+    </details>
+</section>
+{{- end}}
