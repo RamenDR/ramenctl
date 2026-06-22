@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # ramenctl validate
 
@@ -30,13 +32,13 @@ Use "ramenctl validate [command] --help" for more information about a command.
 
 The command supports the following sub-commands:
 
-* [application](#validate-application)
-* [clusters](#validate-clusters)
+- [application](#validate-application)
+- [clusters](#validate-clusters)
 
 > [!IMPORTANT]
 > The validate command requires a configuration file. See
-> [Configuring common options](docs/init.md#configuring-common-options)
-> to learn how to create one.
+> [Configuring common options](docs/init.md#configuring-common-options) to learn
+> how to create one.
 
 ## validate application
 
@@ -199,7 +201,8 @@ applicationStatus:
 This directory contains all data gathered during validation. The data depend on
 the application deployment type. Use the gathered data to investigate the
 problems reported in the `validate-application.yaml` report. Secrets in the
-gathered data are automatically [sanitized](https://github.com/nirs/kubectl-gather#secret-sanitization).
+gathered data are automatically
+[sanitized](https://github.com/nirs/kubectl-gather#secret-sanitization).
 
 ```console
 $ tree -L3 out/validate-application.data
@@ -662,5 +665,5 @@ out/validate-clusters.data
 ### The validate-clusters.log
 
 This log includes detailed information that may help to troubleshoot the
-validate clusters command. If the command failed, check the error details in
-the log.
+validate clusters command. If the command failed, check the error details in the
+log.

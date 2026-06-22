@@ -76,8 +76,8 @@ resources.
 - *ApplicationSet based application*: All DRPCs are located in the GitOps
   namespace on the hub, and must be unique. We only need the DRPC name.
 
-- *OCM discovered application*: All DRPCs are located in the Ramen Ops
-  namespace and must be unique. We need only the DRPC name.
+- *OCM discovered application*: All DRPCs are located in the Ramen Ops namespace
+  and must be unique. We need only the DRPC name.
 
 ### test
 

@@ -15,10 +15,10 @@ Command line tool and Go module for managing and troubleshooting Ramen.
 
 ## Overview
 
-Working with a complicated Kubernetes cluster is not easy.  In a typical
-disaster recovery environment we have at least 3 connected Kubernetes
-clusters with many components. The *ramenctl* project aims to make it
-easier to manage and troubleshoot this challenging environment.
+Working with a complicated Kubernetes cluster is not easy. In a typical disaster
+recovery environment we have at least 3 connected Kubernetes clusters with many
+components. The *ramenctl* project aims to make it easier to manage and
+troubleshoot this challenging environment.
 
 ## Features
 
@@ -27,7 +27,8 @@ The project provides:
 - The *ramenctl* command line tool, managing and troubleshooting ramen.
 - The *ramenctl* Go module for integrating the ramenctl commands in other
   projects. This module is used to implement the
-  [odf dr](https://github.com/red-hat-storage/odf-cli/blob/main/docs/dr.md) command.
+  [odf dr](https://github.com/red-hat-storage/odf-cli/blob/main/docs/dr.md)
+  command.
 
 ## Installing
 
@@ -98,9 +99,8 @@ Check the guides below to learn more:
 
 ## Contributing
 
-- For reporting bugs, suggesting improvements, or requesting new
-  features, please open an
-  [issue](https://github.com/RamenDR/ramenctl/issues).
+- For reporting bugs, suggesting improvements, or requesting new features,
+  please open an [issue](https://github.com/RamenDR/ramenctl/issues).
 - For implementing features or fixing bugs, please see the
   [ramenctl contribution guide](CONTRIBUTING.md)
 

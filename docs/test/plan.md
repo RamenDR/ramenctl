@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # `odf dr` test plan
 
@@ -52,13 +54,14 @@
 
 ## Overview
 
-This test plan covers functional validation of the `odf dr` command in a
-real ODF + Ramen Regional DR environment. The `odf dr` command is delivered
-as part of the odf-cli project and is based on the upstream ramenctl project.
-The goal is to verify that all commands produce correct output, detect real
-problems, and generate usable reports.
+This test plan covers functional validation of the `odf dr` command in a real
+ODF + Ramen Regional DR environment. The `odf dr` command is delivered as part
+of the odf-cli project and is based on the upstream ramenctl project. The goal
+is to verify that all commands produce correct output, detect real problems, and
+generate usable reports.
 
 Each test case includes:
+
 - **Preconditions**: what must be true before the test
 - **Steps**: exact user actions
 - **Expected result**: what the user should observe
@@ -74,46 +77,46 @@ the `ramenctl` command.
 
 Regional DR environment with 3 clusters:
 
-| Cluster | Description |
-|---------|-------------|
-| Hub | ACM hub cluster |
-| c1 | Managed cluster |
-| c2 | Managed cluster |
+| Cluster | Description     |
+| ------- | --------------- |
+| Hub     | ACM hub cluster |
+| c1      | Managed cluster |
+| c2      | Managed cluster |
 
-Different tests require different cluster configuration levels. Each test
-case specifies its own preconditions. The main levels are:
+Different tests require different cluster configuration levels. Each test case
+specifies its own preconditions. The main levels are:
 
-| Level | Description |
-|-------|-------------|
-| Base clusters | Hub with ACM/OCM, managed clusters joined, no Ramen or DR configuration |
-| Ramen deployed | Ramen hub and DR cluster operators deployed, not configured |
-| DR configured | DRPolicy, DRClusters, S3 profiles, and storage replication configured |
-| Application protected | A DR-protected application deployed and in a stable state |
+| Level                   | Description                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| Base clusters           | Hub with ACM/OCM, managed clusters joined, no Ramen or DR configuration                       |
+| Ramen deployed          | Ramen hub and DR cluster operators deployed, not configured                                   |
+| DR configured           | DRPolicy, DRClusters, S3 profiles, and storage replication configured                         |
+| Application protected   | A DR-protected application deployed and in a stable state                                     |
 | Application in-progress | A DR action (failover or relocate) is in progress; the application is moving between clusters |
-| Application degraded | Application is protected but a component is unhealthy (e.g., rbd-mirror daemon is down) |
+| Application degraded    | Application is protected but a component is unhealthy (e.g., rbd-mirror daemon is down)       |
 
 Some tests (e.g., validate clusters on unconfigured clusters) specifically
 require clusters that are NOT fully configured, to verify that `odf dr`
 correctly detects and reports missing components. Other tests require the
 application to be in a transient or degraded state to verify that `odf dr`
-correctly reports problems during DR operations or when replication
-components are unhealthy.
+correctly reports problems during DR operations or when replication components
+are unhealthy.
 
 ### Software
 
-| Component | Notes |
-|-----------|-------|
-| odf-cli | Built from the version under test, provides the `odf dr` command |
-| ramenctl | For testing upstream only features |
-| oc | For verifying cluster state before and after tests (not a dependency of odf dr) |
-| yq | For inspecting YAML reports |
+| Component | Notes                                                                           |
+| --------- | ------------------------------------------------------------------------------- |
+| odf-cli   | Built from the version under test, provides the `odf dr` command                |
+| ramenctl  | For testing upstream only features                                              |
+| oc        | For verifying cluster state before and after tests (not a dependency of odf dr) |
+| yq        | For inspecting YAML reports                                                     |
 
 ### Storage
 
 ODF creates storage classes during installation. The default names used by
 `odf dr init` may differ from the actual names in your clusters. Check the
-available storage classes and update the `pvcSpecs` section in the
-configuration file accordingly:
+available storage classes and update the `pvcSpecs` section in the configuration
+file accordingly:
 
 ```bash
 oc get storageclass
@@ -121,10 +124,10 @@ oc get storageclass
 
 Common storage types used for DR testing:
 
-| Type | Access Mode | Example Storage Class |
-|------|-------------|-----------------------|
-| RBD | ReadWriteOnce | `ocs-storagecluster-ceph-rbd` |
-| CephFS | ReadWriteMany | `ocs-storagecluster-cephfs` |
+| Type   | Access Mode   | Example Storage Class         |
+| ------ | ------------- | ----------------------------- |
+| RBD    | ReadWriteOnce | `ocs-storagecluster-ceph-rbd` |
+| CephFS | ReadWriteMany | `ocs-storagecluster-cephfs`   |
 
 ## Test cases
 
@@ -138,8 +141,8 @@ Common storage types used for DR testing:
 ramenctl --version
 ```
 
-**Expected result:** Prints the version string (e.g., `v0.17.0`) and exits
-with code 0.
+**Expected result:** Prints the version string (e.g., `v0.17.0`) and exits with
+code 0.
 
 #### Help
 
@@ -171,8 +174,8 @@ odf dr test --help
 odf dr validate clusters
 ```
 
-**Expected result:** Error message indicating `--output` flag is required.
-Exits with non-zero code.
+**Expected result:** Error message indicating `--output` flag is required. Exits
+with non-zero code.
 
 #### Missing config file
 
@@ -184,7 +187,6 @@ odf dr validate clusters -c nonexistent.yaml -o out/invalid-config
 
 **Expected result:** Error message about missing config file. Exits with
 non-zero code.
-
 
 ### Init command
 
@@ -199,6 +201,7 @@ odf dr init
 ```
 
 **Expected result:**
+
 - Prints `Created config file "config.yaml" - please modify for your clusters`.
 - File `config.yaml` is created with documented sections: `clusters`, `repo`,
   `drPolicy`, `clusterSet`, `pvcSpecs`, `deployers`, `tests`.
@@ -216,6 +219,7 @@ odf dr init --config myenv.yaml
 ```
 
 **Expected result:**
+
 - Prints `Created config file "myenv.yaml" - please modify for your clusters`.
 - File `myenv.yaml` is created.
 
@@ -230,8 +234,10 @@ ramenctl init --envfile ../ramen/test/envs/regional-dr.yaml
 ```
 
 **Expected result:**
+
 - Prints the envfile path and success message.
-- `config.yaml` is populated with cluster names, storage class names and distro relevant to ramen testing environment.
+- `config.yaml` is populated with cluster names, storage class names and distro
+  relevant to ramen testing environment.
 
 #### Config already exists
 
@@ -246,15 +252,16 @@ odf dr init
 **Expected result:** Error indicating the file already exists. Does not
 overwrite the existing file.
 
-
 ### Validate clusters command
 
 **Preconditions for all tests in this section:**
+
 - `config.yaml` is configured with correct kubeconfig paths.
 
 #### Validate fully configured clusters
 
 **Preconditions:**
+
 - Cluster level: DR configured.
 
 **Steps:**
@@ -264,8 +271,8 @@ odf dr validate clusters -o out/validate-clusters
 ```
 
 **Expected result:**
-- Console output shows progress with checkmarks for each cluster and S3
-  profile.
+
+- Console output shows progress with checkmarks for each cluster and S3 profile.
 - Final line: `Validation completed (N ok, 0 warning, 0 problem)`.
 - Exits with code 0.
 
@@ -276,6 +283,7 @@ ls out/validate-clusters/
 ```
 
 Expected directory contents:
+
 - `validate-clusters.yaml` - machine-readable report
 - `validate-clusters.log` - detailed log
 - `validate-clusters.data/` - gathered resources
@@ -304,9 +312,9 @@ The YAML report contains common fields and command-specific data.
 
 **Command-specific field** (`clustersStatus`):
 
-The `clustersStatus` section contains validations for the hub, managed
-clusters, and S3 profiles. Every validated item shows `state: ok ✅` on a
-healthy cluster. The report validates the following:
+The `clustersStatus` section contains validations for the hub, managed clusters,
+and S3 profiles. Every validated item shows `state: ok ✅` on a healthy cluster.
+The report validates the following:
 
 **For each managed cluster:**
 
@@ -334,8 +342,7 @@ healthy cluster. The report validates the following:
   - Condition: `Validated`
   - Associated DR clusters
   - Scheduling interval
-- Ramen configmap (same checks as managed clusters, controller type is
-  `dr-hub`)
+- Ramen configmap (same checks as managed clusters, controller type is `dr-hub`)
 - Ramen deployment (same checks as managed clusters)
 
 **S3 profiles:**
@@ -348,9 +355,8 @@ healthy cluster. The report validates the following:
 tree out/validate-clusters/validate-clusters.data/
 ```
 
-One directory per cluster. Each contains `cluster/` for cluster-scoped
-resources and `namespaces/` for namespaced resources. The general structure
-is:
+One directory per cluster. Each contains `cluster/` for cluster-scoped resources
+and `namespaces/` for namespaced resources. The general structure is:
 
 ```
 <cluster-name>/
@@ -381,13 +387,14 @@ For the validate clusters command:
 
 Open `out/validate-clusters/validate-clusters.html` in a browser.
 
-- Shows the same information in the yaml in a more compact and easier to
-  read form.
+- Shows the same information in the yaml in a more compact and easier to read
+  form.
 - All items show green/ok status.
 
 #### Validate clusters ramen not deployed
 
 **Preconditions:**
+
 - Cluster level: Base clusters (ACM/OCM configured, managed clusters joined).
 - Ramen operators are NOT deployed on any cluster.
 
@@ -398,6 +405,7 @@ odf dr validate clusters -o out/no-ramen
 ```
 
 **Expected result:**
+
 - Command completes without crashing.
 - Report shows problems for missing ramen deployments and configmaps on all
   clusters.
@@ -406,6 +414,7 @@ odf dr validate clusters -o out/no-ramen
 #### Validate clusters ramen not configured
 
 **Preconditions:**
+
 - Cluster level: Ramen deployed.
 - No DRPolicy, DRClusters, or S3 profiles configured on the hub.
 - No S3 store profiles in ramen configmaps on managed clusters.
@@ -417,6 +426,7 @@ odf dr validate clusters -o out/no-config
 ```
 
 **Expected result:**
+
 - Report shows ramen deployments as ok.
 - Report shows problems for missing DRPolicy, DRClusters on the hub.
 - Report shows problems for missing or empty S3 store profiles.
@@ -424,6 +434,7 @@ odf dr validate clusters -o out/no-config
 #### Validate clusters S3 endpoint unreachable
 
 **Preconditions:**
+
 - Cluster level: DR configured.
 - Scale down the S3 endpoint controller (minio in upstream).
 
@@ -434,6 +445,7 @@ odf dr validate clusters -o out/s3-down
 ```
 
 **Expected result:**
+
 - S3 profile check reports a problem.
 - The report shows the S3 profile as not accessible.
 
@@ -442,6 +454,7 @@ odf dr validate clusters -o out/s3-down
 #### Validate clusters missing S3 secret
 
 **Preconditions:**
+
 - Cluster level: DR configured.
 - Delete or rename the S3 secret in one managed cluster's openshift-dr-system
   namespace.
@@ -453,6 +466,7 @@ odf dr validate clusters -o out/secret-problem
 ```
 
 **Expected result:**
+
 - Report shows a problem for the affected S3 profile's secret.
 
 **Cleanup:** Restore the secret.
@@ -460,6 +474,7 @@ odf dr validate clusters -o out/secret-problem
 #### Validate clusters ramen deployment is down
 
 **Preconditions:**
+
 - Cluster level: DR configured.
 - Scale down the ramen-dr-cluster-operator deployment on one managed cluster:
 
@@ -474,6 +489,7 @@ odf dr validate clusters -o out/operator-down
 ```
 
 **Expected result:**
+
 - Console output completes but final summary shows problem count > 0.
 - `validate-clusters.yaml` report shows a non-ok state for the affected
   cluster's deployment.
@@ -489,6 +505,7 @@ oc scale deployment ramen-dr-cluster-operator -n openshift-dr-system --replicas=
 #### Validate healthy application
 
 **Preconditions:**
+
 - Cluster level: Application protected.
 - The application is in a healthy stable state (progression `Completed`).
 
@@ -500,8 +517,9 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/va
 ```
 
 **Expected result:**
-- Console output shows progress: inspected application, gathered data from
-  each cluster, inspected S3 profiles.
+
+- Console output shows progress: inspected application, gathered data from each
+  cluster, inspected S3 profiles.
 - Final line: `Validation completed (N ok, 0 warning, 0 problem)`.
 - Exits with code 0.
 
@@ -531,8 +549,7 @@ The YAML report contains common fields and command-specific data.
 
 The `applicationStatus` section contains validations for the hub, primary
 cluster, secondary cluster, and S3 profiles. Every validated item shows
-`state: ok ✅` on a healthy application. The report validates the
-following:
+`state: ok ✅` on a healthy application. The report validates the following:
 
 **Hub (DRPC):**
 
@@ -574,8 +591,8 @@ following:
 tree out/validate-app/validate-application.data/
 ```
 
-One directory per cluster plus an `s3/` directory. Each cluster directory
-has the same structure as validate clusters. The general structure is:
+One directory per cluster plus an `s3/` directory. Each cluster directory has
+the same structure as validate clusters. The general structure is:
 
 ```
 <cluster-name>/
@@ -612,6 +629,7 @@ For the validate application command:
 #### Validate application during failover
 
 **Preconditions:**
+
 - Cluster level: Application in-progress.
 - Application is during failover; run the validate command about one minute
   after starting the failover.
@@ -624,6 +642,7 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/ap
 ```
 
 **Expected result:**
+
 - Report shows problems in DRPC progression (not `Completed`).
 - VRG conditions may show issues.
 - Problem count > 0 in the summary.
@@ -631,10 +650,11 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/ap
 #### Validate degraded application
 
 **Preconditions:**
+
 - Cluster level: DR configured.
-- Scale down the rbd-mirror daemon on the secondary cluster before
-  protecting the application. Then deploy and protect the application. The
-  protection will get stuck because replication cannot progress.
+- Scale down the rbd-mirror daemon on the secondary cluster before protecting
+  the application. Then deploy and protect the application. The protection will
+  get stuck because replication cannot progress.
 
 **Steps:**
 
@@ -644,8 +664,9 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/ap
 ```
 
 **Expected result:**
-- Report shows problems in protected PVC conditions (protection condition
-  is not true).
+
+- Report shows problems in protected PVC conditions (protection condition is not
+  true).
 - Problem count > 0 in the summary.
 
 **Cleanup:** Restore the rbd-mirror daemon and wait for the application to
@@ -654,6 +675,7 @@ become fully protected.
 #### Validate application missing S3 secret
 
 **Preconditions:**
+
 - Cluster level: Application protected.
 - Delete or rename the S3 secret on one managed cluster.
 
@@ -665,6 +687,7 @@ odf dr validate application --name <drpc-name> --namespace <namespace> -o out/ap
 ```
 
 **Expected result:**
+
 - Gathering S3 application data from the affected profile fails.
 - Report shows a problem for the affected S3 profile's `gathered` field.
 - Problem count > 0 in the summary.
@@ -690,14 +713,15 @@ required.
 odf dr validate application --name nonexistent --namespace default -o out/app-noexist
 ```
 
-**Expected result:** Error indicating the application was not found. Exits
-with non-zero code.
+**Expected result:** Error indicating the application was not found. Exits with
+non-zero code.
 
 ### Gather command
 
 #### Gather application data
 
 **Preconditions:**
+
 - Cluster level: Application protected.
 
 **Steps:**
@@ -708,29 +732,30 @@ odf dr gather application --name <drpc-name> --namespace <namespace> -o out/gath
 ```
 
 **Expected result:**
-- Console shows progress: inspected application, gathered data from each
-  cluster and S3 profiles.
+
+- Console shows progress: inspected application, gathered data from each cluster
+  and S3 profiles.
 - Prints `Gather completed`.
 - Exits with code 0.
 - Output directory contains:
   - `gather-application.yaml` - report
   - `gather-application.log` - detailed log
   - `gather-application.data/` - gathered resources
-- `gather-application.data/` contains directories for hub, each managed
-  cluster, and `s3/`.
+- `gather-application.data/` contains directories for hub, each managed cluster,
+  and `s3/`.
 - Each cluster directory contains the application namespace and
-  `openshift-operators`/`openshift-dr-system`. Ramen operator logs are
-  gathered in `<namespace>/pods/<operator-pod>/manager/`.
-- `s3/` contains one directory per S3 profile with the application's S3
-  data.
+  `openshift-operators`/`openshift-dr-system`. Ramen operator logs are gathered
+  in `<namespace>/pods/<operator-pod>/manager/`.
+- `s3/` contains one directory per S3 profile with the application's S3 data.
 
 #### Gather degraded application
 
 **Preconditions:**
+
 - Cluster level: DR configured.
-- Scale down the rbd-mirror daemon on the secondary cluster before
-  protecting the application. Then deploy and protect the application. The
-  protection will get stuck because replication cannot progress.
+- Scale down the rbd-mirror daemon on the secondary cluster before protecting
+  the application. Then deploy and protect the application. The protection will
+  get stuck because replication cannot progress.
 
 **Steps:**
 
@@ -740,9 +765,10 @@ odf dr gather application --name <drpc-name> --namespace <namespace> -o out/gath
 ```
 
 **Expected result:**
+
 - Gather completes successfully.
-- Gathered data includes ramen operator logs that contain errors related
-  to the replication failure.
+- Gathered data includes ramen operator logs that contain errors related to the
+  replication failure.
 
 **Cleanup:** Restore the rbd-mirror daemon and wait for the application to
 become fully protected.
@@ -768,17 +794,17 @@ odf dr gather application --name nonexistent --namespace default -o out/gather-n
 
 **Expected result:** Error indicating the application was not found.
 
-
 ### Test command
 
 **Preconditions for all tests in this section:**
+
 - Cluster level: DR configured.
 - `config.yaml` configured with correct kubeconfigs, drPolicy, clusterSet,
   storage classes, and test definitions.
 
-> **Important:** Every test must run both `test run` and `test clean`.
-> Skipping `test clean` may leave resources in the clusters and cause false
-> results for subsequent tests.
+> **Important:** Every test must run both `test run` and `test clean`. Skipping
+> `test clean` may leave resources in the clusters and cause false results for
+> subsequent tests.
 
 #### Default application (appset + rbd)
 
@@ -790,6 +816,7 @@ odf dr test clean -o out/test-rbd
 ```
 
 **Expected result:**
+
 - Console shows progress through all DR phases: deployed, protected, failed
   over, relocated, unprotected, undeployed.
 - Final line: `passed (1 passed, 0 failed, 0 skipped)`.
@@ -803,6 +830,7 @@ ls out/test-rbd/
 ```
 
 Expected directory contents:
+
 - `test-run.yaml` - machine-readable test report
 - `test-run.log` - detailed log
 - `test-clean.yaml` - clean report
@@ -821,8 +849,8 @@ Expected: `passed`
 yq '.steps[-1].items.items[].name' < out/test-rbd/test-run.yaml
 ```
 
-Expected: lists the DR phases: `deploy`, `protect`, `failover`,
-`relocate`, `unprotect`, `undeploy`.
+Expected: lists the DR phases: `deploy`, `protect`, `failover`, `relocate`,
+`unprotect`, `undeploy`.
 
 ```bash
 yq '.summary' < out/test-rbd/test-run.yaml
@@ -858,8 +886,8 @@ odf dr test clean -o out/test-disapp
 
 #### Multiple applications
 
-**Preconditions:** Config file has multiple test entries (e.g., appset+rbd
-and subscr+rbd).
+**Preconditions:** Config file has multiple test entries (e.g., appset+rbd and
+subscr+rbd).
 
 **Steps:**
 
@@ -869,12 +897,14 @@ odf dr test clean -o out/test-multi
 ```
 
 **Expected result:**
+
 - Both tests run (may run in parallel).
 - Final line: `passed (2 passed, 0 failed, 0 skipped)`.
 
 #### Failing test
 
 **Preconditions:**
+
 - Config ready. Plan to break rbd-mirror after the `protected` step.
 
 **Steps:**
@@ -886,6 +916,7 @@ odf dr test run -o out/test-fail
 ```
 
 **Expected result:**
+
 - Console shows `❌` for the failing step.
 - Command gathers data from all clusters and S3.
 - Final line: `failed (0 passed, 1 failed, 0 skipped)`.
@@ -898,6 +929,7 @@ ls out/test-fail/
 ```
 
 Expected:
+
 - `test-run.yaml` - report with `status: failed`
 - `test-run.log` - detailed log
 - `test-run.data/` - gathered resources from all clusters and S3
@@ -906,8 +938,8 @@ Expected:
 ls out/test-fail/test-run.data/
 ```
 
-Expected: directories for hub, both managed clusters, and `s3/`
-with data for each S3 profile.
+Expected: directories for hub, both managed clusters, and `s3/` with data for
+each S3 profile.
 
 **YAML report shows failure details:**
 
@@ -916,12 +948,11 @@ yq '.status' < out/test-fail/test-run.yaml
 yq '.steps[-1].items.items[].status' < out/test-fail/test-run.yaml
 ```
 
-Overall status is `failed`. Individual step statuses show which step
-failed.
+Overall status is `failed`. Individual step statuses show which step failed.
 
-**Cleanup:** Restore rbd-mirror first, then clean up test resources.
-Cleaning up before restoring rbd-mirror may fail or time out and leave
-leftovers in the clusters.
+**Cleanup:** Restore rbd-mirror first, then clean up test resources. Cleaning up
+before restoring rbd-mirror may fail or time out and leave leftovers in the
+clusters.
 
 ```bash
 # Restore rbd-mirror on c1:
@@ -939,6 +970,7 @@ odf dr test run -o out/test-cancel
 ```
 
 **Expected result:**
+
 - Command stops gracefully after completing or timing out the current step.
 - `test-run.yaml` is written with partial results.
 - Does NOT gather data for incomplete tests.
@@ -966,10 +998,10 @@ oc get ns test-gitops --context hub
 ```
 
 **Expected result:**
+
 - Console shows applications being unprotected and undeployed.
 - Environment cleaned.
 - Final line: `passed (1 passed, 0 failed, 0 skipped)`.
 - No test-related DRPC resources or namespaces remain in any cluster.
-- The channel `https-github-com-ramendr-ocm-ramen-samples-git` and
-  namespace `test-gitops` are deleted from the hub.
-
+- The channel `https-github-com-ramendr-ocm-ramen-samples-git` and namespace
+  `test-gitops` are deleted from the hub.

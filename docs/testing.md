@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # Testing disaster recovery with ramenctl
 
@@ -33,7 +35,8 @@ simple application and test real disaster recovery flow. The *ramenctl* command
 makes this task easy.
 
 > [!TIP]
-> When working with ODF clusters, use the `odf dr` command instead of `ramenctl`.
+> When working with ODF clusters, use the `odf dr` command instead of
+> `ramenctl`.
 
 ## Environment
 
@@ -45,8 +48,8 @@ configured for Regional DR.
 
 ## Preparing a configuration file
 
-This section describes how to prepare a configuration file for your clusters
-and run a disaster recovery test.
+This section describes how to prepare a configuration file for your clusters and
+run a disaster recovery test.
 
 `ramenctl` uses a configuration file to access the clusters and the related
 resources needed for testing. To create the configuration file run:
@@ -110,8 +113,8 @@ pvcSpecs:
 ```
 
 > [!TIP]
-> You can add more pvcSpecs for testing other storage classes as needed.
-> Modify the test to refer to your own pvcSpec names.
+> You can add more pvcSpecs for testing other storage classes as needed. Modify
+> the test to refer to your own pvcSpec names.
 
 ### Configuring tests
 
@@ -131,13 +134,13 @@ The available options are:
   - `subscr`: OCM managed application deployed using *Subscription*.
   - `disapp`: OCM discovered application deployed by the test command.
   - `disapp-recipe`: OCM discovered application deployed using recipe without
-   any hooks by the test command.
-  - `disapp-recipe-check`: OCM discovered application deployed using recipe
-   with check hooks by the test command.
-  - `disapp-recipe-exec`: OCM discovered application deployed using recipe
-   with exec hooks by the test command.
-  - `disapp-recipe-check-exec`: OCM discovered application deployed using
-   recipe with check and exec hooks by the test command.
+    any hooks by the test command.
+  - `disapp-recipe-check`: OCM discovered application deployed using recipe with
+    check hooks by the test command.
+  - `disapp-recipe-exec`: OCM discovered application deployed using recipe with
+    exec hooks by the test command.
+  - `disapp-recipe-check-exec`: OCM discovered application deployed using recipe
+    with check and exec hooks by the test command.
 - pvcSpecs:
   - `rbd`: *Ceph* *RBD* storage
   - `cephfs`: *CephFS* storage
@@ -185,13 +188,13 @@ ramenctl-test
 ```
 
 > [!IMPORTANT]
-> When reporting DR related issues, please create an archive with the
-> output directory and upload it to the issue tracker.
+> When reporting DR related issues, please create an archive with the output
+> directory and upload it to the issue tracker.
 
 ### The test-run.yaml
 
-The test-run.yaml is a machine and human readable description of the the
-test run:
+The test-run.yaml is a machine and human readable description of the the test
+run:
 
 ```yaml
 build:
@@ -334,8 +337,8 @@ $ ramenctl test clean -o ramenctl-test
 ✅ passed (1 passed, 0 failed, 0 skipped)
 ```
 
-The clean command adds `test-clean.log` and `test-clean.yaml` to the
-output directory:
+The clean command adds `test-clean.log` and `test-clean.yaml` to the output
+directory:
 
 ```console
 $ tree ramenctl-test
@@ -349,8 +352,8 @@ ramenctl-test
 ## Failed tests
 
 When a test fails, the test command gathers data related to the failed tests in
-the output directory. The gathered data can help you or developers to diagnose the
-issue.
+the output directory. The gathered data can help you or developers to diagnose
+the issue.
 
 The following example shows a test run with a failed test, and how to inspect
 the failure.
@@ -410,8 +413,8 @@ example-failure
 ### Inspecting gathered data
 
 The command gathers all the namespaces related to the failed test, related
-cluster scope resources such as storage classes and persistent volumes, and
-S3 data stored by ramen for the failed applications.
+cluster scope resources such as storage classes and persistent volumes, and S3
+data stored by ramen for the failed applications.
 
 ```console
 $ tree -L3 example-failure/test-run.data

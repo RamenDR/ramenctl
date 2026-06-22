@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # ramenctl gather
 
@@ -28,8 +30,8 @@ Use "ramenctl gather [command] --help" for more information about a command.
 
 > [!IMPORTANT]
 > The gather command requires a configuration file. See
-> [Configuring common options](docs/init.md#configuring-common-options)
-> to learn how to create one.
+> [Configuring common options](docs/init.md#configuring-common-options) to learn
+> how to create one.
 
 ## gather application
 
@@ -39,8 +41,8 @@ protected application across the hub and the managed clusters.
 
 ### Looking up applications
 
-To run the gather application command, we need to find the protected
-application name and namespace. Run the following command:
+To run the gather application command, we need to find the protected application
+name and namespace. Run the following command:
 
 ```console
 $ kubectl get drpc -A --context hub
@@ -50,8 +52,8 @@ argocd      appset-deploy-rbd   6m16s   dr1                                     
 
 ### Gathering application data
 
-To gather data for the application `appset-deploy-rbd` in namespace `argocd`
-run the following command:
+To gather data for the application `appset-deploy-rbd` in namespace `argocd` run
+the following command:
 
 ```console
 $ ramenctl gather application --name appset-deploy-rbd --namespace argocd -o out
@@ -120,9 +122,9 @@ out/gather-application.data
         └── test-appset-deploy-rbd
 ```
 
-Secrets in the gathered data are automatically sanitized. See [Secret
-sanitization](https://github.com/nirs/kubectl-gather#secret-sanitization) for
-more info.
+Secrets in the gathered data are automatically sanitized. See
+[Secret sanitization](https://github.com/nirs/kubectl-gather#secret-sanitization)
+for more info.
 
 You can use standard tools to inspect the resources:
 

@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # HTML Report Generation
 
@@ -15,21 +17,21 @@ reports that are human-readable and shareable.
 ## Requirements
 
 1. Each command has its own report structure with specific data
-2. HTML reports share common styling and layout
-3. External tools can unmarshal YAML reports without custom parsing
-4. Templates should be standard Go templates for maintainability
-5. HTML reports are self-contained (embedded CSS)
+1. HTML reports share common styling and layout
+1. External tools can unmarshal YAML reports without custom parsing
+1. Templates should be standard Go templates for maintainability
+1. HTML reports are self-contained (embedded CSS)
 
 ## Report Types
 
 Each command has its own report type with clear structure:
 
-| Command | Report Type | Specific Data |
-|---------|-------------|---------------|
+| Command              | Report Type          | Specific Data                  |
+| -------------------- | -------------------- | ------------------------------ |
 | validate-application | `application.Report` | Application, ApplicationStatus |
-| validate-clusters | `clusters.Report` | ClustersStatus |
-| test-run | `test.Report` | Config, TestResults |
-| gather-application | `gather.Report` | Application, GatherResults |
+| validate-clusters    | `clusters.Report`    | ClustersStatus                 |
+| test-run             | `test.Report`        | Config, TestResults            |
+| gather-application   | `gather.Report`      | Application, GatherResults     |
 
 All reports embed `report.Report` (for validate/gather) or `report.Base` (for
 test) which contains common fields.
@@ -54,7 +56,7 @@ Kubernetes `kind`). We may rename it to `Kind` in the future.
 External tools can unmarshal reports by:
 
 1. Using the specific report type directly if known
-2. Using a helper function that detects the type from the `Name` field
+1. Using a helper function that detects the type from the `Name` field
 
 ## HTML Template Structure
 
@@ -79,8 +81,8 @@ pkg/validate/application/
 
 ### Main Report Template
 
-The shared `report.tmpl` defines the complete HTML structure. Each command
-only needs to define its `content` template:
+The shared `report.tmpl` defines the complete HTML structure. Each command only
+needs to define its `content` template:
 
 ```html
 <!DOCTYPE html>
@@ -175,8 +177,8 @@ func Template() (*template.Template, error) {
 
 ### Command HTML writing
 
-Command report provides the `WriteHTML()` function using the command template
-to write report HTML.
+Command report provides the `WriteHTML()` function using the command template to
+write report HTML.
 
 ```go
 func (r *Report) WriteHTML(w io.Writer) error {
@@ -193,8 +195,8 @@ func (r *Report) WriteHTML(w io.Writer) error {
 To add HTML support for a new command (e.g., `gather-application`):
 
 1. Create `templates/content.tmpl` defining the `content` template
-2. Create `html.go` with `templateData` type and `Template()` function
-3. Add `WriteHTML()` method to the report type
+1. Create `html.go` with `templateData` type and `Template()` function
+1. Add `WriteHTML()` method to the report type
 
 ## Testing HTML output
 

@@ -1,10 +1,12 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # ramenctl init
 
-The init command crates a configuration file required for other
-*ramenctl* commands.
+The init command crates a configuration file required for other *ramenctl*
+commands.
 
 ```console
 % ramenctl init -h
@@ -23,8 +25,8 @@ Global Flags:
 
 ## Creating a configuration file
 
-The init command creates a configuration file named "config.yaml" in the
-current directory:
+The init command creates a configuration file named "config.yaml" in the current
+directory:
 
 ```console
 $ ramenctl init
@@ -33,8 +35,8 @@ $ ramenctl init
 ```
 
 > [!IMPORTANT]
-> Before using the configuration file you need to edit it to match your
-> clusters and storage.
+> Before using the configuration file you need to edit it to match your clusters
+> and storage.
 
 Other *ramenctl* commands use "config.yaml" by default.
 
@@ -54,9 +56,9 @@ You can edit the configuration file to change the default tests.
 
 ## Using multiple configuration files
 
-When working with multiple environments or when you want to run
-different sets of tests with the same environment, you can create
-multiple configuration files and use them with the `--config` option.
+When working with multiple environments or when you want to run different sets
+of tests with the same environment, you can create multiple configuration files
+and use them with the `--config` option.
 
 Create a configuration file named "myenv.yaml":
 
@@ -78,8 +80,8 @@ $ ramenctl test run --config myenv.yaml -o test
 
 ## Configuring common options
 
-All *ramenctl* commands require the `clusters` and `clusterSet` options.
-For the validate and gather commands, these are the only options needed.
+All *ramenctl* commands require the `clusters` and `clusterSet` options. For the
+validate and gather commands, these are the only options needed.
 
 > [!TIP]
 > When using a ramen testing environment, the `--envfile` option configures
@@ -88,9 +90,9 @@ For the validate and gather commands, these are the only options needed.
 
 ### Configuring clusters
 
-Modify the `clusters` section to match your hub and managed clusters
-kubeconfig files. Set `passive-hub` kubeconfig for optional passive hub
-cluster, or leave it empty if not using passive hub.
+Modify the `clusters` section to match your hub and managed clusters kubeconfig
+files. Set `passive-hub` kubeconfig for optional passive hub cluster, or leave
+it empty if not using passive hub.
 
 ```yaml
 clusters:
@@ -109,8 +111,7 @@ clusters:
 The `clusterSet` option specifies the Open Cluster Management
 `ManagedClusterSet` that contains the managed clusters.
 
-To find the clusterSet for your managed clusters, run the following
-command:
+To find the clusterSet for your managed clusters, run the following command:
 
 ```console
 $ kubectl get managedclusters --kubeconfig my-hub.yaml -L cluster.open-cluster-management.io/clusterset
@@ -120,8 +121,8 @@ my-c2           true           https://api.my-c2.example.com:6443   True     Tru
 local-cluster   true           https://api.my-hub.example.com:6443  True     True        16d   default
 ```
 
-The `CLUSTERSET` column shows which clusterSet each managed cluster
-belongs to. Use this value in the configuration file:
+The `CLUSTERSET` column shows which clusterSet each managed cluster belongs to.
+Use this value in the configuration file:
 
 ```yaml
 clusterSet: dr-clusters
@@ -147,10 +148,9 @@ clusterSet: dr-clusters
 
 ## Configuration for the test command
 
-The test command requires the [common options](#configuring-common-options)
-and additional test options. The following is a sample configuration
-file showing the default values. You must modify it to match your
-clusters and storage.
+The test command requires the [common options](#configuring-common-options) and
+additional test options. The following is a sample configuration file showing
+the default values. You must modify it to match your clusters and storage.
 
 ```yaml
 ## ramenctl configuration file

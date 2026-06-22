@@ -1,5 +1,7 @@
-<!-- SPDX-FileCopyrightText: The RamenDR authors -->
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+SPDX-FileCopyrightText: The RamenDR authors
+SPDX-License-Identifier: Apache-2.0
+-->
 
 # ramenctl test
 
@@ -30,8 +32,8 @@ Use "ramenctl test [command] --help" for more information about a command.
 
 The command supports the following sub-commands:
 
-* [run](#test-run)
-* [clean](#test-clean)
+- [run](#test-run)
+- [clean](#test-clean)
 
 > [!IMPORTANT]
 > The test command requires a configuration file. See [init](docs/init.md) to
