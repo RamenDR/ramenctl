@@ -55,6 +55,17 @@ jobs:
           make htmlfmt
           git diff --exit-code
 
+  mdformat:
+    name: Markdown Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+      - name: Install mdformat
+        run: pip3 install -r requirements.txt
+      - name: Check markdown formatting
+        run: git ls-files -z '*.md' | xargs -0 mdformat --check
+
   build-matrix:
     name: Build
     runs-on: ubuntu-latest

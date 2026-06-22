@@ -30,6 +30,7 @@ pre-commit: fmt htmlfmt spell lint
 
 fmt:
 	golangci-lint fmt
+	git ls-files -z '*.md' | xargs -0 mdformat
 
 htmlfmt:
 	find pkg -path '*/testdata/*.html' -exec $(GO) run ./tools/htmlfmt {} \;
