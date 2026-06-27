@@ -1,42 +1,60 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Propose a new feature or enhancement
 title: ''
 labels: ''
 assignees: ''
 type: Feature
 ---
 
-## Is your feature request related to a problem? Please describe
+## Problem
 
-A clear and concise description of what the problem is. Ex. I'm always
-frustrated when [...]
+What problem are you trying to solve? Why do we need this feature? What is the
+current behavior and why is it not sufficient?
 
-## Describe the solution you'd like
+## Proposed solution
 
-A clear and concise description of what you want to happen.
+How do you want to solve the problem? Describe the approach and why this is the
+right solution.
 
-## Describe alternatives you've considered
+## Alternatives considered
 
-A clear and concise description of any alternative solutions or features you've
-considered.
+What other approaches did you consider? Why is the proposed solution better?
 
 ## User experience
 
-How the user will use the new feature? Do we ned to add new command or flags?
-Show example usage of the new command and flags.
+How will the user experience change? If we add new commands or flags, describe
+how they will be used in different scenarios. How do the new commands and flags
+work with existing commands and flags? Show example usage and expected output.
 
 ## Configuration
 
-Do we need to add new configuration options for this feature? Specify the new
-configuration.
+Do we need new configuration options? Specify the new configuration and how it
+affects existing options.
 
 ## Documentation
 
-Do we need to update existing documentation or add new documents? What will be
-the content of new documents?
+What documentation changes are needed? Describe the content of new or updated
+documents. We want to start with documentation, not code.
+
+## Security and privacy
+
+Does this feature handle secrets or sensitive data? Do we need to collect,
+store, or display data that may contain sensitive information? How will the data
+be sanitized?
+
+## Backward compatibility
+
+Does this feature change existing commands, flags, configuration, or output
+formats? Will it break existing users or projects that depend on ramenctl as a
+module?
+
+## Performance
+
+How does this feature affect performance? Does it add slow operations or
+operations that require a lot of memory?
 
 ## Testing
 
-How the new feature will be tested? Specify the new tests to add and changes to
+How will the new feature be tested? Describe the new tests to add and changes to
 existing tests.
