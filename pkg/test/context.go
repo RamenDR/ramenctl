@@ -5,7 +5,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	stdtime "time"
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
@@ -25,8 +24,12 @@ type Context struct {
 
 var _ types.TestContext = &Context{}
 
-func newContext(parent types.Context, workload types.Workload, deployer types.Deployer) *Context {
-	name := fmt.Sprintf("%s-%s", deployer.GetName(), workload.GetName())
+func newContext(
+	parent types.Context,
+	name string,
+	workload types.Workload,
+	deployer types.Deployer,
+) *Context {
 	return &Context{
 		parent:   parent,
 		context:  parent.Context(),
