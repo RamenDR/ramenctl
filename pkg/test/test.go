@@ -52,7 +52,7 @@ func newTest(tc e2econfig.Test, cmd *Command) *Test {
 	}
 
 	return &Test{
-		Context: newContext(cmd, workload, deployer),
+		Context: newContext(cmd, tc.ContextName(), workload, deployer),
 		Backend: cmd.backend,
 		Status:  report.Passed,
 	}

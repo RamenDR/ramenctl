@@ -16,7 +16,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.13.0
 	github.com/ramendr/ramen/api v0.0.0-20260302102746-0080ff0b2f30
-	github.com/ramendr/ramen/e2e v0.0.0-20260303090636-b77204c8e780
+	github.com/ramendr/ramen/e2e v0.0.0-20260701090316-2fa150b226dd
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.19.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
