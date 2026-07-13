@@ -14,14 +14,14 @@ require (
 	github.com/aws/smithy-go v1.24.2
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/go-logr/zapr v1.3.0
-	github.com/nirs/kubectl-gather v0.13.0
+	github.com/nirs/kubectl-gather v0.13.1
 	github.com/ramendr/ramen/api v0.0.0-20260708142616-0e17c0d9913e
 	github.com/ramendr/ramen/e2e v0.0.0-20260708142616-0e17c0d9913e
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.19.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	go.uber.org/zap v1.27.1
-	golang.org/x/term v0.43.0
+	golang.org/x/term v0.45.0
 	k8s.io/api v0.33.10
 	k8s.io/apimachinery v0.33.10
 	k8s.io/client-go v0.33.10
@@ -85,12 +85,12 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
