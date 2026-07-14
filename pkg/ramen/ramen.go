@@ -23,6 +23,14 @@ import (
 )
 
 const (
+	// Known VRG condition types that ramenctl validates.
+	// https://github.com/RamenDR/ramen/blob/ca0d1e2ab23a86a9706893b5635ed83c6bc4ecc2/internal/controller/status.go
+	VRGConditionTypeDataReady             = "DataReady"
+	VRGConditionTypeClusterDataReady      = "ClusterDataReady"
+	VRGConditionTypeKubeObjectsReady      = "KubeObjectsReady"
+	VRGConditionTypeClusterDataProtected  = "ClusterDataProtected"
+	VRGConditionTypeNoClusterDataConflict = "NoClusterDataConflict"
+
 	// PV data is protected. This means that, the PV data from the storage
 	// is in complete sync with its remote peer.
 	// https://github.com/RamenDR/ramen/blob/eebc5c0cb46af2eea145e7d40feef09681f6b110/internal/controller/status.go#L25
@@ -93,6 +101,17 @@ const (
 // Actions are the valid DRPC and VRG actions.
 // NOTE: ramen uses different type for vrg actions with the same values.
 var Actions = []string{"", string(ramenapi.ActionFailover), string(ramenapi.ActionRelocate)}
+
+// knownVRGConditionTypes are VRG conditions that ramenctl knows how to
+// validate. Unknown conditions are filtered out to avoid breaking validation
+// when ramen adds new conditions.
+var knownVRGConditionTypes = map[string]struct{}{
+	VRGConditionTypeDataReady:             {},
+	VRGConditionTypeClusterDataReady:      {},
+	VRGConditionTypeKubeObjectsReady:      {},
+	VRGConditionTypeClusterDataProtected:  {},
+	VRGConditionTypeNoClusterDataConflict: {},
+}
 
 type Context interface {
 	Env() *e2etypes.Env
@@ -378,6 +397,12 @@ func ParseRamenConfig(configMap *corev1.ConfigMap) (*ramenapi.RamenConfig, error
 		return nil, fmt.Errorf("failed to parse %q: %w", ConfigMapRamenConfigKeyName, err)
 	}
 	return config, nil
+}
+
+// IsKnownVRGCondition returns true if the condition type is known to ramenctl.
+func IsKnownVRGCondition(conditionType string) bool {
+	_, known := knownVRGConditionTypes[conditionType]
+	return known
 }
 
 // getRamenConfigMapData reads and parses the ramen operator configmap data.

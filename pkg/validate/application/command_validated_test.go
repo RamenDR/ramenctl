@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	stdtime "time"
 
@@ -767,6 +768,146 @@ func TestValidateLastGroupSyncTime(t *testing.T) {
 			&syncTime, &clusterTime, schedulingInterval, true)
 		if !validated.Equal(&expected) {
 			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+}
+
+func TestValidatedVRGConditions(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			ObjectMeta: metav1.ObjectMeta{Generation: 1},
+			Status: ramenapi.VolumeReplicationGroupStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               "DataReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Ready",
+					},
+					{
+						Type:               "ClusterDataReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Restored",
+					},
+					{
+						Type:               "KubeObjectsReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "KubeObjectsRestored",
+					},
+					{
+						Type:               "ClusterDataProtected",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Uploaded",
+					},
+					{
+						Type:               "NoClusterDataConflict",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "NoConflictDetected",
+					},
+				},
+			},
+		}
+
+		expected := []report.ValidatedCondition{
+			{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
+			{Validated: report.Validated{State: report.OK}, Type: "ClusterDataReady"},
+			{Validated: report.Validated{State: report.OK}, Type: "KubeObjectsReady"},
+			{Validated: report.Validated{State: report.OK}, Type: "ClusterDataProtected"},
+			{Validated: report.Validated{State: report.OK}, Type: "NoClusterDataConflict"},
+		}
+		validated := cmd.validatedVRGConditions(vrg)
+		if !slices.Equal(validated, expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("skip unknown conditions", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			ObjectMeta: metav1.ObjectMeta{Generation: 1},
+			Status: ramenapi.VolumeReplicationGroupStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               "DataReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Ready",
+					},
+					{
+						Type:               "HooksReady",
+						Status:             metav1.ConditionUnknown,
+						ObservedGeneration: 1,
+						Reason:             "Initializing",
+					},
+				},
+			},
+		}
+
+		expected := []report.ValidatedCondition{
+			{Validated: report.Validated{State: report.OK}, Type: "DataReady"},
+		}
+		validated := cmd.validatedVRGConditions(vrg)
+		if !slices.Equal(validated, expected) {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, expected, validated))
+		}
+	})
+
+	t.Run("skip unused conditions", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			ObjectMeta: metav1.ObjectMeta{Generation: 1},
+			Status: ramenapi.VolumeReplicationGroupStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               "DataReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Unused",
+					},
+					{
+						Type:               "ClusterDataReady",
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 1,
+						Reason:             "Unused",
+					},
+				},
+			},
+		}
+
+		validated := cmd.validatedVRGConditions(vrg)
+		if len(validated) != 0 {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, nil, validated))
+		}
+	})
+
+	t.Run("skip data protected", func(t *testing.T) {
+		cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+
+		vrg := &ramenapi.VolumeReplicationGroup{
+			ObjectMeta: metav1.ObjectMeta{Generation: 1},
+			Status: ramenapi.VolumeReplicationGroupStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:               "DataProtected",
+						Status:             metav1.ConditionFalse,
+						ObservedGeneration: 1,
+						Reason:             "Replicating",
+					},
+				},
+			},
+		}
+
+		validated := cmd.validatedVRGConditions(vrg)
+		if len(validated) != 0 {
+			t.Fatalf("unexpected result\n%s", helpers.UnifiedDiff(t, nil, validated))
 		}
 	})
 }

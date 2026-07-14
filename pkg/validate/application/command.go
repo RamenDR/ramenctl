@@ -818,6 +818,10 @@ func (c *Command) validatedVRGConditions(
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
 			continue
 		}
+		if !ramen.IsKnownVRGCondition(condition.Type) {
+			c.Logger().Warnf("Skipping validation for unknown VRG condition: %+v", *condition)
+			continue
+		}
 		validated := validatecmd.ValidatedCondition(vrg, condition, metav1.ConditionTrue)
 		summary.AddValidation(c.Report.Summary, &validated)
 		conditions = append(conditions, validated)
