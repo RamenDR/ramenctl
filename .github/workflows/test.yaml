@@ -109,6 +109,31 @@ jobs:
           retention-days: 15
           compression-level: 9
 
+  go-compatibility:
+    name: Go compatibility
+    runs-on: ubuntu-24.04
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Extract go version
+        id: go-version
+        run: |
+          version=$(awk '/^go [0-9]/ {print $2}' go.mod)
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          # We cannot use go-version-file since in v6 it picks the toolchain
+          # version instead of go version, ignoring GOTOOLCHAIN=local.
+          go-version: ${{ steps.go-version.outputs.version }}
+          cache: false
+      - name: Build ramenctl
+        run: make
+
   test-matrix:
     name: Test
     strategy:
