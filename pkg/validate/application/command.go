@@ -813,7 +813,7 @@ func (c *Command) validatedVRGConditions(
 			continue
 		}
 		// DataProtected behaves differently for volrep and volsync. Since a workload can have both
-		// volsync protected pvcs and volrep protected pvcs we seem to have now way to validate this
+		// volsync protected pvcs and volrep protected pvcs we seem to have no way to validate this
 		// condition.
 		if condition.Type == ramen.VRGConditionTypeDataProtected {
 			continue
