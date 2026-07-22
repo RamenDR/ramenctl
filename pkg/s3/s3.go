@@ -235,46 +235,11 @@ func newObjectStore(
 func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir string) error {
 	start := time.Now()
 
-	keys, err := s.listObjects(ctx, prefix)
-	if err != nil {
-		return err
-	}
-
-	if len(keys) == 0 {
-		return fmt.Errorf("no objects found in bucket %q for prefix %q",
-			s.profile.Bucket, prefix)
-	}
-
 	profileDir := filepath.Join(outputDir, dirName, s.profile.Name)
 	if err := os.MkdirAll(profileDir, dirPerm); err != nil {
 		return fmt.Errorf("failed to create directory %q for prefix %q: %w",
 			profileDir, prefix, err)
 	}
-
-	var failed int
-	for _, key := range keys {
-		if err := s.downloadObject(ctx, key, profileDir); err != nil {
-			s.log.Warnf("Failed to download object %q from bucket %q: %v",
-				key, s.profile.Bucket, err)
-			failed++
-			continue
-		}
-	}
-
-	if failed > 0 {
-		return fmt.Errorf("failed to download %d of %d objects from bucket %q",
-			failed, len(keys), s.profile.Bucket)
-	}
-
-	s.log.Debugf("Downloaded %d objects from bucket %q in %.3f seconds",
-		len(keys), s.profile.Bucket, time.Since(start).Seconds())
-
-	return nil
-}
-
-// listObjects returns all object keys under the given prefix.
-func (s *objectStore) listObjects(ctx context.Context, prefix string) ([]string, error) {
-	start := time.Now()
 
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.profile.Bucket),
@@ -287,24 +252,40 @@ func (s *objectStore) listObjects(ctx context.Context, prefix string) ([]string,
 
 	paginator := s3.NewListObjectsV2Paginator(s.client, input)
 
-	var keys []string
+	var total, failed int
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			s.log.Warnf("Failed to list objects in bucket %q with prefix %q: %v",
 				s.profile.Bucket, prefix, err)
-			return nil, fmt.Errorf("failed to list objects in bucket %q with prefix %q",
+			return fmt.Errorf("failed to list objects in bucket %q with prefix %q",
 				s.profile.Bucket, prefix)
 		}
 		for _, obj := range page.Contents {
-			keys = append(keys, *obj.Key)
+			total++
+			if err := s.downloadObject(ctx, *obj.Key, profileDir); err != nil {
+				s.log.Warnf("Failed to download object %q from bucket %q: %v",
+					*obj.Key, s.profile.Bucket, err)
+				failed++
+				continue
+			}
 		}
 	}
 
-	s.log.Debugf("Listed %d objects in bucket %q with prefix %q in %.3f seconds",
-		len(keys), s.profile.Bucket, prefix, time.Since(start).Seconds())
+	if total == 0 {
+		return fmt.Errorf("no objects found in bucket %q for prefix %q",
+			s.profile.Bucket, prefix)
+	}
 
-	return keys, nil
+	if failed > 0 {
+		return fmt.Errorf("failed to download %d of %d objects from bucket %q",
+			failed, total, s.profile.Bucket)
+	}
+
+	s.log.Debugf("Downloaded %d objects from bucket %q in %.3f seconds",
+		total, s.profile.Bucket, time.Since(start).Seconds())
+
+	return nil
 }
 
 // downloadObject downloads and decompresses an object from S3 store.
