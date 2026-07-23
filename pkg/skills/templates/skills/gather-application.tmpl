@@ -1,0 +1,115 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+---
+name: {{.Command.Slug}}-{{.Skill.Name}}
+description: >-
+  Gather diagnostic data for a DR-protected application using
+  {{.Command.Name}} gather application. Use when the user wants to collect
+  data for troubleshooting, create a bug report, or inspect application
+  resources across clusters.
+---
+
+# {{.Command.Name}} gather application
+
+Gather data for a specific DR-protected application across the hub, managed
+clusters, and S3 storage. Unlike `{{.Command.Name}} validate application`,
+this command only collects data without validating it.
+
+## Requirements
+
+- A configuration file with cluster kubeconfigs (see {{.Command.Slug}}-init skill)
+- At least one DR-protected application in the clusters
+
+## Workflow
+
+### Step 1: Look up protected applications
+
+Read the hub kubeconfig path from `clusters.hub.kubeconfig` in the
+{{.Command.Name}} config file, then list DRPCs:
+
+```console
+$ kubectl get drpc -A --kubeconfig <hub-kubeconfig>
+NAMESPACE   NAME                   AGE   PREFERREDCLUSTER   FAILOVERCLUSTER   DESIREDSTATE   CURRENTSTATE
+argocd      appset-deploy-rbd      69m   dr1                dr2               Relocate       Relocated
+```
+
+Present the list and let the user choose which application to gather
+data for.
+
+### Step 2: Pick an output directory
+
+Ask the user where to store the output. Suggest a unique name like
+`out/<drpc-namespace>-<drpc-name>-<%Y-%m-%d-%H-%M>`, e.g.,
+`out/myns-myapp-2026-07-20-19-46`.
+
+### Step 3: Run gather application
+
+```console
+$ {{.Command.Name}} gather application --name <drpc-name> --namespace <namespace> -o <output-directory>
+```
+
+Use `--config <file>` if the config file is not the default `config.yaml`.
+
+Run without a timeout — the command may take a while on remote clusters.
+
+### Step 4: Check the result
+
+On success the command ends with:
+
+```console
+✅ Gather completed
+```
+
+On failure, check `<output-directory>/gather-application.log` for details.
+
+### Step 5: Inspect gathered data
+
+The output directory contains:
+
+| File | Purpose |
+|------|---------|
+| `gather-application.yaml` | Report describing the gather operation |
+| `gather-application.log` | Detailed log |
+| `gather-application.data/` | Gathered resources |
+
+#### Gathered data structure
+
+One directory per cluster plus `s3/`. Each cluster directory has
+`cluster/` for cluster-scoped resources and `namespaces/` for namespaced
+resources. Ramen operator logs are gathered under
+`namespaces/ramen-system/pods/`.
+
+```console
+$ tree -L3 <output-directory>/gather-application.data
+gather-application.data/
+├── dr1/
+│   ├── cluster/
+│   │   ├── namespaces/
+│   │   ├── persistentvolumes/
+│   │   └── storage.k8s.io/
+│   └── namespaces/
+│       ├── test-appset-deploy-rbd/
+│       └── ramen-system/
+├── dr2/
+│   ├── cluster/
+│   └── namespaces/
+│       ├── test-appset-deploy-rbd/
+│       └── ramen-system/
+├── hub/
+│   ├── cluster/
+│   └── namespaces/
+│       ├── argocd/
+│       └── ramen-system/
+└── s3/
+    ├── minio-on-dr1/
+    │   └── test-appset-deploy-rbd/
+    └── minio-on-dr2/
+        └── test-appset-deploy-rbd/
+```
+
+## Notes
+
+- To report DR issues, archive the entire output directory and upload it
+  to the issue tracker.
+- Use `{{.Command.Name}} validate application` if you need both data collection
+  and problem detection.
