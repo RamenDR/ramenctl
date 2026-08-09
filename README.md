@@ -56,31 +56,53 @@ Create a configuration file for Regional DR test environment:
 $ ramenctl init --envfile ramen/test/envs/regional-dr.yaml
 ```
 
-Run disaster recovery tests:
+Validate the disaster recovery clusters and create an HTML report:
 
 ```console
-$ ramenctl test run -o rdr-test
-⭐ Using report "rdr-test"
+$ ramenctl validate clusters -o validate-clusters
 ⭐ Using config "config.yaml"
+⭐ Using report "validate-clusters"
 
 🔎 Validate config ...
    ✅ Config validated
 
-🔎 Setup environment ...
-   ✅ Environment setup
+🔎 Validate clusters ...
+   ✅ Gathered data from cluster "hub"
+   ✅ Gathered data from cluster "dr1"
+   ✅ Gathered data from cluster "dr2"
+   ✅ Inspected S3 profiles
+   ✅ Checked S3 profile "minio-on-dr2"
+   ✅ Checked S3 profile "minio-on-dr1"
+   ✅ Clusters validated
 
-🔎 Run tests ...
-   ✅ Application "appset-deploy-rbd" deployed
-   ✅ Application "appset-deploy-rbd" protected
-   ✅ Application "appset-deploy-rbd" failed over
-   ✅ Application "appset-deploy-rbd" relocated
-   ✅ Application "appset-deploy-rbd" unprotected
-   ✅ Application "appset-deploy-rbd" undeployed
-
-✅ passed (1 passed, 0 failed, 0 skipped)
+✅ Validation completed (90 ok, 0 warning, 0 problem)
 ```
 
-Your system is ready for disaster recovery!
+Validate a protected application and create an HTML report:
+
+```console
+$ ramenctl validate application --name appset-deploy-rbd \
+    --namespace argocd -o validate-application
+⭐ Using config "config.yaml"
+⭐ Using report "validate-application"
+
+🔎 Validate config ...
+   ✅ Config validated
+
+🔎 Validate application ...
+   ✅ Inspected application
+   ✅ Gathered data from cluster "dr2"
+   ✅ Gathered data from cluster "dr1"
+   ✅ Gathered data from cluster "hub"
+   ✅ Inspected S3 profiles
+   ✅ Gathered S3 profile "minio-on-dr1"
+   ✅ Gathered S3 profile "minio-on-dr2"
+   ✅ Application validated
+
+✅ Validation completed (24 ok, 0 warning, 0 problem)
+```
+
+See the [validate documentation](docs/validate.md) for more info.
 
 Please see [Documentation](#documentation) to learn more.
 
