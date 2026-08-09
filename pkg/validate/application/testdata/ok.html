@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Validate Application</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Validate Application <span class="subtitle">argocd / appset-deploy-rbd</span></h1>
+      <div class="result"><span class="status passed">passed</span><span class="summary">30 ok, 0 warning, 0 problem</span></div>
+      <footer><span>Created 2026-03-16T20:16:31&#43;02:00</span><span>Duration 2.21s</span></footer>
+    </header>
+    <main>
+      <section>
+        <div class="main-grid">
+          <h2>Application Status</h2>
+          <section>
+            <h3>Hub</h3>
+            <section>
+              <h4>DRPC</h4>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>appset-deploy-rbd</dd>
+                <dt>Namespace</dt>
+                <dd>argocd</dd>
+                <dt>DRPolicy</dt>
+                <dd>dr-policy-1m</dd>
+                <dt>Cluster Time</dt>
+                <dd>2025-07-29T17:24:30Z</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
+                <dt>Last Group Sync Time</dt>
+                <dd><span class="value">2025-07-29T17:23:00Z</span><span class="state">✅</span></dd>
+                <dt>Action</dt>
+                <dd><span class="value"></span><span class="state">✅</span></dd>
+                <dt>Phase</dt>
+                <dd><span class="value">Deployed</span><span class="state">✅</span></dd>
+                <dt>Progression</dt>
+                <dd><span class="value">Completed</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>Available</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>PeerReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>Protected</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Primary Cluster: dr1</h3>
+            <section>
+              <h4>VRG</h4>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>appset-deploy-rbd</dd>
+                <dt>Namespace</dt>
+                <dd>test-appset-deploy-rbd</dd>
+                <dt>Cluster Time</dt>
+                <dd>2025-07-29T17:24:30Z</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
+                <dt>Last Group Sync Time</dt>
+                <dd><span class="value">2025-07-29T17:23:00Z</span><span class="state">✅</span></dd>
+                <dt>State</dt>
+                <dd><span class="value">Primary</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>DataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>ClusterDataProtected</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>KubeObjectsReady</dt>
+                    <dd><span class="state">✅</span></dd>
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
+              </section>
+              <section>
+                <details>
+                  <summary>
+                    <h5>Protected PVCs</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <ul>
+                    <li>
+                      <dl class="metadata">
+                        <dt>Name</dt>
+                        <dd>busybox-pvc</dd>
+                        <dt>Namespace</dt>
+                        <dd>test-appset-deploy-rbd</dd>
+                        <dt>Replication</dt>
+                        <dd>volrep</dd>
+                      </dl>
+                      <dl class="validation">
+                        <dt>Phase</dt>
+                        <dd><span class="value">Bound</span><span class="state">✅</span></dd>
+                      </dl>
+                      <section>
+                        <details>
+                          <summary>
+                            <h6>Conditions</h6>
+                            <span class="state">✅</span>
+                          </summary>
+                          <dl class="validation">
+                            <dt>DataReady</dt>
+                            <dd><span class="state">✅</span></dd>
+                            <dt>ClusterDataProtected</dt>
+                            <dd><span class="state">✅</span></dd>
+                          </dl>
+                        </details>
+                      </section>
+                    </li>
+                  </ul>
+                </details>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>Secondary Cluster: dr2</h3>
+            <section>
+              <h4>VRG</h4>
+              <dl class="metadata">
+                <dt>Name</dt>
+                <dd>appset-deploy-rbd</dd>
+                <dt>Namespace</dt>
+                <dd>test-appset-deploy-rbd</dd>
+                <dt>Cluster Time</dt>
+                <dd>2025-07-29T17:24:30Z</dd>
+              </dl>
+              <dl class="validation">
+                <dt>Scheduling Interval</dt>
+                <dd><span class="value">1m0s</span><span class="state">✅</span></dd>
+                <dt>Last Group Sync Time</dt>
+                <dd><span class="value"></span><span class="state">✅</span></dd>
+                <dt>State</dt>
+                <dd><span class="value">Secondary</span><span class="state">✅</span></dd>
+              </dl>
+              <section>
+                <details>
+                  <summary>
+                    <h5>Conditions</h5>
+                    <span class="state">✅</span>
+                  </summary>
+                  <dl class="validation">
+                    <dt>NoClusterDataConflict</dt>
+                    <dd><span class="state">✅</span></dd>
+                  </dl>
+                </details>
+              </section>
+            </section>
+          </section>
+          <section>
+            <h3>S3 Stores</h3>
+            <dl class="validation">
+              <dt>Profiles</dt>
+              <dd><span class="value">2</span><span class="state">✅</span></dd>
+            </dl>
+            <section>
+              <h4>minio-on-dr2</h4>
+              <dl class="validation">
+                <dt>Gathered</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
+              </dl>
+            </section>
+            <section>
+              <h4>minio-on-dr1</h4>
+              <dl class="validation">
+                <dt>Gathered</dt>
+                <dd><span class="value">true</span><span class="state">✅</span></dd>
+              </dl>
+            </section>
+          </section>
+        </div>
+      </section>
+      <div class="details-grid">
+        <h2>Report Details</h2>
+        <section>
+          <h3>Build</h3>
+          <dl class="metadata">
+            <dt>Version</dt>
+            <dd>v0.17.0-2-gc5cc831</dd>
+            <dt>Commit</dt>
+            <dd title="c5cc831b601f99c3a83a297da6840c3f21376b39">c5cc831b60...</dd>
+          </dl>
+          <h3>Host</h3>
+          <dl class="metadata">
+            <dt>OS</dt>
+            <dd>darwin</dd>
+            <dt>Arch</dt>
+            <dd>arm64</dd>
+            <dt>CPUs</dt>
+            <dd>12</dd>
+          </dl>
+          <h3>Namespaces</h3>
+          <ul class="namespaces">
+            <li>argocd</li>
+            <li>ramen-system</li>
+            <li>test-appset-deploy-rbd</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Config</h3>
+          <pre>clusterSet: default
+clusters:
+  c1:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr1
+  c2:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/dr2
+  hub:
+    kubeconfig: /Users/nir/.config/drenv/rdr/kubeconfigs/hub
+  passive-hub:
+    kubeconfig: &#34;&#34;
+distro: k8s
+namespaces:
+  argocdNamespace: argocd
+  ramenDRClusterNamespace: ramen-system
+  ramenHubNamespace: ramen-system
+  ramenOpsNamespace: ramen-ops
+</pre>
+        </section>
+        <section>
+          <h3>Steps</h3>
+          <ul class="steps">
+            <li class="step passed"><span class="step-name">validate config</span><span class="step-duration">0.01s</span></li>
+            <li class="step passed">
+              <span class="step-name">validate application</span><span class="step-duration">2.20s</span>
+              <ul>
+                <li class="step passed"><span class="step-name">inspect application</span><span class="step-duration">0.00s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;hub&#34;</span><span class="step-duration">1.22s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr2&#34;</span><span class="step-duration">2.14s</span></li>
+                <li class="step passed"><span class="step-name">gather &#34;dr1&#34;</span><span class="step-duration">2.18s</span></li>
+                <li class="step passed"><span class="step-name">inspect S3 profiles</span><span class="step-duration">0.00s</span></li>
+                <li class="step passed"><span class="step-name">gather S3 profile &#34;minio-on-dr2&#34;</span><span class="step-duration">0.01s</span></li>
+                <li class="step passed"><span class="step-name">gather S3 profile &#34;minio-on-dr1&#34;</span><span class="step-duration">0.01s</span></li>
+                <li class="step passed"><span class="step-name">validate data</span><span class="step-duration">0.00s</span></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
