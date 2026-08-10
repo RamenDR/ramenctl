@@ -1,0 +1,187 @@
+# SPDX-FileCopyrightText: The RamenDr authors
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: Test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spell:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Run codespell
+        uses: codespell-project/actions-codespell@8f01853be192eb0f849a5c7d721450e7a467c579 # v2.2
+        with:
+          skip: go.sum
+
+  lint:
+    name: Lint
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+        with:
+          version: latest
+
+  htmlfmt:
+    name: HTML Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Check HTML formatting
+        run: |
+          make htmlfmt
+          git diff --exit-code
+
+  mdformat:
+    name: Markdown Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Install mdformat
+        run: pip3 install -r requirements.txt
+      - name: Check markdown formatting
+        run: git ls-files -z '*.md' | xargs -0 mdformat --check
+
+  tidy:
+    name: Go Mod Tidy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Check go modules are tidy
+        run: |
+          go mod tidy
+          git --no-pager diff --exit-code
+
+  build-matrix:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          - goarch: arm64
+            goos: windows
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Create build tag
+        run: git tag build-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Download modules
+        run: go mod download
+      - name: Build binary
+        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} make
+      - name: Upload artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ramenctl-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ramenctl*
+          retention-days: 15
+          compression-level: 9
+
+  go-compatibility:
+    name: Go compatibility
+    runs-on: ubuntu-24.04
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Extract go version
+        id: go-version
+        run: |
+          version=$(awk '/^go [0-9]/ {print $2}' go.mod)
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          # We cannot use go-version-file since in v6 it picks the toolchain
+          # version instead of go version, ignoring GOTOOLCHAIN=local.
+          go-version: ${{ steps.go-version.outputs.version }}
+          cache: false
+      - name: Build ramenctl
+        run: make
+
+  test-matrix:
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        runner:
+          - ubuntu-24.04 # x86_64
+          - ubuntu-24.04-arm # arm64
+          - windows-latest # x86_64
+          - macos-15-intel # x86_64
+          - macos-15 # arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Create build tag
+        run: git tag latest
+      - name: Setup go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Download modules
+        run: go mod download
+      - name: Run tests
+        run: make test

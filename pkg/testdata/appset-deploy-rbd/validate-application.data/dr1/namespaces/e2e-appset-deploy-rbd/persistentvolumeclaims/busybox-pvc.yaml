@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"appset-deploy-rbd-dr1","appname":"busybox"},"name":"busybox-pvc","namespace":"e2e-appset-deploy-rbd"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"rook-ceph-block"}}
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    replication.storage.openshift.io/volume-replication-name: busybox-pvc
+    volume.beta.kubernetes.io/storage-provisioner: rook-ceph.rbd.csi.ceph.com
+    volume.kubernetes.io/storage-provisioner: rook-ceph.rbd.csi.ceph.com
+    volumereplicationgroups.ramendr.openshift.io/vr-archived: archiveV1-0
+    volumereplicationgroups.ramendr.openshift.io/vr-protected: protected
+  creationTimestamp: "2025-08-04T17:55:42Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  - volumereplicationgroups.ramendr.openshift.io/pvc-vr-protection
+  - replication.storage.openshift.io/pvc-protection
+  labels:
+    app.kubernetes.io/instance: appset-deploy-rbd-dr1
+    appname: busybox
+    ramendr.openshift.io/owner-name: appset-deploy-rbd
+    ramendr.openshift.io/owner-namespace-name: e2e-appset-deploy-rbd
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+        f:labels:
+          .: {}
+          f:app.kubernetes.io/instance: {}
+          f:appname: {}
+      f:spec:
+        f:accessModes: {}
+        f:resources:
+          f:requests:
+            .: {}
+            f:storage: {}
+        f:storageClassName: {}
+        f:volumeMode: {}
+    manager: argocd-controller
+    operation: Update
+    time: "2025-08-04T17:55:42Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          f:pv.kubernetes.io/bind-completed: {}
+          f:pv.kubernetes.io/bound-by-controller: {}
+          f:volume.beta.kubernetes.io/storage-provisioner: {}
+          f:volume.kubernetes.io/storage-provisioner: {}
+      f:spec:
+        f:volumeName: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2025-08-04T17:55:42Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        f:accessModes: {}
+        f:capacity:
+          .: {}
+          f:storage: {}
+        f:phase: {}
+    manager: kube-controller-manager
+    operation: Update
+    subresource: status
+    time: "2025-08-04T17:55:42Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          f:replication.storage.openshift.io/volume-replication-name: {}
+        f:finalizers:
+          v:"replication.storage.openshift.io/pvc-protection": {}
+    manager: csi-addons-manager
+    operation: Update
+    time: "2025-08-04T17:56:39Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          f:volumereplicationgroups.ramendr.openshift.io/vr-archived: {}
+          f:volumereplicationgroups.ramendr.openshift.io/vr-protected: {}
+        f:finalizers:
+          v:"volumereplicationgroups.ramendr.openshift.io/pvc-vr-protection": {}
+        f:labels:
+          f:ramendr.openshift.io/owner-name: {}
+          f:ramendr.openshift.io/owner-namespace-name: {}
+    manager: manager
+    operation: Update
+    time: "2025-08-04T17:56:40Z"
+  name: busybox-pvc
+  namespace: e2e-appset-deploy-rbd
+  resourceVersion: "8084"
+  uid: d64713d0-682d-43d2-85d2-8077d089dd0d
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rook-ceph-block
+  volumeMode: Filesystem
+  volumeName: pvc-d64713d0-682d-43d2-85d2-8077d089dd0d
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  phase: Bound

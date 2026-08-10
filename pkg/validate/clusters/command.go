@@ -1,0 +1,1181 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
+package clusters
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os"
+	"strings"
+
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
+	"github.com/ramendr/ramen/e2e/types"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	basecmd "github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/config"
+	"github.com/ramendr/ramenctl/pkg/console"
+	"github.com/ramendr/ramenctl/pkg/core"
+	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/logging"
+	"github.com/ramendr/ramenctl/pkg/ramen"
+	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
+	"github.com/ramendr/ramenctl/pkg/sets"
+	"github.com/ramendr/ramenctl/pkg/time"
+	validatecmd "github.com/ramendr/ramenctl/pkg/validate/command"
+	"github.com/ramendr/ramenctl/pkg/validate/summary"
+	"github.com/ramendr/ramenctl/pkg/validation"
+)
+
+const (
+	// CommandName is the name of the validate-clusters command.
+	CommandName = "validate-clusters"
+
+	// minS3Profiles is the minimum S3 profiles in configmap required for DR.
+	minS3Profiles = 2
+
+	profileNotFoundInHub = "Profile not found in hub"
+)
+
+type Command struct {
+	*validatecmd.Command
+	Report *Report
+}
+
+func NewCommand(cmd *basecmd.Command, cfg *config.Config, backend validation.Validation) *Command {
+	r := NewReport(cfg)
+	return &Command{
+		Command: validatecmd.New(cmd, cfg, backend, r.Report),
+		Report:  r,
+	}
+}
+
+func (c *Command) passed() {
+	c.WriteReport(c.Report)
+	console.Completed("Validation completed (%s)", summary.String(c.Report.Summary))
+}
+
+func (c *Command) failed() error {
+	c.WriteReport(c.Report)
+	return errors.New(c.Report.Error())
+}
+
+func (c *Command) Run() error {
+	if !c.ValidateConfig() {
+		return c.failed()
+	}
+	if !c.validateClusters() {
+		return c.failed()
+	}
+	c.passed()
+	return nil
+}
+
+func (c *Command) validateClusters() bool {
+	console.Step("Validate clusters")
+	c.StartStep("validate clusters")
+
+	namespaces := c.namespacesToGather()
+	c.Report.Namespaces = namespaces
+
+	options := gathering.Options{
+		Namespaces: namespaces,
+		Cluster:    true,
+		OutputDir:  c.DataDir(),
+	}
+	if !c.GatherNamespaces(options) {
+		return c.FinishStep()
+	}
+
+	if !c.checkS3Profiles() {
+		return c.FinishStep()
+	}
+
+	if !c.validateGatheredData() {
+		return c.FinishStep()
+	}
+
+	c.FinishStep()
+	return true
+}
+
+func (c *Command) namespacesToGather() []string {
+	return sets.Sorted([]string{
+		c.Config().Namespaces.RamenHubNamespace,
+		c.Config().Namespaces.RamenDRClusterNamespace,
+	})
+}
+
+// checkS3Profiles inspects S3 profiles and checks access. It returns false only if the user
+// cancelled, otherwise true even if there were errors during inspection, as those will be
+// reported in the validation results.
+func (c *Command) checkS3Profiles() bool {
+	profiles, err := c.inspectS3Profiles()
+	if err != nil {
+		return !errors.Is(err, context.Canceled)
+	}
+	return c.checkS3(profiles)
+}
+
+func (c *Command) inspectS3Profiles() ([]*s3.Profile, error) {
+	start := time.Now()
+	step := &report.Step{Name: "inspect S3 profiles"}
+
+	c.Logger().Infof("Step %q started", step.Name)
+
+	profiles, err := c.s3Info()
+	if err != nil {
+		step.Duration = time.Since(start).Seconds()
+		if errors.Is(err, context.Canceled) {
+			step.Status = report.Canceled
+			step.Err = fmt.Sprintf("Canceled %s", step.Name)
+			console.Error("Canceled %s", step.Name)
+		} else {
+			step.Status = report.Failed
+			step.Err = "Failed to read S3 profiles from hub"
+			console.Error("Failed to %s", step.Name)
+		}
+		c.Logger().Errorf("Step %q %s: %s", step.Name, step.Status, err)
+		c.Current.AddStep(step)
+		return nil, err
+	}
+
+	step.Duration = time.Since(start).Seconds()
+	step.Status = report.Passed
+	c.Current.AddStep(step)
+
+	console.Pass("Inspected S3 profiles")
+	c.Logger().Infof("Step %q passed", step.Name)
+
+	return profiles, nil
+}
+
+// s3Info reads S3 profiles and fetches secrets from the hub cluster.
+func (c *Command) s3Info() ([]*s3.Profile, error) {
+	// Read S3 profiles from the ramen hub configmap, the source of truth
+	// synced to managed clusters.
+	hub := c.Env().Hub
+	reader := c.OutputReader(hub.Name)
+	configMapName := ramen.HubOperatorConfigMapName
+	configMapNamespace := c.Config().Namespaces.RamenHubNamespace
+
+	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get S3 secrets from live hub cluster since gathered data may contain
+	// sanitized secrets. On cancellation, return immediately. On other failures,
+	// empty credentials will cause S3 operations to fail during checkS3.
+	var profiles []*s3.Profile
+	for _, sp := range storeProfiles {
+		secret, err := c.Backend.GetSecret(c, hub, sp.S3SecretRef.Name, sp.S3SecretRef.Namespace)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil, err
+			}
+			c.Logger().Warnf("Failed to get S3 secret \"%s/%s\" from cluster %q: %s",
+				sp.S3SecretRef.Namespace, sp.S3SecretRef.Name, hub.Name, err)
+		}
+		profiles = append(profiles, ramen.S3ProfileFromStore(sp, secret))
+	}
+
+	return profiles, nil
+}
+
+func (c *Command) validateGatheredData() bool {
+	log := c.Logger()
+
+	start := time.Now()
+	step := &report.Step{Name: "validate clusters data"}
+	defer func() {
+		step.Duration = time.Since(start).Seconds()
+		c.Current.AddStep(step)
+	}()
+
+	s := &c.Report.ClustersStatus
+
+	if err := c.validateHub(&s.Hub); err != nil {
+		step.Status = report.Failed
+		step.Err = "Failed to validate hub"
+		msg := "Failed to validate hub"
+		console.Error(msg)
+		log.Errorf("%s: %s", msg, err)
+		return false
+	}
+
+	if err := c.validateManagedClusters(&s.Clusters); err != nil {
+		step.Status = report.Failed
+		step.Err = "Failed to validate managed clusters"
+		msg := "Failed to validate managed clusters"
+		console.Error(msg)
+		log.Errorf("%s: %s", msg, err)
+		return false
+	}
+
+	c.validateS3Status(&s.S3)
+
+	if summary.HasIssues(c.Report.Summary) {
+		step.Status = report.Failed
+		step.Err = fmt.Sprintf("Validation failed (%s)", summary.String(c.Report.Summary))
+		msg := "Issues found during validation"
+		console.Error(msg)
+		log.Errorf("%s: %s", msg, summary.String(c.Report.Summary))
+		return false
+	}
+
+	step.Status = report.Passed
+	console.Pass("Clusters validated")
+	return true
+}
+
+func (c *Command) validateHub(s *report.ClustersStatusHub) error {
+	if err := c.validateDRPolicies(&s.DRPolicies); err != nil {
+		return fmt.Errorf("failed to validate drpolicies: %w", err)
+	}
+
+	if err := c.validateDRClusters(&s.DRClusters); err != nil {
+		return fmt.Errorf("failed to validate drclusters: %w", err)
+	}
+
+	hub := c.Env().Hub
+	namespace := c.Config().Namespaces.RamenHubNamespace
+	if err := c.validateRamen(&s.Ramen, hub, namespace, ramenapi.DRHubType); err != nil {
+		return fmt.Errorf("failed to validate ramen: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Command) validateDRPolicies(
+	drPoliciesList *report.ValidatedDRPoliciesList,
+) error {
+	log := c.Logger()
+	reader := c.OutputReader(c.Env().Hub.Name)
+
+	drPolicyNames, err := ramen.ListDRPolicies(reader)
+	if err != nil {
+		return fmt.Errorf("failed to list drpolicies: %w", err)
+	}
+
+	for _, policyName := range drPolicyNames {
+		drPolicy, err := ramen.ReadDRPolicy(reader, policyName)
+		if err != nil {
+			return fmt.Errorf("failed to read drpolicy %q: %w", policyName, err)
+		}
+
+		log.Debugf("Read drpolicy %q", drPolicy.Name)
+		dps := report.DRPolicySummary{
+			Name:               drPolicy.Name,
+			SchedulingInterval: drPolicy.Spec.SchedulingInterval,
+			DRClusters:         drPolicy.Spec.DRClusters,
+			PeerClasses:        c.validatedPeerClasses(drPolicy),
+			Conditions:         c.ValidatedConditions(drPolicy, drPolicy.Status.Conditions),
+		}
+		drPoliciesList.Value = append(drPoliciesList.Value, dps)
+	}
+
+	if len(drPoliciesList.Value) == 0 {
+		drPoliciesList.State = report.Problem
+		drPoliciesList.Description = "No DRPolicies found"
+	} else {
+		drPoliciesList.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, drPoliciesList)
+
+	return nil
+}
+
+func (c *Command) validatedPeerClasses(
+	drPolicy *ramenapi.DRPolicy,
+) report.ValidatedPeerClassesList {
+	peerClassesList := report.ValidatedPeerClassesList{}
+
+	for _, peerClass := range drPolicy.Status.Async.PeerClasses {
+		pcs := report.PeerClassesSummary{
+			StorageClassName: peerClass.StorageClassName,
+			ReplicationID:    peerClass.ReplicationID,
+			Grouping:         peerClass.Grouping,
+		}
+		peerClassesList.Value = append(peerClassesList.Value, pcs)
+	}
+
+	if len(peerClassesList.Value) == 0 {
+		peerClassesList.State = report.Problem
+		peerClassesList.Description = "No peer classes found"
+	} else {
+		peerClassesList.State = report.OK
+	}
+	summary.AddValidation(c.Report.Summary, &peerClassesList)
+
+	return peerClassesList
+}
+
+func (c *Command) validateDRClusters(
+	drClustersList *report.ValidatedDRClustersList,
+) error {
+	log := c.Logger()
+	reader := c.OutputReader(c.Env().Hub.Name)
+
+	drClusterNames, err := ramen.ListDRClusters(reader)
+	if err != nil {
+		return fmt.Errorf("failed to list drclusters: %w", err)
+	}
+
+	for _, drClusterName := range drClusterNames {
+		drCluster, err := ramen.ReadDRCluster(reader, drClusterName)
+		if err != nil {
+			return fmt.Errorf("failed to read drluster %q: %w", drClusterName, err)
+		}
+
+		log.Debugf("Read drcluster %q", drCluster.Name)
+		dcs := report.DRClusterSummary{
+			Name:       drCluster.Name,
+			Phase:      string(drCluster.Status.Phase),
+			Conditions: c.validatedDRClusterConditions(drCluster),
+		}
+		drClustersList.Value = append(drClustersList.Value, dcs)
+	}
+
+	if len(drClustersList.Value) < 2 {
+		drClustersList.State = report.Problem
+		drClustersList.Description = fmt.Sprintf("2 DRClusters required, %d found",
+			len(drClustersList.Value))
+	} else {
+		drClustersList.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, drClustersList)
+
+	return nil
+}
+
+func (c *Command) validatedDRClusterConditions(
+	drCluster *ramenapi.DRCluster,
+) []report.ValidatedCondition {
+	var conditions []report.ValidatedCondition
+	for i := range drCluster.Status.Conditions {
+		condition := &drCluster.Status.Conditions[i]
+
+		var validated report.ValidatedCondition
+		if condition.Type == ramenapi.DRClusterConditionTypeFenced {
+			// For Fenced condition, "False" is the expected status.
+			validated = validatecmd.ValidatedCondition(drCluster, condition, metav1.ConditionFalse)
+		} else {
+			// For Clean & Validated conditions, "True" is the expected status.
+			validated = validatecmd.ValidatedCondition(drCluster, condition, metav1.ConditionTrue)
+		}
+
+		summary.AddValidation(c.Report.Summary, &validated)
+		conditions = append(conditions, validated)
+	}
+
+	return conditions
+}
+
+func (c *Command) validateManagedClusters(s *[]report.ClustersStatusCluster) error {
+	env := c.Env()
+	namespace := c.Config().Namespaces.RamenDRClusterNamespace
+
+	for _, cluster := range env.ManagedClusters() {
+		cs := report.ClustersStatusCluster{Name: cluster.Name}
+		if err := c.validateRamen(
+			&cs.Ramen,
+			cluster,
+			namespace,
+			ramenapi.DRClusterType,
+		); err != nil {
+			return fmt.Errorf("failed to validate ramen: %w", err)
+		}
+		*s = append(*s, cs)
+	}
+
+	return nil
+}
+
+func (c *Command) validateRamen(
+	s *report.RamenSummary,
+	cluster *types.Cluster,
+	namespace string,
+	controllerType ramenapi.ControllerType,
+) error {
+	deploymentName := ramen.OperatorDeploymentName(controllerType)
+	configMapName := ramen.OperatorConfigMapName(controllerType)
+
+	deployment, err := c.readRamenDeployment(cluster, deploymentName, namespace)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to read deployment: %w", err)
+	}
+
+	c.validateDeployment(
+		&s.Deployment,
+		deploymentName,
+		namespace,
+		deployment,
+		ramen.OperatorReplicas,
+	)
+
+	configMap, err := c.readRamenConfigMap(cluster, configMapName, namespace)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to read configmap: %w", err)
+	}
+
+	if err := c.validateRamenConfigMap(
+		&s.ConfigMap,
+		cluster,
+		configMapName,
+		namespace,
+		configMap,
+		controllerType,
+	); err != nil {
+		return fmt.Errorf("failed to validate configmap: %w", err)
+	}
+
+	if err := c.validateControllerType(
+		&s.Deployment,
+		deployment,
+		configMap,
+		controllerType,
+	); err != nil {
+		return fmt.Errorf("failed to validate controller type: %w", err)
+	}
+
+	return nil
+}
+
+// readRamenConfigMap reads the ramen operator configmap from the gathered output.
+func (c *Command) readRamenConfigMap(
+	cluster *types.Cluster,
+	name, namespace string,
+) (*corev1.ConfigMap, error) {
+	reader := c.OutputReader(cluster.Name)
+
+	configMap, err := core.ReadConfigMap(reader, name, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read configmap \"%s/%s\" from cluster %q: %w",
+			namespace, name, cluster.Name, err)
+	}
+
+	c.Logger().Debugf("Read configmap \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
+	return configMap, nil
+}
+
+func (c *Command) validateRamenConfigMap(
+	s *report.ConfigMapSummary,
+	cluster *types.Cluster,
+	name, namespace string,
+	configMap *corev1.ConfigMap,
+	controllerType ramenapi.ControllerType,
+) error {
+	s.Name = name
+	s.Namespace = namespace
+
+	if configMap == nil {
+		s.Deleted = c.ValidatedDeleted(nil)
+		return nil
+	}
+
+	s.Deleted = c.ValidatedDeleted(configMap)
+
+	config, err := ramen.ParseRamenConfig(configMap)
+	s.Parsed = c.validatedParsed(err)
+	if err != nil {
+		c.Logger().Errorf("Failed to parse ramen config from configmap \"%s/%s\": %s",
+			namespace, name, err)
+		return nil
+	}
+
+	if controllerType == ramenapi.DRHubType {
+		if err := c.validatedHubS3Profiles(
+			&s.S3StoreProfiles,
+			cluster,
+			config,
+			namespace,
+		); err != nil {
+			return fmt.Errorf("failed to validate hub s3 profiles: %w", err)
+		}
+	} else {
+		if err := c.validatedManagedClusterS3Profiles(
+			&s.S3StoreProfiles,
+			cluster,
+			config,
+			namespace,
+		); err != nil {
+			return fmt.Errorf("failed to validate managed cluster s3 profiles: %w", err)
+		}
+	}
+
+	// TODO: Validate that configmap is identical to the configmap on the hub except the controller
+	// type.
+
+	return nil
+}
+
+// validateControllerType validates the ramen controller type. Since ODF 4.22 the controller type is
+// set as an environment variable in the deployment. In older versions it is set in the configmap.
+// We check the deployment first and fall back to the configmap to support all ramen versions.
+func (c *Command) validateControllerType(
+	s *report.DeploymentSummary,
+	deployment *appsv1.Deployment,
+	configMap *corev1.ConfigMap,
+	expectedType ramenapi.ControllerType,
+) error {
+	if deployment != nil {
+		if controllerType, ok := ramen.DeploymentControllerType(deployment); ok {
+			s.RamenControllerType = c.validatedRamenControllerType(controllerType, expectedType)
+			return nil
+		}
+	}
+
+	if configMap != nil {
+		config, err := ramen.ParseRamenConfig(configMap)
+		if err == nil {
+			s.RamenControllerType = c.validatedRamenControllerType(
+				config.RamenControllerType,
+				expectedType,
+			)
+			return nil
+		}
+		c.Logger().Errorf("Failed to parse ramen config for controller type: %s", err)
+	}
+
+	s.RamenControllerType = c.validatedRamenControllerType("", expectedType)
+
+	return nil
+}
+
+func (c *Command) validatedParsed(err error) report.ValidatedBool {
+	validated := report.ValidatedBool{}
+	if err != nil {
+		validated.State = report.Problem
+		validated.Description = err.Error()
+	} else {
+		validated.Value = true
+		validated.State = report.OK
+	}
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedRamenControllerType(
+	value ramenapi.ControllerType,
+	expectedType ramenapi.ControllerType,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: string(value)}
+
+	if value != expectedType {
+		validated.State = report.Problem
+		validated.Description = fmt.Sprintf("Expecting controller type %q", expectedType)
+	} else {
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+// validatedHubS3Profiles validates that S3 profile fields in the hub are not empty.
+func (c *Command) validatedHubS3Profiles(
+	s *report.ValidatedS3StoreProfilesList,
+	cluster *types.Cluster,
+	config *ramenapi.RamenConfig,
+	configNamespace string,
+) error {
+	for i := range config.S3StoreProfiles {
+		profile := &config.S3StoreProfiles[i]
+
+		validatedSecret, err := c.validatedHubSecretRef(
+			profile.S3SecretRef,
+			cluster,
+			configNamespace,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to validate s3 profile %q secret in cluster %q: %w",
+				profile.S3ProfileName, cluster.Name, err)
+		}
+
+		ps := report.S3StoreProfilesSummary{
+			S3ProfileName:        profile.S3ProfileName,
+			S3Bucket:             c.validatedRequiredString(profile.S3Bucket),
+			S3CompatibleEndpoint: c.validatedRequiredString(profile.S3CompatibleEndpoint),
+			S3Region:             c.validatedRequiredString(profile.S3Region),
+			CACertificate:        c.validatedCertificateFingerprint(profile.CACertificates),
+			S3SecretRef:          validatedSecret,
+		}
+		s.Value = append(s.Value, ps)
+	}
+
+	if len(s.Value) < minS3Profiles {
+		s.State = report.Problem
+		s.Description = fmt.Sprintf("Found %d S3 profile(s), expected at least %d",
+			len(s.Value), minS3Profiles)
+	} else {
+		s.State = report.OK
+	}
+	summary.AddValidation(c.Report.Summary, s)
+
+	return nil
+}
+
+// validatedManagedClusterS3Profiles validates that managed cluster S3 profile fields
+// are not empty and match the hub profile.
+func (c *Command) validatedManagedClusterS3Profiles(
+	s *report.ValidatedS3StoreProfilesList,
+	cluster *types.Cluster,
+	config *ramenapi.RamenConfig,
+	configNamespace string,
+) error {
+	for i := range config.S3StoreProfiles {
+		profile := &config.S3StoreProfiles[i]
+
+		hubS3Profile, found := c.lookupHubS3StoreProfileSummary(profile.S3ProfileName)
+
+		validatedSecret, err := c.validatedManagedClusterSecretRef(
+			profile.S3SecretRef, cluster, configNamespace, hubS3Profile.S3SecretRef, found)
+		if err != nil {
+			return fmt.Errorf("failed to validate s3 profile %q secret in cluster %q: %w",
+				profile.S3ProfileName, cluster.Name, err)
+		}
+
+		ps := report.S3StoreProfilesSummary{
+			S3ProfileName: profile.S3ProfileName,
+			S3Bucket: c.validatedManagedClusterRequiredString(
+				profile.S3Bucket,
+				hubS3Profile.S3Bucket,
+				found,
+			),
+			S3CompatibleEndpoint: c.validatedManagedClusterRequiredString(
+				profile.S3CompatibleEndpoint,
+				hubS3Profile.S3CompatibleEndpoint,
+				found,
+			),
+			S3Region: c.validatedManagedClusterRequiredString(
+				profile.S3Region,
+				hubS3Profile.S3Region,
+				found,
+			),
+			CACertificate: c.validatedManagedClusterCertificateFingerprint(
+				profile.CACertificates,
+				hubS3Profile.CACertificate,
+				found,
+			),
+			S3SecretRef: validatedSecret,
+		}
+		s.Value = append(s.Value, ps)
+	}
+
+	hubS3ProfileCount := len(c.Report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value)
+	switch {
+	case len(s.Value) < minS3Profiles:
+		s.State = report.Problem
+		s.Description = fmt.Sprintf("Found %d S3 profile(s), expected at least %d",
+			len(s.Value), minS3Profiles)
+	case len(s.Value) != hubS3ProfileCount:
+		s.State = report.Problem
+		s.Description = fmt.Sprintf("Found %d S3 profile(s), hub has %d",
+			len(s.Value), hubS3ProfileCount)
+	default:
+		s.State = report.OK
+	}
+	summary.AddValidation(c.Report.Summary, s)
+
+	return nil
+}
+
+func (c *Command) lookupHubS3StoreProfileSummary(
+	name string,
+) (report.S3StoreProfilesSummary, bool) {
+	profiles := c.Report.ClustersStatus.Hub.Ramen.ConfigMap.S3StoreProfiles.Value
+	for i := range profiles {
+		if profiles[i].S3ProfileName == name {
+			return profiles[i], true
+		}
+	}
+	return report.S3StoreProfilesSummary{}, false
+}
+
+func (c *Command) validatedRequiredString(value string) report.ValidatedString {
+	validated := report.ValidatedString{Value: value}
+
+	if value == "" {
+		validated.State = report.Problem
+		validated.Description = "Value is not set"
+	} else {
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedManagedClusterRequiredString(
+	value string,
+	hubValue report.ValidatedString,
+	found bool,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: value}
+
+	switch {
+	case !found:
+		validated.State = report.Problem
+		validated.Description = profileNotFoundInHub
+	case value == "":
+		validated.State = report.Problem
+		validated.Description = "Value is not set"
+	case value != hubValue.Value:
+		validated.State = report.Problem
+		validated.Description = fmt.Sprintf("Does not match hub: %q", hubValue.Value)
+	default:
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedCertificateFingerprint(certPem []byte) report.ValidatedFingerprint {
+	validated := report.ValidatedFingerprint{}
+
+	switch {
+	case len(certPem) == 0:
+		// Empty certificate is validated OK, since it is an optional field.
+		validated.State = report.OK
+	default:
+		fingerprint, err := report.CertificateFingerprint(certPem)
+		if err != nil {
+			validated.State = report.Problem
+			validated.Description = fmt.Sprintf("Invalid certificate: %s", err)
+		} else {
+			validated.Value = fingerprint
+			validated.State = report.OK
+		}
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedManagedClusterCertificateFingerprint(
+	certPem []byte,
+	hubValue report.ValidatedFingerprint,
+	found bool,
+) report.ValidatedFingerprint {
+	validated := report.ValidatedFingerprint{}
+
+	switch {
+	case !found:
+		validated.State = report.Problem
+		validated.Description = profileNotFoundInHub
+	case hubValue.State == report.Problem:
+		// Hub has invalid certificate, can't validate against it.
+		validated.State = report.Problem
+		validated.Description = "Hub certificate is invalid"
+	case len(certPem) == 0:
+		// Managed cluster has no certificate.
+		if hubValue.Value != "" {
+			validated.State = report.Problem
+			validated.Description = "Missing certificate, but hub has a certificate"
+		} else {
+			// Validated OK if both Managed cluster and Hub have no certificate.
+			validated.State = report.OK
+		}
+	default:
+		// Managed cluster has certificate, compute fingerprint.
+		fingerprint, err := report.CertificateFingerprint(certPem)
+		if err != nil {
+			validated.State = report.Problem
+			validated.Description = fmt.Sprintf("Invalid certificate: %s", err)
+		} else {
+			validated.Value = fingerprint
+			switch {
+			case hubValue.Value == "":
+				validated.State = report.Problem
+				validated.Description = "Has certificate, but hub does not have a certificate"
+			case fingerprint != hubValue.Value:
+				validated.State = report.Problem
+				validated.Description = fmt.Sprintf("Does not match hub: %q", hubValue.Value)
+			default:
+				validated.State = report.OK
+			}
+		}
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedHubSecretRef(
+	secretRef corev1.SecretReference,
+	cluster *types.Cluster,
+	configNamespace string,
+) (report.S3SecretSummary, error) {
+	log := c.Logger()
+
+	validated := report.S3SecretSummary{
+		Name:      c.validatedRequiredString(secretRef.Name),
+		Namespace: c.validatedSecretNamespaceString(secretRef.Namespace, configNamespace),
+	}
+
+	secret, err := c.readSecret(cluster, secretRef.Name, secretRef.Namespace, configNamespace)
+	if err != nil {
+		return validated, err
+	}
+
+	if secret == nil {
+		log.Debugf("Secret \"%s/%s\" does not exist in cluster %q",
+			secretRef.Namespace, secretRef.Name, cluster.Name)
+		validated.Deleted = c.ValidatedDeleted(nil)
+	} else {
+		log.Debugf("Read secret \"%s/%s\" from cluster %q",
+			secretRef.Namespace, secretRef.Name, cluster.Name)
+		validated.Deleted = c.ValidatedDeleted(secret)
+		validated.AWSAccessKeyID = c.validatedSecretKeyFingerprint(secret, "AWS_ACCESS_KEY_ID")
+		validated.AWSSecretAccessKey = c.validatedSecretKeyFingerprint(
+			secret,
+			"AWS_SECRET_ACCESS_KEY",
+		)
+	}
+
+	return validated, nil
+}
+
+func (c *Command) validatedManagedClusterSecretRef(
+	secretRef corev1.SecretReference,
+	cluster *types.Cluster,
+	configNamespace string,
+	hubSecret report.S3SecretSummary,
+	found bool,
+) (report.S3SecretSummary, error) {
+	log := c.Logger()
+
+	validated := report.S3SecretSummary{
+		Name:      c.validatedManagedClusterRequiredString(secretRef.Name, hubSecret.Name, found),
+		Namespace: c.validatedSecretNamespaceString(secretRef.Namespace, configNamespace),
+	}
+
+	secret, err := c.readSecret(cluster, secretRef.Name, secretRef.Namespace, configNamespace)
+	if err != nil {
+		return validated, err
+	}
+
+	if secret == nil {
+		log.Debugf("Secret \"%s/%s\" does not exist in cluster %q",
+			secretRef.Namespace, secretRef.Name, cluster.Name)
+		validated.Deleted = c.ValidatedDeleted(nil)
+	} else {
+		log.Debugf("Read secret \"%s/%s\" from cluster %q",
+			secretRef.Namespace, secretRef.Name, cluster.Name)
+		validated.Deleted = c.ValidatedDeleted(secret)
+		validated.AWSAccessKeyID = c.validatedManagedClusterSecretKeyFingerprint(
+			secret, "AWS_ACCESS_KEY_ID", hubSecret.AWSAccessKeyID, found)
+		validated.AWSSecretAccessKey = c.validatedManagedClusterSecretKeyFingerprint(
+			secret, "AWS_SECRET_ACCESS_KEY", hubSecret.AWSSecretAccessKey, found)
+	}
+
+	return validated, nil
+}
+
+func (c *Command) readSecret(
+	cluster *types.Cluster,
+	name, namespace, configNamespace string,
+) (*corev1.Secret, error) {
+	if namespace == "" {
+		namespace = configNamespace
+	}
+	reader := c.OutputReader(cluster.Name)
+	secret, err := core.ReadSecret(reader, name, namespace)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("failed to read secret \"%s/%s\" from cluster %q: %w",
+				namespace, name, cluster.Name, err)
+		}
+		// Secret doesn't exist
+		return nil, nil
+	}
+	return secret, nil
+}
+
+func (c *Command) validatedSecretNamespaceString(
+	namespace string,
+	configNamespace string,
+) report.ValidatedString {
+	validated := report.ValidatedString{Value: namespace}
+
+	// Namespace can be empty (defaults to configmap namespace)
+	// But if specified, must match configmap namespace.
+	if namespace != "" && namespace != configNamespace {
+		validated.State = report.Problem
+		validated.Description = fmt.Sprintf("Must be in configmap namespace %q", configNamespace)
+	} else {
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedSecretKeyFingerprint(
+	secret *corev1.Secret,
+	key string,
+) report.ValidatedFingerprint {
+	validated := report.ValidatedFingerprint{}
+
+	data, exists := secret.Data[key]
+	switch {
+	case !exists:
+		validated.State = report.Problem
+		validated.Description = "Key is missing"
+	case len(data) == 0:
+		validated.State = report.Problem
+		validated.Description = "Key is empty"
+	default:
+		fingerprint, err := report.Fingerprint(data)
+		if err != nil {
+			panic(fmt.Sprintf("unexpected Fingerprint() error: %v", err))
+		}
+		validated.Value = fingerprint
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedManagedClusterSecretKeyFingerprint(
+	secret *corev1.Secret,
+	key string,
+	hubValue report.ValidatedFingerprint,
+	found bool,
+) report.ValidatedFingerprint {
+	validated := report.ValidatedFingerprint{}
+
+	switch {
+	case !found:
+		validated.State = report.Problem
+		validated.Description = profileNotFoundInHub
+	case hubValue.Value == "":
+		validated.State = report.Problem
+		validated.Description = "Hub key is missing"
+	default:
+		data, exists := secret.Data[key]
+		switch {
+		case !exists:
+			validated.State = report.Problem
+			validated.Description = "Key is missing"
+		case len(data) == 0:
+			validated.State = report.Problem
+			validated.Description = "Key is empty"
+		default:
+			fingerprint, err := report.Fingerprint(data)
+			if err != nil {
+				panic(fmt.Sprintf("unexpected Fingerprint() error: %v", err))
+			}
+			validated.Value = fingerprint
+			if fingerprint != hubValue.Value {
+				validated.State = report.Problem
+				validated.Description = fmt.Sprintf("Does not match hub: %q", hubValue.Value)
+			} else {
+				validated.State = report.OK
+			}
+		}
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+// readRamenDeployment reads the ramen operator deployment from the gathered output.
+func (c *Command) readRamenDeployment(
+	cluster *types.Cluster,
+	name, namespace string,
+) (*appsv1.Deployment, error) {
+	reader := c.OutputReader(cluster.Name)
+
+	deployment, err := readDeployment(reader, name, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read deployment \"%s/%s\" from cluster %q: %w",
+			namespace, name, cluster.Name, err)
+	}
+
+	c.Logger().Debugf("Read deployment \"%s/%s\" from cluster %q", namespace, name, cluster.Name)
+	return deployment, nil
+}
+
+func (c *Command) validateDeployment(
+	s *report.DeploymentSummary,
+	name, namespace string,
+	deployment *appsv1.Deployment,
+	expectedReplicas int32,
+) {
+	s.Name = name
+	s.Namespace = namespace
+
+	if deployment == nil {
+		s.Deleted = c.ValidatedDeleted(nil)
+		return
+	}
+
+	s.Deleted = c.ValidatedDeleted(deployment)
+	s.Replicas = c.validatedDeploymentReplicas(deployment, expectedReplicas)
+	s.Conditions = c.validatedDeploymentConditions(deployment)
+}
+
+func (c *Command) validatedDeploymentReplicas(
+	deployment *appsv1.Deployment,
+	expectedReplicas int32,
+) report.ValidatedInteger {
+	validated := report.ValidatedInteger{Value: defaultReplicas}
+
+	if deployment.Spec.Replicas != nil {
+		validated.Value = int64(*deployment.Spec.Replicas)
+	}
+
+	if validated.Value != int64(expectedReplicas) {
+		validated.State = report.Problem
+		validated.Description = fmt.Sprintf("Expecting %d replicas", expectedReplicas)
+	} else {
+		validated.State = report.OK
+	}
+
+	summary.AddValidation(c.Report.Summary, &validated)
+	return validated
+}
+
+func (c *Command) validatedDeploymentConditions(
+	deployment *appsv1.Deployment,
+) []report.ValidatedCondition {
+	log := c.Logger()
+	var conditions []report.ValidatedCondition
+
+	for i := range deployment.Status.Conditions {
+		condition := &deployment.Status.Conditions[i]
+
+		var expectedStatus corev1.ConditionStatus
+		switch condition.Type {
+		case appsv1.DeploymentAvailable, appsv1.DeploymentProgressing:
+			expectedStatus = corev1.ConditionTrue
+		case appsv1.DeploymentReplicaFailure:
+			expectedStatus = corev1.ConditionFalse
+		default:
+			// Possible if new deployemnt condition is added. We don't have a way to fail during
+			// compile time if a new type is introduced.
+			log.Warnf("Expecting True status for unexpected deployment condition: %+v", condition)
+			expectedStatus = corev1.ConditionTrue
+		}
+
+		validated := validatedDeploymentCondition(condition, expectedStatus)
+		summary.AddValidation(c.Report.Summary, &validated)
+		conditions = append(conditions, validated)
+	}
+
+	return conditions
+}
+
+// checkS3 checks S3 access for the given profiles by verifying bucket connectivity.
+// Returns false only if the user cancelled, otherwise true even if there were errors,
+// as those will be reported during validation.
+func (c *Command) checkS3(profiles []*s3.Profile) bool {
+	start := time.Now()
+
+	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
+
+	var failedProfiles []string
+	for r := range c.Backend.CheckS3(c, profiles) {
+		// Collect results to validate and report S3 status in validateS3Status.
+		c.S3Results = append(c.S3Results, r)
+
+		step := &report.Step{
+			Name:     fmt.Sprintf("check S3 profile %q", r.ProfileName),
+			Duration: r.Duration,
+		}
+		if r.Err != nil {
+			if errors.Is(r.Err, context.Canceled) {
+				msg := fmt.Sprintf("Canceled check S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Canceled
+				step.Err = msg
+			} else {
+				msg := fmt.Sprintf("Failed to check S3 profile %q", r.ProfileName)
+				console.Error(msg)
+				c.Logger().Errorf("%s: %s", msg, r.Err)
+				step.Status = report.Failed
+				step.Err = fmt.Sprintf("Failed to check S3 profile %q", r.ProfileName)
+				failedProfiles = append(failedProfiles, r.ProfileName)
+			}
+		} else {
+			step.Status = report.Passed
+			console.Pass("Checked S3 profile %q", r.ProfileName)
+		}
+		c.Current.AddStep(step)
+	}
+
+	c.Logger().Infof("Checked S3 profiles in %.2f seconds", time.Since(start).Seconds())
+
+	switch c.Current.Status {
+	case report.Canceled:
+		c.Current.Err = "Canceled check S3 profiles"
+		return false
+	case report.Failed:
+		c.Current.Err = fmt.Sprintf(
+			"Failed to check S3 profiles %s",
+			strings.Join(failedProfiles, ", "),
+		)
+		return true
+	default:
+		return true
+	}
+}
+
+func (c *Command) validateS3Status(s *report.ClustersS3Status) {
+	c.validatedS3ProfileStatus(&s.Profiles)
+}
+
+func (c *Command) validatedS3ProfileStatus(s *report.ValidatedClustersS3ProfileStatusList) {
+	if len(c.S3Results) > 0 {
+		// Checked S3 for one or more profiles, validate the results.
+		s.State = report.OK
+		for _, result := range c.S3Results {
+			validated := c.validatedS3Profile(result)
+			s.Value = append(s.Value, validated)
+		}
+	} else {
+		// Failed to get S3 profiles from the gathered hub data.
+		s.State = report.Problem
+		s.Description = "No s3 profiles found"
+	}
+
+	summary.AddValidation(c.Report.Summary, s)
+}
+
+func (c *Command) validatedS3Profile(result s3.Result) report.ClustersS3ProfileStatus {
+	profileStatus := report.ClustersS3ProfileStatus{
+		Name: result.ProfileName,
+	}
+
+	if result.Err != nil {
+		profileStatus.Accessible = report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: result.Err.Error(),
+			},
+			Value: false,
+		}
+	} else {
+		profileStatus.Accessible = report.ValidatedBool{
+			Validated: report.Validated{
+				State: report.OK,
+			},
+			Value: true,
+		}
+	}
+
+	summary.AddValidation(c.Report.Summary, &profileStatus.Accessible)
+	return profileStatus
+}

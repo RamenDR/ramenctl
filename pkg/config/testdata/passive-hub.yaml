@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+---
+clusters:
+  hub:
+    kubeconfig: hub/config
+  passive-hub:
+    kubeconfig: passive-hub/config
+  c1:
+    kubeconfig: dr1/config
+  c2:
+    kubeconfig: dr2/config
+clusterSet: default

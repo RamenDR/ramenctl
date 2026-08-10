@@ -1,0 +1,64 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "drpolicies" -}}
+<dl class="validation">
+    <dt>Policies</dt>
+    <dd>
+        <span class="value">{{len .Value}}</span>
+        <span class="state">{{icon .State}}</span>
+        {{- if .Description}}
+            <p class="description">{{.Description}}</p>
+        {{- end}}
+    </dd>
+</dl>
+{{- range .Value}}
+<section>
+    <h5>{{.Name}}</h5>
+    <dl class="metadata">
+        <dt>Scheduling Interval</dt>
+        <dd>{{.SchedulingInterval}}</dd>
+        <dt>DRClusters</dt>
+        <dd>{{range $i, $c := .DRClusters}}{{if $i}}, {{end}}{{$c}}{{end}}</dd>
+    </dl>
+    {{- with .PeerClasses}}
+    <section>
+        <details{{if shouldOpen .}} open{{end}}>
+            <summary><h6>Peer Classes</h6><span class="state">{{icon .AggregateState}}</span></summary>
+        <dl class="validation">
+            <dt>Classes</dt>
+            <dd>
+                <span class="value">{{len .Value}}</span>
+                <span class="state">{{icon .State}}</span>
+                {{- if .Description}}
+                    <p class="description">{{.Description}}</p>
+                {{- end}}
+            </dd>
+        </dl>
+        {{- with .Value}}
+        <ul>
+            {{- range .}}
+            <li>
+                <dl class="metadata">
+                    <dt>Storage Class</dt>
+                    <dd>{{.StorageClassName}}</dd>
+                    {{- if .ReplicationID}}
+                        <dt>Replication ID</dt>
+                        <dd>{{.ReplicationID}}</dd>
+                    {{- end}}
+                </dl>
+            </li>
+            {{- end}}
+        </ul>
+        {{- end}}
+        </details>
+    </section>
+    {{- end}}
+    <section>
+        <details{{if shouldOpen .Conditions}} open{{end}}>
+            <summary><h6>Conditions</h6><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+            {{template "conditions" .Conditions}}
+        </details>
+    </section>
+</section>
+{{- end}}
+{{- end}}
