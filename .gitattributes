@@ -3,3 +3,4 @@
 # CRLF conversion).
 *.tmpl text eol=lf
 *.html text eol=lf
+*.go text eol=lf
