@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: The RamenDR authors
+# SPDX-License-Identifier: Apache-2.0
+
+version: "2"
+linters:
+  enable:
+    - gocritic
+    - gosec
+    - misspell
+    - nolintlint
+    - staticcheck
+    - unconvert
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+    rules:
+      # G705 (XSS) not relevant for CLI tools writing to stderr.
+      - path: tools/
+        text: "G705"
+  settings:
+    gosec:
+      excludes:
+        # G602 (slice bounds) has high false positive rate and Go has runtime
+        # bounds checking, so out of bounds access causes a panic instead of
+        # silent memory corruption.
+        - G602
+        # G703 (path traversal) not relevant for CLI tools. The user can
+        # specify any path, including paths with "..".
+        - G703
+        # G118 (context cancellation) flags functions that return cancel to the
+        # caller instead of calling it directly. This is a valid pattern for
+        # helper functions like withTimeout().
+        - G118
+      config:
+        # Maximum allowed permissions mode for os.WriteFile (default 0600)
+        G306: "0640"
+formatters:
+  enable:
+    - gofmt
+    - gci
+    - golines
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+  settings:
+    golines:
+      shorten-comments: true
+    gci:
+      sections:
+      - standard
+      - default
+      - localmodule

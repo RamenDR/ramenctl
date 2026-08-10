@@ -1,0 +1,72 @@
+{{/* SPDX-FileCopyrightText: The RamenDR authors */}}
+{{/* SPDX-License-Identifier: Apache-2.0 */}}
+{{define "ramen" -}}
+{{- with .Deployment}}
+<section>
+    <h5>Deployment</h5>
+    <dl class="metadata">
+        <dt>Name</dt>
+        <dd>{{.Name}}</dd>
+        <dt>Namespace</dt>
+        <dd>{{.Namespace}}</dd>
+    </dl>
+    <dl class="validation">
+        <dt>Controller Type</dt>
+        <dd>{{template "validated" .RamenControllerType}}</dd>
+        <dt>Replicas</dt>
+        <dd>{{template "validated" .Replicas}}</dd>
+        {{- if isProblem .Deleted.State}}
+            <dt>Deleted</dt>
+            <dd>{{template "validated" .Deleted}}</dd>
+        {{- end}}
+    </dl>
+    <section>
+        <details{{if shouldOpen .Conditions}} open{{end}}>
+            <summary><h6>Conditions</h6><span class="state">{{icon .Conditions.AggregateState}}</span></summary>
+            {{template "conditions" .Conditions}}
+        </details>
+    </section>
+</section>
+{{- end}}
+{{- with .ConfigMap}}
+<section>
+    <h5>ConfigMap</h5>
+    <dl class="metadata">
+        <dt>Name</dt>
+        <dd>{{.Name}}</dd>
+        <dt>Namespace</dt>
+        <dd>{{.Namespace}}</dd>
+    </dl>
+    <dl class="validation">
+        {{- if isProblem .Deleted.State}}
+            <dt>Deleted</dt>
+            <dd>{{template "validated" .Deleted}}</dd>
+        {{- end}}
+        {{- if isProblem .Parsed.State}}
+            <dt>Parsed</dt>
+            <dd>{{template "validated" .Parsed}}</dd>
+        {{- end}}
+    </dl>
+    {{- if .S3StoreProfiles.State}}
+    <section>
+        <details{{if shouldOpen .S3StoreProfiles}} open{{end}}>
+            <summary><h6>S3 Store Profiles</h6><span class="state">{{icon .S3StoreProfiles.AggregateState}}</span></summary>
+            <dl class="validation">
+                <dt>Profiles</dt>
+                <dd>
+                    <span class="value">{{len .S3StoreProfiles.Value}}</span>
+                    <span class="state">{{icon .S3StoreProfiles.State}}</span>
+                    {{- if .S3StoreProfiles.Description}}
+                        <p class="description">{{.S3StoreProfiles.Description}}</p>
+                    {{- end}}
+                </dd>
+            </dl>
+            {{- range .S3StoreProfiles.Value}}
+                {{template "s3profile" .}}
+            {{- end}}
+        </details>
+    </section>
+    {{- end}}
+</section>
+{{- end}}
+{{- end}}

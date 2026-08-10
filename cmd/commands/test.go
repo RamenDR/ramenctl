@@ -1,0 +1,49 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
+package commands
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/test"
+)
+
+var TestCmd = &cobra.Command{
+	Use:   "test",
+	Short: "Test disaster recovery flow in your clusters",
+}
+
+var TestRunCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Run disaster recovery flow",
+	Run: func(c *cobra.Command, args []string) {
+		if err := test.Run(command.Options{
+			ConfigFile: configFile,
+			OutputDir:  outputDir,
+		}); err != nil {
+			os.Exit(1)
+		}
+	},
+}
+
+var TestCleanCmd = &cobra.Command{
+	Use:   "clean",
+	Short: "Delete test artifacts",
+	Run: func(c *cobra.Command, args []string) {
+		if err := test.Clean(command.Options{
+			ConfigFile: configFile,
+			OutputDir:  outputDir,
+		}); err != nil {
+			os.Exit(1)
+		}
+	},
+}
+
+func init() {
+	addOutputFlags(TestCmd)
+	TestCmd.AddCommand(TestRunCmd, TestCleanCmd)
+}
