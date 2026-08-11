@@ -1,0 +1,310 @@
+# Golden file for TestValidateClustersOcp in command_test.go.
+#
+# Tracks the testdata under pkg/testdata/clusters/ocp/. Regenerate this
+# file if that testdata changes.
+
+clusters:
+- name: c1
+  ramen:
+    configmap:
+      deleted:
+        state: ok ✅
+      name: ramen-dr-cluster-operator-config
+      namespace: openshift-dr-system
+      parsed:
+        state: ok ✅
+        value: true
+      s3StoreProfiles:
+        state: ok ✅
+        value:
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c1.example.com
+          profileName: s3profile-c1-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 5e88331f09006ac31169b027235b50fd94458b6
+            namespace:
+              state: ok ✅
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c2.example.com
+          profileName: s3profile-c2-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 020a140310eb1fce63e2087087d9a0bdf972b93
+            namespace:
+              state: ok ✅
+    deployment:
+      conditions:
+      - state: ok ✅
+        type: Available
+      - state: ok ✅
+        type: Progressing
+      deleted:
+        state: ok ✅
+      name: ramen-dr-cluster-operator
+      namespace: openshift-dr-system
+      ramenControllerType:
+        state: ok ✅
+        value: dr-cluster
+      replicas:
+        state: ok ✅
+        value: 1
+- name: c2
+  ramen:
+    configmap:
+      deleted:
+        state: ok ✅
+      name: ramen-dr-cluster-operator-config
+      namespace: openshift-dr-system
+      parsed:
+        state: ok ✅
+        value: true
+      s3StoreProfiles:
+        state: ok ✅
+        value:
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c1.example.com
+          profileName: s3profile-c1-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 5e88331f09006ac31169b027235b50fd94458b6
+            namespace:
+              state: ok ✅
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c2.example.com
+          profileName: s3profile-c2-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 020a140310eb1fce63e2087087d9a0bdf972b93
+            namespace:
+              state: ok ✅
+    deployment:
+      conditions:
+      - state: ok ✅
+        type: Available
+      - state: ok ✅
+        type: Progressing
+      deleted:
+        state: ok ✅
+      name: ramen-dr-cluster-operator
+      namespace: openshift-dr-system
+      ramenControllerType:
+        state: ok ✅
+        value: dr-cluster
+      replicas:
+        state: ok ✅
+        value: 1
+hub:
+  drClusters:
+    state: ok ✅
+    value:
+    - conditions:
+      - state: ok ✅
+        type: Fenced
+      - state: ok ✅
+        type: Clean
+      - state: ok ✅
+        type: Validated
+      name: c1
+      phase: Available
+    - conditions:
+      - state: ok ✅
+        type: Fenced
+      - state: ok ✅
+        type: Clean
+      - state: ok ✅
+        type: Validated
+      name: c2
+      phase: Available
+  drPolicies:
+    state: ok ✅
+    value:
+    - conditions:
+      - state: ok ✅
+        type: Validated
+      drClusters:
+      - c1
+      - c2
+      name: odr-policy-5m
+      peerClasses:
+        state: ok ✅
+        value:
+        - grouping: true
+          replicationID: 275fb2e9822a88bfbfb96516fd307ff3
+          storageClassName: ocs-storagecluster-ceph-rbd
+        - grouping: true
+          replicationID: 275fb2e9822a88bfbfb96516fd307ff3
+          storageClassName: ocs-storagecluster-ceph-rbd-virtualization
+        - grouping: true
+          storageClassName: ocs-storagecluster-cephfs
+      schedulingInterval: 5m
+  ramen:
+    configmap:
+      deleted:
+        state: ok ✅
+      name: ramen-hub-operator-config
+      namespace: openshift-operators
+      parsed:
+        state: ok ✅
+        value: true
+      s3StoreProfiles:
+        state: ok ✅
+        value:
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c1.example.com
+          profileName: s3profile-c1-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 5e88331f09006ac31169b027235b50fd94458b6
+            namespace:
+              state: ok ✅
+        - bucket:
+            state: ok ✅
+            value: odrbucket-244c8f95bf0d
+          caCertificate:
+            state: ok ✅
+            value: BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00
+          endpoint:
+            state: ok ✅
+            value: https://s3-openshift-storage.apps.c2.example.com
+          profileName: s3profile-c2-ocs-storagecluster
+          region:
+            state: ok ✅
+            value: noobaa
+          secret:
+            awsAccessKeyID:
+              state: ok ✅
+              value: F3:1C:B8:5A:2C:33:BA:C3:57:84:22:D5:11:F5:35:40:FF:A8:6A:34:B8:CD:42:AC:86:65:E2:2B:E1:05:EA:23
+            awsSecretAccessKey:
+              state: ok ✅
+              value: BC:42:FE:14:DB:F0:91:1C:91:1F:8F:CF:72:AF:CE:C5:83:5C:AF:93:AC:08:40:CE:31:D8:67:CA:AC:BC:E4:16
+            deleted:
+              state: ok ✅
+            name:
+              state: ok ✅
+              value: 020a140310eb1fce63e2087087d9a0bdf972b93
+            namespace:
+              state: ok ✅
+    deployment:
+      conditions:
+      - state: ok ✅
+        type: Progressing
+      - state: ok ✅
+        type: Available
+      deleted:
+        state: ok ✅
+      name: ramen-hub-operator
+      namespace: openshift-operators
+      ramenControllerType:
+        state: ok ✅
+        value: dr-hub
+      replicas:
+        state: ok ✅
+        value: 1
+s3:
+  profiles:
+    state: ok ✅
+    value:
+    - accessible:
+        state: ok ✅
+        value: true
+      name: s3profile-c1-ocs-storagecluster
+    - accessible:
+        state: ok ✅
+        value: true
+      name: s3profile-c2-ocs-storagecluster

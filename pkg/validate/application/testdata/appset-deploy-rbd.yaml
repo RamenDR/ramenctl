@@ -1,0 +1,107 @@
+# Golden file for TestValidateApplicationPassed in command_test.go.
+#
+# Tracks the testdata under pkg/testdata/appset-deploy-rbd/. Regenerate
+# this file if that testdata changes.
+
+hub:
+  drpc:
+    action:
+      state: ok ✅
+    clusterTime: "2025-07-29T17:24:30Z"
+    conditions:
+    - state: ok ✅
+      type: Available
+    - state: ok ✅
+      type: PeerReady
+    - state: ok ✅
+      type: Protected
+    deleted:
+      state: ok ✅
+    drPolicy: dr-policy-1m
+    lastGroupSyncTime:
+      state: ok ✅
+      value: "2025-07-29T17:23:00Z"
+    name: appset-deploy-rbd
+    namespace: argocd
+    phase:
+      state: ok ✅
+      value: Deployed
+    progression:
+      state: ok ✅
+      value: Completed
+    schedulingInterval:
+      state: ok ✅
+      value: 1m0s
+primaryCluster:
+  name: dr1
+  vrg:
+    clusterTime: "2025-07-29T17:24:30Z"
+    conditions:
+    - state: ok ✅
+      type: DataReady
+    - state: ok ✅
+      type: ClusterDataReady
+    - state: ok ✅
+      type: ClusterDataProtected
+    - state: ok ✅
+      type: KubeObjectsReady
+    - state: ok ✅
+      type: NoClusterDataConflict
+    deleted:
+      state: ok ✅
+    lastGroupSyncTime:
+      state: ok ✅
+      value: "2025-07-29T17:23:00Z"
+    name: appset-deploy-rbd
+    namespace: e2e-appset-deploy-rbd
+    protectedPVCs:
+    - conditions:
+      - state: ok ✅
+        type: DataReady
+      - state: ok ✅
+        type: ClusterDataProtected
+      deleted:
+        state: ok ✅
+      name: busybox-pvc
+      namespace: e2e-appset-deploy-rbd
+      phase:
+        state: ok ✅
+        value: Bound
+      replication: volrep
+    schedulingInterval:
+      state: ok ✅
+      value: 1m0s
+    state:
+      state: ok ✅
+      value: Primary
+s3:
+  profiles:
+    state: ok ✅
+    value:
+    - gathered:
+        state: ok ✅
+        value: true
+      name: minio-on-dr1
+    - gathered:
+        state: ok ✅
+        value: true
+      name: minio-on-dr2
+secondaryCluster:
+  name: dr2
+  vrg:
+    clusterTime: "2025-07-29T17:24:30Z"
+    conditions:
+    - state: ok ✅
+      type: NoClusterDataConflict
+    deleted:
+      state: ok ✅
+    lastGroupSyncTime:
+      state: ok ✅
+    name: appset-deploy-rbd
+    namespace: e2e-appset-deploy-rbd
+    schedulingInterval:
+      state: ok ✅
+      value: 1m0s
+    state:
+      state: ok ✅
+      value: Secondary

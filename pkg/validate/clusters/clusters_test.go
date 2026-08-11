@@ -12,6 +12,7 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	"sigs.k8s.io/yaml"
 
 	basecmd "github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -20,9 +21,6 @@ import (
 	"github.com/ramendr/ramenctl/pkg/sets"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
-
-// caCertificate fingerprint (SHA-256 hash) for OCP testdata.
-const caCertificateFingerprint = "BA:A5:C7:3B:3F:6E:06:27:19:F5:45:FC:6F:07:42:81:3B:F6:4D:61:95:CC:D5:D8:79:22:65:63:35:63:97:00"
 
 // testSystem is a test system such as drenv or ocp clusters.
 type testSystem struct {
@@ -145,6 +143,19 @@ func checkClusterStatus(
 		diff := helpers.UnifiedDiff(t, expected, &r.ClustersStatus)
 		t.Fatalf("clusters statuses not equal\n%s", diff)
 	}
+}
+
+func loadClustersStatus(t *testing.T, name string) *report.ClustersStatus {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join("testdata", name))
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error: %v", name, err)
+	}
+	s := &report.ClustersStatus{}
+	if err := yaml.Unmarshal(data, s); err != nil {
+		t.Fatalf("Unmarshal(%q) error: %v", name, err)
+	}
+	return s
 }
 
 func checkSummary(t *testing.T, r *Report, expected report.Summary) {

@@ -12,6 +12,7 @@ import (
 
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
+	"sigs.k8s.io/yaml"
 
 	basecmd "github.com/ramendr/ramenctl/pkg/command"
 	"github.com/ramendr/ramenctl/pkg/config"
@@ -161,6 +162,19 @@ func totalDuration(steps []*report.Step) float64 {
 		total += step.Duration
 	}
 	return total
+}
+
+func loadApplicationStatus(t *testing.T, name string) *report.ApplicationStatus {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join("testdata", name))
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error: %v", name, err)
+	}
+	s := &report.ApplicationStatus{}
+	if err := yaml.Unmarshal(data, s); err != nil {
+		t.Fatalf("Unmarshal(%q) error: %v", name, err)
+	}
+	return s
 }
 
 func dumpCommandLog(t *testing.T, cmd *Command) {
