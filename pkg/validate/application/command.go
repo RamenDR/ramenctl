@@ -428,11 +428,11 @@ func (c *Command) validatedS3Profile(
 	if result.Err != nil {
 		profileStatus.Gathered = report.ValidatedBool{
 			Validated: report.Validated{
-				State:       report.Problem,
-				Description: result.Err.Error(),
+				State: report.Problem,
 			},
 			Value: false,
 		}
+		report.SetError(&profileStatus.Gathered.Validated, result.Err)
 	} else {
 		profileStatus.Gathered = report.ValidatedBool{
 			Validated: report.Validated{
