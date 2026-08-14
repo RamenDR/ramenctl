@@ -312,6 +312,70 @@ func ListDRClusters(reader gathering.OutputReader) ([]string, error) {
 	return reader.ListResources("", resource)
 }
 
+// ApplicationProfiles returns the S3 store profiles relevant for an application,
+// filtered to only those referenced by the primary VRG's spec.s3Profiles.
+func ApplicationProfiles(
+	ctx Context,
+	drpcName, drpcNamespace string,
+) ([]*ramenapi.S3StoreProfile, error) {
+	hubReader := ctx.OutputReader(ctx.Env().Hub.Name)
+
+	drpc, err := ReadDRPC(hubReader, drpcName, drpcNamespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read drpc \"%s/%s\": %w",
+			drpcNamespace, drpcName, err)
+	}
+
+	primary, err := PrimaryCluster(ctx, drpc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find primary cluster: %w", err)
+	}
+
+	vrgNamespace := VRGNamespace(drpc)
+	if vrgNamespace == "" {
+		return nil, fmt.Errorf("drpc \"%s/%s\" annotation %q not found",
+			drpc.Namespace, drpc.Name, drpcAppNamespaceAnnotation)
+	}
+
+	primaryReader := ctx.OutputReader(primary.Name)
+	vrg, err := ReadVRG(primaryReader, drpc.Name, vrgNamespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read vrg \"%s/%s\" from cluster %q: %w",
+			vrgNamespace, drpc.Name, primary.Name, err)
+	}
+
+	appProfiles := vrg.Spec.S3Profiles
+	if len(appProfiles) == 0 {
+		return nil, fmt.Errorf("vrg \"%s/%s\" has no s3Profiles",
+			vrgNamespace, drpc.Name)
+	}
+
+	allProfiles, err := ClusterProfiles(
+		hubReader,
+		HubOperatorConfigMapName,
+		ctx.Config().Namespaces.RamenHubNamespace,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var filtered []*ramenapi.S3StoreProfile
+	for _, p := range allProfiles {
+		if slices.Contains(appProfiles, p.S3ProfileName) {
+			filtered = append(filtered, p)
+		}
+	}
+
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf(
+			"no s3 profiles in hub configmap match vrg \"%s/%s\" profiles %v",
+			vrgNamespace, drpc.Name, appProfiles,
+		)
+	}
+
+	return filtered, nil
+}
+
 // ClusterProfiles extracts S3 store profiles from the ramen configmap.
 func ClusterProfiles(
 	reader gathering.OutputReader,

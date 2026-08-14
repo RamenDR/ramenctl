@@ -269,14 +269,10 @@ func (c *Command) namespacesToGather() ([]string, error) {
 
 // s3Info reads S3 profiles and application prefix from gathered hub data.
 func (c *Command) s3Info() ([]*s3.Profile, string, error) {
-	// Read S3 profiles from the ramen hub configmap, the source of truth
-	// synced to managed clusters.
 	hub := c.Env().Hub
 	reader := c.OutputReader(hub.Name)
-	configMapName := ramen.HubOperatorConfigMapName
-	configMapNamespace := c.Config().Namespaces.RamenHubNamespace
 
-	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
+	storeProfiles, err := ramen.ApplicationProfiles(c, c.opts.DRPCName, c.opts.DRPCNamespace)
 	if err != nil {
 		return nil, "", err
 	}
