@@ -4,23 +4,19 @@
 package validation
 
 import (
-	"context"
-
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/gathering"
+	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/s3"
 )
 
 // Context is validation context, decoupling the ramenctl command from the backend implementation.
 type Context interface {
-	Env() *types.Env
-	Config() *config.Config
+	ramen.Context
 	Logger() *zap.SugaredLogger
-	Context() context.Context
 }
 
 // Validation provides the validation operations.

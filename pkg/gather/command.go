@@ -74,7 +74,7 @@ func (c *Command) Context() context.Context {
 	return c.context
 }
 
-func (c *Command) outputReader(cluster string) gathering.OutputReader {
+func (c *Command) OutputReader(cluster string) gathering.OutputReader {
 	clusterDir := filepath.Join(c.dataDir(), cluster)
 	return gather.NewOutputReader(clusterDir)
 }
@@ -366,7 +366,7 @@ func (c *Command) applicationS3Info() ([]*s3.Profile, string, error) {
 	// Read S3 profiles from the ramen hub configmap, the source of truth
 	// synced to managed clusters.
 	hub := c.Env().Hub
-	reader := c.outputReader(hub.Name)
+	reader := c.OutputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 

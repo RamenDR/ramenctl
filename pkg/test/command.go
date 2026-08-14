@@ -149,7 +149,7 @@ func (c Command) withTimeout(d stdtime.Duration) (*Command, context.CancelFunc) 
 	return &c, cancel
 }
 
-func (c *Command) outputReader(cluster string) gathering.OutputReader {
+func (c *Command) OutputReader(cluster string) gathering.OutputReader {
 	clusterDir := filepath.Join(c.dataDir(), cluster)
 	return gather.NewOutputReader(clusterDir)
 }
@@ -239,7 +239,7 @@ func (c *Command) gatherS3Data() {
 	// Read S3 profiles and prefixes from gathered hub data. The hub configmap
 	// is the source of truth, synced to managed clusters.
 	hub := c.Env().Hub
-	reader := c.outputReader(hub.Name)
+	reader := c.OutputReader(hub.Name)
 	configMapName := ramen.HubOperatorConfigMapName
 	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
