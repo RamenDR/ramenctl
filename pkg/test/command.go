@@ -15,11 +15,13 @@ import (
 	stdtime "time"
 
 	"github.com/nirs/kubectl-gather/pkg/gather"
+	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	e2econfig "github.com/ramendr/ramen/e2e/config"
 	"github.com/ramendr/ramen/e2e/types"
 	"go.uber.org/zap"
 
 	"github.com/ramendr/ramenctl/pkg/command"
+	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/gathering"
 	"github.com/ramendr/ramenctl/pkg/logging"
@@ -67,6 +69,29 @@ var _ types.Context = &Command{}
 // flowFunc runs a test flow on with a test. The test logs progress messages and marked as failed if
 // the flow failed.
 type flowFunc func(t *Test)
+
+// ramenContext adapts the test Command to satisfy ramen.Context since
+// the Command's Config() returns *e2econfig.Config, not *config.Config.
+type ramenContext struct {
+	cmd *Command
+	cfg *config.Config
+}
+
+func (r *ramenContext) Env() *types.Env {
+	return r.cmd.Env()
+}
+
+func (r *ramenContext) Context() context.Context {
+	return r.cmd.Context()
+}
+
+func (r *ramenContext) Config() *config.Config {
+	return r.cfg
+}
+
+func (r *ramenContext) OutputReader(cluster string) gathering.OutputReader {
+	return r.cmd.OutputReader(cluster)
+}
 
 // newCommand return a new test command.
 func newCommand(
@@ -236,18 +261,14 @@ func (c *Command) gatherS3Data() {
 
 	c.Logger().Info("Inspecting S3 profiles for failed tests")
 
-	// Read S3 profiles and prefixes from gathered hub data. The hub configmap
-	// is the source of truth, synced to managed clusters.
 	hub := c.Env().Hub
 	reader := c.OutputReader(hub.Name)
-	configMapName := ramen.HubOperatorConfigMapName
-	configMapNamespace := c.config.Namespaces.RamenHubNamespace
 
-	storeProfiles, err := ramen.ClusterProfiles(reader, configMapName, configMapNamespace)
-	if err != nil {
-		msg := "Failed to get S3 profiles from gathered hub data"
+	storeProfiles := c.s3ProfilesToGather()
+	if len(storeProfiles) == 0 {
+		msg := "No application S3 profiles found to gather S3 data"
 		console.Error(msg)
-		c.Logger().Errorf("%s: %s", msg, err)
+		c.Logger().Error(msg)
 		return
 	}
 
@@ -440,6 +461,41 @@ func (c *Command) namespacesToGather() []string {
 	}
 
 	return slices.Sorted(maps.Keys(set))
+}
+
+// s3ProfilesToGather returns the deduplicated S3 profiles for all failed tests.
+// The e2e framework enforces one DRPolicy for all tests, so all apps use the same profiles.
+func (c *Command) s3ProfilesToGather() []*ramenapi.S3StoreProfile {
+	ctx := &ramenContext{
+		cmd: c,
+		cfg: &config.Config{Namespaces: c.config.Namespaces},
+	}
+	seen := map[string]struct{}{}
+	var profiles []*ramenapi.S3StoreProfile
+
+	for _, test := range c.tests {
+		if test.Status != report.Failed {
+			continue
+		}
+
+		appProfiles, err := ramen.ApplicationProfiles(
+			ctx, test.Name(), test.ManagementNamespace(),
+		)
+		if err != nil {
+			c.Logger().Warnf("Failed to get S3 profiles for application \"%s/%s\": %s",
+				test.ManagementNamespace(), test.Name(), err)
+			continue
+		}
+
+		for _, p := range appProfiles {
+			if _, ok := seen[p.S3ProfileName]; !ok {
+				seen[p.S3ProfileName] = struct{}{}
+				profiles = append(profiles, p)
+			}
+		}
+	}
+
+	return profiles
 }
 
 func (c *Command) s3PrefixesToGather(reader gathering.OutputReader) []string {
