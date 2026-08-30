@@ -19,12 +19,18 @@ const (
 
 // ProtectedPVCSummary is the summary of a protected PVC.
 type ProtectedPVCSummary struct {
-	Name        string                 `json:"name"`
-	Namespace   string                 `json:"namespace"`
-	Replication ReplicationType        `json:"replication,omitempty"`
-	Deleted     ValidatedBool          `json:"deleted"`
-	Phase       ValidatedString        `json:"phase"`
-	Conditions  ValidatedConditionList `json:"conditions,omitempty"`
+	// Name is the name of the PVC.
+	Name string `json:"name"`
+	// Namespace is the namespace of the PVC.
+	Namespace string `json:"namespace"`
+	// Replication is the replication type used to protect the PVC.
+	Replication ReplicationType `json:"replication,omitempty"`
+	// Deleted indicates whether the PVC has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// Phase is the validated phase of the PVC.
+	Phase ValidatedString `json:"phase"`
+	// Conditions are the validated conditions of the PVC.
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 func (p *ProtectedPVCSummary) AggregateState() ValidationState {
@@ -44,66 +50,100 @@ func (p ProtectedPVCList) AggregateState() ValidationState {
 
 // PVCGroupsSummary represents list of CGs that are protected by the VRG.
 type PVCGroupsSummary struct {
+	// Grouped is the list of PVC names grouped into this consistency group.
 	Grouped []string `json:"grouped,omitempty"`
 }
 
 // DRPCSummary is the summary of a DRPC.
 type DRPCSummary struct {
-	Name               string                 `json:"name"`
-	Namespace          string                 `json:"namespace"`
-	ClusterTime        *time.Time             `json:"clusterTime,omitempty"`
-	Deleted            ValidatedBool          `json:"deleted"`
-	DRPolicy           string                 `json:"drPolicy"`
-	SchedulingInterval ValidatedDuration      `json:"schedulingInterval"`
-	LastGroupSyncTime  ValidatedTime          `json:"lastGroupSyncTime"`
-	Action             ValidatedString        `json:"action"`
-	Phase              ValidatedString        `json:"phase"`
-	Progression        ValidatedString        `json:"progression"`
-	Conditions         ValidatedConditionList `json:"conditions,omitempty"`
+	// Name is the name of the DRPC.
+	Name string `json:"name"`
+	// Namespace is the namespace of the DRPC.
+	Namespace string `json:"namespace"`
+	// ClusterTime is the API server time when the DRPC was gathered.
+	ClusterTime *time.Time `json:"clusterTime,omitempty"`
+	// Deleted indicates whether the DRPC has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// DRPolicy is the name of the DRPolicy used by the DRPC.
+	DRPolicy string `json:"drPolicy"`
+	// SchedulingInterval is the replication scheduling interval from the DRPolicy.
+	SchedulingInterval ValidatedDuration `json:"schedulingInterval"`
+	// LastGroupSyncTime is the timestamp of the last successful volume group
+	// replication sync, validated for freshness against SchedulingInterval.
+	LastGroupSyncTime ValidatedTime `json:"lastGroupSyncTime"`
+	// Action is the validated DR action currently set on the DRPC.
+	Action ValidatedString `json:"action"`
+	// Phase is the validated phase of the DRPC.
+	Phase ValidatedString `json:"phase"`
+	// Progression is the validated progression of the current DR action.
+	Progression ValidatedString `json:"progression"`
+	// Conditions are the validated conditions of the DRPC.
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // VRGSummary is the summary of a VRG.
 type VRGSummary struct {
-	Name               string                 `json:"name"`
-	Namespace          string                 `json:"namespace"`
-	ClusterTime        *time.Time             `json:"clusterTime,omitempty"`
-	Deleted            ValidatedBool          `json:"deleted"`
-	SchedulingInterval ValidatedDuration      `json:"schedulingInterval"`
-	LastGroupSyncTime  ValidatedTime          `json:"lastGroupSyncTime"`
-	State              ValidatedString        `json:"state"`
-	Conditions         ValidatedConditionList `json:"conditions,omitempty"`
-	ProtectedPVCs      ProtectedPVCList       `json:"protectedPVCs,omitempty"`
-	PVCGroups          []PVCGroupsSummary     `json:"pvcGroups,omitempty"`
+	// Name is the name of the VRG.
+	Name string `json:"name"`
+	// Namespace is the namespace of the VRG.
+	Namespace string `json:"namespace"`
+	// ClusterTime is the API server time when the VRG was gathered.
+	ClusterTime *time.Time `json:"clusterTime,omitempty"`
+	// Deleted indicates whether the VRG has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// SchedulingInterval is the replication scheduling interval for the VRG.
+	SchedulingInterval ValidatedDuration `json:"schedulingInterval"`
+	// LastGroupSyncTime is the timestamp of the last successful volume group
+	// replication sync, validated for freshness against SchedulingInterval.
+	LastGroupSyncTime ValidatedTime `json:"lastGroupSyncTime"`
+	// State is the validated state of the VRG.
+	State ValidatedString `json:"state"`
+	// Conditions are the validated conditions of the VRG.
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
+	// ProtectedPVCs is the list of PVCs protected by the VRG.
+	ProtectedPVCs ProtectedPVCList `json:"protectedPVCs,omitempty"`
+	// PVCGroups is the list of consistency groups protected by the VRG.
+	PVCGroups []PVCGroupsSummary `json:"pvcGroups,omitempty"`
 }
 
 // ApplicationHubStaus is the application status on the hub.
 type ApplicationStatusHub struct {
+	// DRPC is the summary of the application's DRPC on the hub.
 	DRPC DRPCSummary `json:"drpc"`
 }
 
 // ApplicationHubStaus is the application status on a managed cluster.
 type ApplicationStatusCluster struct {
-	Name string     `json:"name"`
-	VRG  VRGSummary `json:"vrg"`
+	// Name is the name of the managed cluster.
+	Name string `json:"name"`
+	// VRG is the summary of the application's VRG on this cluster.
+	VRG VRGSummary `json:"vrg"`
 }
 
 // ApplicationS3ProfileStatus is the status of an S3 profile.
 type ApplicationS3ProfileStatus struct {
-	Name     string        `json:"name"`
+	// Name is the name of the S3 profile.
+	Name string `json:"name"`
+	// Gathered indicates whether data was gathered from this S3 profile.
 	Gathered ValidatedBool `json:"gathered"`
 }
 
 // ApplicationS3Status is the status of all S3 profiles.
 type ApplicationS3Status struct {
+	// Profiles is the validated list of S3 profile statuses.
 	Profiles ValidatedApplicationS3ProfileStatusList `json:"profiles"`
 }
 
 // ApplicationStatus is protected application status in multi-cluster environment.
 type ApplicationStatus struct {
-	Hub              ApplicationStatusHub     `json:"hub"`
-	PrimaryCluster   ApplicationStatusCluster `json:"primaryCluster"`
+	// Hub is the application status on the hub cluster.
+	Hub ApplicationStatusHub `json:"hub"`
+	// PrimaryCluster is the application status on the primary managed cluster.
+	PrimaryCluster ApplicationStatusCluster `json:"primaryCluster"`
+	// SecondaryCluster is the application status on the secondary managed cluster.
 	SecondaryCluster ApplicationStatusCluster `json:"secondaryCluster"`
-	S3               ApplicationS3Status      `json:"s3"`
+	// S3 is the status of the application's S3 profiles.
+	S3 ApplicationS3Status `json:"s3"`
 }
 
 func (a *ApplicationStatus) Equal(o *ApplicationStatus) bool {

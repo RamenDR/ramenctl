@@ -9,35 +9,53 @@ import (
 
 // DRClusterSummary is the summary of a DRCluster.
 type DRClusterSummary struct {
-	Name       string                 `json:"name"`
-	Phase      string                 `json:"phase,omitempty"`
+	// Name is the name of the DRCluster.
+	Name string `json:"name"`
+	// Phase is the phase of the DRCluster.
+	Phase string `json:"phase,omitempty"`
+	// Conditions are the validated conditions of the DRCluster.
 	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // DRPolicySummary is the summary of a DRPolicy.
 type DRPolicySummary struct {
-	Name               string                   `json:"name"`
-	DRClusters         []string                 `json:"drClusters"`
-	SchedulingInterval string                   `json:"schedulingInterval"`
-	PeerClasses        ValidatedPeerClassesList `json:"peerClasses"`
-	Conditions         ValidatedConditionList   `json:"conditions,omitempty"`
+	// Name is the name of the DRPolicy.
+	Name string `json:"name"`
+	// DRClusters is the list of DRCluster names covered by the DRPolicy.
+	DRClusters []string `json:"drClusters"`
+	// SchedulingInterval is the replication scheduling interval configured
+	// on the DRPolicy.
+	SchedulingInterval string `json:"schedulingInterval"`
+	// PeerClasses is the validated list of peer storage classes for the DRPolicy.
+	PeerClasses ValidatedPeerClassesList `json:"peerClasses"`
+	// Conditions are the validated conditions of the DRPolicy.
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // PeerClassesSummary is the summary of peerClasses in a DRPolicy.
 type PeerClassesSummary struct {
+	// StorageClassName is the name of the peer storage class.
 	StorageClassName string `json:"storageClassName"`
-	ReplicationID    string `json:"replicationID,omitempty"`
-	Grouping         bool   `json:"grouping,omitempty"`
+	// ReplicationID identifies the replication relationship for this storage class.
+	ReplicationID string `json:"replicationID,omitempty"`
+	// Grouping indicates whether volume grouping is enabled for this storage class.
+	Grouping bool `json:"grouping,omitempty"`
 }
 
 // S3StoreProfilesSummary is the summary of S3 store profiles in the ConfigMap
 type S3StoreProfilesSummary struct {
-	S3ProfileName        string               `json:"profileName"`
-	S3Bucket             ValidatedString      `json:"bucket"`
-	S3CompatibleEndpoint ValidatedString      `json:"endpoint"`
-	S3Region             ValidatedString      `json:"region"`
-	CACertificate        ValidatedFingerprint `json:"caCertificate"`
-	S3SecretRef          S3SecretSummary      `json:"secret"`
+	// S3ProfileName is the name of the S3 store profile.
+	S3ProfileName string `json:"profileName"`
+	// S3Bucket is the validated S3 bucket name.
+	S3Bucket ValidatedString `json:"bucket"`
+	// S3CompatibleEndpoint is the validated S3-compatible endpoint URL.
+	S3CompatibleEndpoint ValidatedString `json:"endpoint"`
+	// S3Region is the validated S3 region.
+	S3Region ValidatedString `json:"region"`
+	// CACertificate is the validated fingerprint of the S3 CA certificate.
+	CACertificate ValidatedFingerprint `json:"caCertificate"`
+	// S3SecretRef is the summary of the S3 credentials secret.
+	S3SecretRef S3SecretSummary `json:"secret"`
 }
 
 func (p *S3StoreProfilesSummary) AggregateState() ValidationState {
@@ -52,10 +70,15 @@ func (p *S3StoreProfilesSummary) AggregateState() ValidationState {
 
 // S3SecretSummary is the summary of S3 Secret in the ConfigMap.
 type S3SecretSummary struct {
-	Name               ValidatedString      `json:"name"`
-	Namespace          ValidatedString      `json:"namespace"`
-	Deleted            ValidatedBool        `json:"deleted"`
-	AWSAccessKeyID     ValidatedFingerprint `json:"awsAccessKeyID"`
+	// Name is the validated name of the S3 secret.
+	Name ValidatedString `json:"name"`
+	// Namespace is the validated namespace of the S3 secret.
+	Namespace ValidatedString `json:"namespace"`
+	// Deleted indicates whether the S3 secret has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// AWSAccessKeyID is the validated fingerprint of the AWS access key ID.
+	AWSAccessKeyID ValidatedFingerprint `json:"awsAccessKeyID"`
+	// AWSSecretAccessKey is the validated fingerprint of the AWS secret access key.
 	AWSSecretAccessKey ValidatedFingerprint `json:"awsSecretAccessKey"`
 }
 
@@ -71,58 +94,83 @@ func (s *S3SecretSummary) AggregateState() ValidationState {
 
 // ConfigMapSummary is the summary of a Ramen ConfigMap.
 type ConfigMapSummary struct {
-	Name            string                       `json:"name"`
-	Namespace       string                       `json:"namespace"`
-	Deleted         ValidatedBool                `json:"deleted"`
-	Parsed          ValidatedBool                `json:"parsed"`
+	// Name is the name of the ConfigMap.
+	Name string `json:"name"`
+	// Namespace is the namespace of the ConfigMap.
+	Namespace string `json:"namespace"`
+	// Deleted indicates whether the ConfigMap has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// Parsed indicates whether the ConfigMap was parsed successfully.
+	Parsed ValidatedBool `json:"parsed"`
+	// S3StoreProfiles is the validated list of S3 store profiles in the ConfigMap.
 	S3StoreProfiles ValidatedS3StoreProfilesList `json:"s3StoreProfiles"`
 }
 
 // DeploymentSummary is the summary of a Deployment
 type DeploymentSummary struct {
-	Name                string                 `json:"name"`
-	Namespace           string                 `json:"namespace"`
-	Deleted             ValidatedBool          `json:"deleted"`
-	RamenControllerType ValidatedString        `json:"ramenControllerType"`
-	Replicas            ValidatedInteger       `json:"replicas"`
-	Conditions          ValidatedConditionList `json:"conditions,omitempty"`
+	// Name is the name of the Deployment.
+	Name string `json:"name"`
+	// Namespace is the namespace of the Deployment.
+	Namespace string `json:"namespace"`
+	// Deleted indicates whether the Deployment has been deleted.
+	Deleted ValidatedBool `json:"deleted"`
+	// RamenControllerType is the validated type of the Ramen controller
+	// running in this Deployment.
+	RamenControllerType ValidatedString `json:"ramenControllerType"`
+	// Replicas is the validated number of ready replicas for the Deployment.
+	Replicas ValidatedInteger `json:"replicas"`
+	// Conditions are the validated conditions of the Deployment.
+	Conditions ValidatedConditionList `json:"conditions,omitempty"`
 }
 
 // RamenSummary is the summary of Ramen components.
 type RamenSummary struct {
-	ConfigMap  ConfigMapSummary  `json:"configmap"`
+	// ConfigMap is the summary of the Ramen ConfigMap.
+	ConfigMap ConfigMapSummary `json:"configmap"`
+	// Deployment is the summary of the Ramen Deployment.
 	Deployment DeploymentSummary `json:"deployment"`
 }
 
 // ClustersStatusHub is the cluster status on the hub cluster.
 type ClustersStatusHub struct {
+	// DRClusters is the validated list of DRCluster summaries.
 	DRClusters ValidatedDRClustersList `json:"drClusters"`
+	// DRPolicies is the validated list of DRPolicy summaries.
 	DRPolicies ValidatedDRPoliciesList `json:"drPolicies"`
-	Ramen      RamenSummary            `json:"ramen"`
+	// Ramen is the summary of Ramen components on the hub cluster.
+	Ramen RamenSummary `json:"ramen"`
 }
 
 // ClustersStatusCluster is the cluster status on a managed cluster.
 type ClustersStatusCluster struct {
-	Name  string       `json:"name"`
+	// Name is the name of the managed cluster.
+	Name string `json:"name"`
+	// Ramen is the summary of Ramen components on this managed cluster.
 	Ramen RamenSummary `json:"ramen"`
 }
 
 // ClustersS3ProfileStatus is the status of an S3 profile.
 type ClustersS3ProfileStatus struct {
-	Name       string        `json:"name"`
+	// Name is the name of the S3 profile.
+	Name string `json:"name"`
+	// Accessible indicates whether the S3 profile was reachable.
 	Accessible ValidatedBool `json:"accessible"`
 }
 
 // ClustersS3Status is the status of all S3 profiles.
 type ClustersS3Status struct {
+	// Profiles is the validated list of S3 profile statuses.
 	Profiles ValidatedClustersS3ProfileStatusList `json:"profiles"`
 }
 
 // ClustersStatus is cluster status in multi-cluster environment.
 type ClustersStatus struct {
-	Hub      ClustersStatusHub       `json:"hub"`
+	// Hub is the cluster status on the hub cluster.
+	Hub ClustersStatusHub `json:"hub"`
+	// Clusters is the cluster status on each managed cluster.
 	Clusters []ClustersStatusCluster `json:"clusters"`
-	S3       ClustersS3Status        `json:"s3"`
+	// S3 is the status of the cluster's S3 profiles.
+	S3 ClustersS3Status `json:"s3"`
 }
 
 func (c *ClustersStatus) Equal(o *ClustersStatus) bool {
