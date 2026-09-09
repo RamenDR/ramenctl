@@ -9,6 +9,12 @@
         {{- if .Description}}
             <p class="description">{{.Description}}</p>
         {{- end}}
+        {{- if .Reason}}
+            <p class="reason">{{.Reason}}</p>
+        {{- end}}
+        {{- if .Suggestion}}
+            <p class="suggestion">{{- if .URL}}<a href="{{.URL}}">{{.Suggestion}}</a>{{- else}}{{.Suggestion}}{{- end}}</p>
+        {{- end}}
     </dd>
     {{- end}}
 </dl>

@@ -1162,11 +1162,11 @@ func (c *Command) validatedS3Profile(result s3.Result) report.ClustersS3ProfileS
 	if result.Err != nil {
 		profileStatus.Accessible = report.ValidatedBool{
 			Validated: report.Validated{
-				State:       report.Problem,
-				Description: result.Err.Error(),
+				State: report.Problem,
 			},
 			Value: false,
 		}
+		report.SetError(&profileStatus.Accessible.Validated, result.Err)
 	} else {
 		profileStatus.Accessible = report.ValidatedBool{
 			Validated: report.Validated{
