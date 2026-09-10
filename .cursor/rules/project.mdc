@@ -64,3 +64,4 @@ Content guidelines:
 
 Footer:
 - Include `Assisted-by: Cursor/{model}` footer with full model version (e.g., `Cursor/Claude Opus 4.6`)
+- NEVER add `Co-authored-by` trailer - we use only `Assisted-by`

@@ -1,0 +1,115 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+---
+name: {{.Command.Slug}}-{{.Skill.Name}}
+description: >-
+  Run disaster recovery tests using {{.Command.Name}} test run. Use when the
+  user wants to test DR flow, verify failover/relocate works, or run
+  end-to-end DR tests.
+---
+
+# {{.Command.Name}} test run
+
+Run a disaster recovery flow test with one or more tiny applications defined
+in the configuration file.
+
+## Requirements
+
+- A fully configured `config.yaml` including test options
+  (see {{.Command.Slug}}-init skill).
+- `{{.Command.Name}} validate clusters` passes without problems. If
+  validation fails there is no point in running tests.
+
+## Workflow
+
+### Step 1: Pick an output directory
+
+Ask the user where to store the report. Suggest a unique name like
+`out/test-<%Y-%m-%d-%H-%M>`, e.g., `out/test-2026-07-20-19-46`.
+
+### Step 2: Run the test
+
+```console
+$ {{.Command.Name}} test run -o <output-directory>
+```
+
+Use `--config <file>` if the config file is not the default `config.yaml`.
+
+The test runs through the full DR flow for each test case:
+deploy, protect, failover, relocate, unprotect, undeploy.
+
+Run without a timeout — tests take a long time. Multiple test cases run
+in parallel.
+
+### Step 3: Check the result
+
+**On success:**
+
+```console
+✅ passed (N passed, 0 failed, 0 skipped)
+```
+
+**On failure** the command automatically gathers diagnostic data from all
+clusters and S3 into `test-run.data/`:
+
+```console
+❌ failed (N passed, M failed, 0 skipped)
+```
+
+### Step 4: Inspect the report
+
+The output directory contains:
+
+| File | Purpose |
+|------|---------|
+| `test-run.yaml` | Machine-readable test report |
+| `test-run.log` | Detailed log |
+| `test-run.data/` | Gathered data (only present on failure) |
+
+Useful commands:
+
+Overall status:
+
+```console
+$ yq '.status' < <output-directory>/test-run.yaml
+```
+
+Individual step status and durations:
+
+```console
+$ yq '.steps[-1].items' < <output-directory>/test-run.yaml
+```
+
+Test events from the log:
+
+```console
+$ grep -E '(INFO|ERROR).+<app-name>' <output-directory>/test-run.log
+```
+
+The `test-run.yaml` report contains the config used, each test step with
+its status and duration, and a summary with pass/fail/skip counts.
+
+### Step 5: Handle failures
+
+If the test failed:
+
+1. Check `test-run.yaml` to see which step failed
+2. Inspect `test-run.data/` for gathered resources and logs — it has the
+   same structure as validate-application gathered data (one directory per
+   cluster plus `s3/`)
+3. Check DRPC status, VRG conditions, and operator logs
+4. Fix the underlying issue
+5. **Always clean up** before re-running (see {{.Command.Slug}}-test-clean skill)
+
+### Step 6: Clean up
+
+Ask the user if they want to clean up. Do not clean up without an
+explicit request — failed test resources are evidence for debugging.
+See the {{.Command.Slug}}-test-clean skill for details.
+
+## Notes
+
+- Pressing Ctrl+C cancels gracefully. The current step may take up to
+  10 minutes to complete. Partial results are saved but data is not
+  gathered for incomplete tests.
+- To report DR issues, archive the entire output directory.
