@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"slices"
 
+	"k8s.io/utils/ptr"
+
 	"github.com/ramendr/ramenctl/pkg/build"
 	"github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/time"
@@ -141,11 +143,7 @@ func (r *Base) Equal(o *Base) bool {
 	} else if r.Created != o.Created {
 		return false
 	}
-	if r.Build != nil && o.Build != nil {
-		if *r.Build != *o.Build {
-			return false
-		}
-	} else if r.Build != o.Build {
+	if !ptr.Equal(r.Build, o.Build) {
 		return false
 	}
 	if r.Name != o.Name {
@@ -218,11 +216,7 @@ func (r *Report) Equal(o *Report) bool {
 	} else if r.Config != o.Config {
 		return false
 	}
-	if r.Application != nil && o.Application != nil {
-		if *r.Application != *o.Application {
-			return false
-		}
-	} else if r.Application != o.Application {
+	if !ptr.Equal(r.Application, o.Application) {
 		return false
 	}
 	if !slices.Equal(r.Namespaces, o.Namespaces) {
