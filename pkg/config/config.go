@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
+	"slices"
 
 	"github.com/ramendr/ramen/e2e/config"
 	"github.com/spf13/viper"
@@ -88,6 +89,23 @@ func ReadConfig(filename string) (*Config, error) {
 	return cfg, nil
 }
 
+// ValidateUniqueKubeconfigs ensures no two clusters share the same kubeconfig path.
+func ValidateUniqueKubeconfigs(clusters map[string]config.Cluster) error {
+	seen := make(map[string]string)
+
+	for _, name := range slices.Sorted(maps.Keys(clusters)) {
+		kubeconfig := clusters[name].Kubeconfig
+		if other, exists := seen[kubeconfig]; exists {
+			return fmt.Errorf("clusters %q and %q use the same kubeconfig path %q",
+				other, name, kubeconfig)
+		}
+
+		seen[kubeconfig] = name
+	}
+
+	return nil
+}
+
 // Equal return true if config is equal to other config.
 func (c *Config) Equal(o *Config) bool {
 	if c == o {
@@ -144,6 +162,11 @@ func (c *Config) validateClusters() error {
 	if c.Clusters["c2"].Kubeconfig == "" {
 		return fmt.Errorf("failed to find c2 cluster in configuration")
 	}
+
+	if err := ValidateUniqueKubeconfigs(c.Clusters); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/ramendr/ramen/e2e/deployers"
 	"github.com/ramendr/ramen/e2e/workloads"
 
+	ramenctlconfig "github.com/ramendr/ramenctl/pkg/config"
 	"github.com/ramendr/ramenctl/pkg/console"
 )
 
@@ -18,10 +19,15 @@ func readConfig(filename string) (*config.Config, error) {
 		Workloads: workloads.AvailableNames(),
 		Deployers: deployers.AvailableTypes(),
 	}
-	config, err := config.ReadConfig(filename, options)
+	cfg, err := config.ReadConfig(filename, options)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read config: %w", err)
 	}
+
+	if err := ramenctlconfig.ValidateUniqueKubeconfigs(cfg.Clusters); err != nil {
+		return nil, err
+	}
+
 	console.Info("Using config %q", filename)
-	return config, nil
+	return cfg, nil
 }

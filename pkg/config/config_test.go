@@ -128,6 +128,56 @@ func TestReadConfigWithPassiveHub(t *testing.T) {
 	}
 }
 
+func TestReadConfigDuplicateKubeconfig(t *testing.T) {
+	_, err := config.ReadConfig("testdata/duplicate-kubeconfig.yaml")
+	if err == nil {
+		t.Fatal("expected error for duplicate kubeconfig paths")
+	}
+}
+
+func TestValidateUniqueKubeconfigs(t *testing.T) {
+	t.Run("unique kubeconfigs", func(t *testing.T) {
+		clusters := map[string]e2econfig.Cluster{
+			"hub": {Kubeconfig: "hub/config"},
+			"c1":  {Kubeconfig: "dr1/config"},
+			"c2":  {Kubeconfig: "dr2/config"},
+		}
+		if err := config.ValidateUniqueKubeconfigs(clusters); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+	t.Run("duplicate managed clusters", func(t *testing.T) {
+		clusters := map[string]e2econfig.Cluster{
+			"hub": {Kubeconfig: "hub/config"},
+			"c1":  {Kubeconfig: "dr1/config"},
+			"c2":  {Kubeconfig: "dr1/config"},
+		}
+		err := config.ValidateUniqueKubeconfigs(clusters)
+		if err == nil {
+			t.Fatal("expected error for duplicate kubeconfig paths")
+		}
+		expected := `clusters "c1" and "c2" use the same kubeconfig path "dr1/config"`
+		if err.Error() != expected {
+			t.Fatalf("expected error %q, got %q", expected, err.Error())
+		}
+	})
+	t.Run("duplicate hub and managed cluster", func(t *testing.T) {
+		clusters := map[string]e2econfig.Cluster{
+			"hub": {Kubeconfig: "hub/config"},
+			"c1":  {Kubeconfig: "hub/config"},
+			"c2":  {Kubeconfig: "dr2/config"},
+		}
+		err := config.ValidateUniqueKubeconfigs(clusters)
+		if err == nil {
+			t.Fatal("expected error for duplicate kubeconfig paths")
+		}
+		expected := `clusters "c1" and "hub" use the same kubeconfig path "hub/config"`
+		if err.Error() != expected {
+			t.Fatalf("expected error %q, got %q", expected, err.Error())
+		}
+	})
+}
+
 func TestConfigEqual(t *testing.T) {
 	c1 := testConfig()
 	t.Run("equal to itself", func(t *testing.T) {
