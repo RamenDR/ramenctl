@@ -23,6 +23,11 @@ clusters:
 # - Modify to match your Open Cluster Management configuration.
 clusterSet: default
 
+## S3 options - timeout for S3 operations (seconds).
+# - Increase if S3 operations timeout in slow environments.
+s3:
+  timeout: 30
+
 ## Test options - used only by the test command.
 
 ## Git repository.

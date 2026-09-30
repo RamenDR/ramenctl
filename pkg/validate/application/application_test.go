@@ -38,6 +38,7 @@ var testK8s = testSystem{
 	name: "k8s",
 	config: &config.Config{
 		Namespaces: e2econfig.K8sNamespaces,
+		S3:         config.S3Config{Timeout: config.DefaultS3Timeout},
 	},
 	env: &types.Env{
 		Hub: &types.Cluster{Name: "hub"},

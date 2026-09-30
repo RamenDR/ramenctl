@@ -30,7 +30,19 @@ type Config struct {
 
 	// Namespaces are set automatically based on Distro.
 	Namespaces config.Namespaces `json:"namespaces"`
+
+	// S3 configures S3 operations.
+	S3 S3Config `json:"s3"`
 }
+
+// S3Config configures S3 operations.
+type S3Config struct {
+	// Timeout in seconds for each S3 request.
+	Timeout int `json:"timeout"`
+}
+
+// DefaultS3Timeout is the default S3 request timeout in seconds.
+const DefaultS3Timeout = 30
 
 // CreateSampleConfig create a sample config that can be used by all commands. The file can be
 // parsed using ReadConfig() or test.readConfig().
@@ -65,6 +77,7 @@ func CreateSampleConfig(filename, commandName, envFile string) error {
 // configuration.
 func ReadConfig(filename string) (*Config, error) {
 	viper.SetDefault("ClusterSet", config.DefaultClusterSetName)
+	viper.SetDefault("S3.Timeout", DefaultS3Timeout)
 	viper.SetConfigFile(filename)
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -84,6 +97,10 @@ func ReadConfig(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	if err := cfg.validateS3(); err != nil {
+		return nil, err
+	}
+
 	console.Info("Using config %q", filename)
 	return cfg, nil
 }
@@ -100,6 +117,9 @@ func (c *Config) Equal(o *Config) bool {
 		return false
 	}
 	if c.Namespaces != o.Namespaces {
+		return false
+	}
+	if c.S3 != o.S3 {
 		return false
 	}
 	return maps.Equal(c.Clusters, o.Clusters)
@@ -143,6 +163,16 @@ func (c *Config) validateClusters() error {
 	}
 	if c.Clusters["c2"].Kubeconfig == "" {
 		return fmt.Errorf("failed to find c2 cluster in configuration")
+	}
+	return nil
+}
+
+func (c *Config) validateS3() error {
+	if c.S3.Timeout <= 0 {
+		return fmt.Errorf(
+			"invalid S3 timeout %d: must be a positive number of seconds",
+			c.S3.Timeout,
+		)
 	}
 	return nil
 }

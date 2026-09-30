@@ -76,6 +76,7 @@ func testConfig() *config.Config {
 			"c2":  {Kubeconfig: "dr2/config"},
 		},
 		ClusterSet: "default",
+		S3:         config.S3Config{Timeout: config.DefaultS3Timeout},
 	}
 }
 
@@ -121,10 +122,18 @@ func TestReadConfigWithPassiveHub(t *testing.T) {
 			"c2":          {Kubeconfig: "dr2/config"},
 		},
 		ClusterSet: "default",
+		S3:         config.S3Config{Timeout: config.DefaultS3Timeout},
 	}
 	if !c.Equal(expected) {
 		diff := helpers.UnifiedDiff(t, expected, c)
 		t.Fatalf("configs not equal\n%s", diff)
+	}
+}
+
+func TestReadConfigNegativeS3Timeout(t *testing.T) {
+	_, err := config.ReadConfig("testdata/negative-s3-timeout.yaml")
+	if err == nil {
+		t.Fatal("expected error for negative S3 timeout")
 	}
 }
 
@@ -167,6 +176,13 @@ func TestConfigNotEqual(t *testing.T) {
 		c2.Clusters["c2"] = e2econfig.Cluster{Kubeconfig: "modified"}
 		if c1.Equal(c2) {
 			t.Fatalf("config with modified clusters is equal\n%s", helpers.MarshalYAML(t, c2))
+		}
+	})
+	t.Run("s3 timeout", func(t *testing.T) {
+		c2 := testConfig()
+		c2.S3.Timeout = 60
+		if c1.Equal(c2) {
+			t.Fatalf("config with modified S3 timeout is equal\n%s", helpers.MarshalYAML(t, c2))
 		}
 	})
 }
