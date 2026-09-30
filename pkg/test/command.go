@@ -302,7 +302,9 @@ func (c *Command) gatherS3Data() {
 	c.Logger().Infof("Gathering S3 data from profiles %q with prefixes %q",
 		logging.ProfileNames(profiles), prefixes)
 
-	for r := range c.backend.GatherS3(c, profiles, prefixes, c.dataDir()) {
+	s3Options := s3.Options{Timeout: s3.DefaultTimeout}
+
+	for r := range c.backend.GatherS3(c, profiles, prefixes, c.dataDir(), s3Options) {
 		if r.Err != nil {
 			if errors.Is(r.Err, context.Canceled) {
 				msg := fmt.Sprintf("Canceled gather S3 profile %q", r.ProfileName)

@@ -279,8 +279,10 @@ func (c *Command) gatherApplicationS3Data(profiles []*s3.Profile, prefix string)
 	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
 		logging.ProfileNames(profiles), prefix)
 
+	s3Options := s3.Options{Timeout: s3.DefaultTimeout}
+
 	var failedProfiles []string
-	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
+	for r := range c.backend.GatherS3(c, profiles, []string{prefix}, outputDir, s3Options) {
 		step := &report.Step{
 			Name:     fmt.Sprintf("gather S3 profile %q", r.ProfileName),
 			Duration: r.Duration,

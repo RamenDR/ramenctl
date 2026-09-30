@@ -34,6 +34,7 @@ type Validation interface {
 		profiles []*s3.Profile,
 		prefixes []string,
 		outputDir string,
+		options s3.Options,
 	) <-chan s3.Result
-	CheckS3(ctx Context, profiles []*s3.Profile) <-chan s3.Result
+	CheckS3(ctx Context, profiles []*s3.Profile, options s3.Options) <-chan s3.Result
 }

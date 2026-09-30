@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	stdtime "time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -31,7 +32,16 @@ const (
 
 	// S3 output directory permission
 	dirPerm = 0o750
+
+	// DefaultTimeout is the default timeout for each S3 request.
+	DefaultTimeout = 30 * stdtime.Second
 )
+
+// Options configures S3 operations.
+type Options struct {
+	// Timeout for each S3 request.
+	Timeout stdtime.Duration
+}
 
 // Profile contains S3 connection and authentication information.
 type Profile struct {
@@ -51,10 +61,11 @@ type Result struct {
 	Duration    float64
 }
 
-// objectStore wraps an S3 client with profile information and log.
+// objectStore wraps an S3 client with profile information, timeout, and log.
 type objectStore struct {
 	client  *s3.Client
 	profile *Profile
+	timeout stdtime.Duration
 	log     *zap.SugaredLogger
 }
 
@@ -65,6 +76,7 @@ func Gather(
 	profiles []*Profile,
 	prefixes []string,
 	outputDir string,
+	options Options,
 	log *zap.SugaredLogger,
 ) <-chan Result {
 	results := make(chan Result)
@@ -76,7 +88,7 @@ func Gather(
 		go func() {
 			defer wg.Done()
 			start := time.Now()
-			err := gatherData(ctx, profile, prefixes, outputDir, log)
+			err := gatherData(ctx, profile, prefixes, outputDir, options, log)
 			results <- Result{
 				ProfileName: profile.Name,
 				Err:         err,
@@ -98,6 +110,7 @@ func Gather(
 func Check(
 	ctx context.Context,
 	profiles []*Profile,
+	options Options,
 	log *zap.SugaredLogger,
 ) <-chan Result {
 	results := make(chan Result)
@@ -108,7 +121,7 @@ func Check(
 		go func() {
 			defer wg.Done()
 			start := time.Now()
-			err := checkBucket(ctx, profile, log)
+			err := checkBucket(ctx, profile, options, log)
 			results <- Result{
 				ProfileName: profile.Name,
 				Err:         err,
@@ -132,9 +145,10 @@ func gatherData(
 	profile *Profile,
 	prefixes []string,
 	outputDir string,
+	options Options,
 	log *zap.SugaredLogger,
 ) error {
-	objectStore, err := newObjectStore(ctx, profile, log)
+	objectStore, err := newObjectStore(ctx, profile, options.Timeout, log)
 	if err != nil {
 		return fmt.Errorf("failed to create S3 client for profile %q: %w",
 			profile.Name, err)
@@ -159,9 +173,10 @@ func gatherData(
 func checkBucket(
 	ctx context.Context,
 	profile *Profile,
+	options Options,
 	log *zap.SugaredLogger,
 ) error {
-	objectStore, err := newObjectStore(ctx, profile, log)
+	objectStore, err := newObjectStore(ctx, profile, options.Timeout, log)
 	if err != nil {
 		return fmt.Errorf("failed to create S3 client for profile %q: %w",
 			profile.Name, err)
@@ -186,6 +201,7 @@ func checkBucket(
 func newObjectStore(
 	ctx context.Context,
 	profile *Profile,
+	timeout stdtime.Duration,
 	log *zap.SugaredLogger,
 ) (*objectStore, error) {
 	configOptions := []func(*config.LoadOptions) error{
@@ -227,6 +243,7 @@ func newObjectStore(
 	return &objectStore{
 		client:  s3Client,
 		profile: profile,
+		timeout: timeout,
 		log:     log,
 	}, nil
 }

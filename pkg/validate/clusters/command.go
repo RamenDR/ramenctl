@@ -1086,7 +1086,9 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
 
 	var failedProfiles []string
-	for r := range c.Backend.CheckS3(c, profiles) {
+	s3Options := s3.Options{Timeout: s3.DefaultTimeout}
+
+	for r := range c.Backend.CheckS3(c, profiles, s3Options) {
 		// Collect results to validate and report S3 status in validateS3Status.
 		c.S3Results = append(c.S3Results, r)
 

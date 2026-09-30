@@ -35,7 +35,7 @@ type TestingMock struct {
 	// Handling failures.
 	GatherFunc    func(ctx types.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
 	GetSecretFunc func(ctx types.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
-	GatherS3Func  func(ctx types.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
+	GatherS3Func  func(ctx types.Context, profiles []*s3.Profile, prefixes []string, outputDir string, options s3.Options) <-chan s3.Result
 }
 
 var _ testing.Testing = &TestingMock{}
@@ -148,9 +148,10 @@ func (m *TestingMock) GatherS3(
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
+	options s3.Options,
 ) <-chan s3.Result {
 	if m.GatherS3Func != nil {
-		return m.GatherS3Func(ctx, profiles, prefixes, outputDir)
+		return m.GatherS3Func(ctx, profiles, prefixes, outputDir, options)
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
