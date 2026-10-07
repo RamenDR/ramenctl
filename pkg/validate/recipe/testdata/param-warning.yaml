@@ -1,0 +1,22 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: param-warning-recipe
+  namespace: test-ns
+spec:
+  appType: stateful
+  groups:
+    - name: r-group
+      type: resource
+  hooks:
+    - name: app-hook
+      namespace: test-ns
+      type: exec
+      ops:
+        - name: quiesce
+          command: "/scripts/quiesce.sh --param $param"
+  workflows:
+    - name: backup
+      sequence:
+        - group: r-group
+        - hook: app-hook/quiesce

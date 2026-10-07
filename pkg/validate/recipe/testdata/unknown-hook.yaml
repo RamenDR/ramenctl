@@ -1,0 +1,13 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: unknown-hook-recipe
+  namespace: test-ns
+spec:
+  appType: stateless
+  workflows:
+    - name: backup
+      sequence:
+        - hook: nonexistent-hook/op
+    - name: restore
+      sequence: []
