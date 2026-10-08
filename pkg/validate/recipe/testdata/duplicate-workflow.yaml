@@ -1,0 +1,12 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: duplicate-workflow-recipe
+  namespace: test-ns
+spec:
+  appType: stateless
+  workflows:
+    - name: backup
+      sequence: []
+    - name: backup
+      sequence: []

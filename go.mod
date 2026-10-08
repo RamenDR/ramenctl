@@ -17,6 +17,7 @@ require (
 	github.com/nirs/kubectl-gather v0.13.1
 	github.com/ramendr/ramen/api v0.0.0-20260820171631-6ec7115daad9
 	github.com/ramendr/ramen/e2e v0.0.0-20260820171631-6ec7115daad9
+	github.com/ramendr/recipe v0.0.0-20260511145713-454117f61334
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.19.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
@@ -75,7 +76,6 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/ramendr/recipe v0.0.0-20250507125257-0295a01da567 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -88,7 +88,7 @@ require (
 	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
 	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.9.0 // indirect

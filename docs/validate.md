@@ -19,6 +19,7 @@ Usage:
 Available Commands:
   application Detect problems in disaster recovery protected application
   clusters    Detect problems in disaster recovery clusters
+  recipe      Detect problems in a Recipe YAML file
 
 Flags:
   -h, --help            help for validate
@@ -34,11 +35,14 @@ The command supports the following sub-commands:
 
 - [application](#validate-application)
 - [clusters](#validate-clusters)
+- [recipe](#validate-recipe)
 
 > [!IMPORTANT]
-> The validate command requires a configuration file. See
+> The `validate application` and `validate clusters` commands require a
+> configuration file. See
 > [Configuring common options](docs/init.md#configuring-common-options) to learn
-> how to create one.
+> how to create one. The `validate recipe` command works offline and requires no
+> configuration.
 
 ## validate application
 
@@ -667,3 +671,58 @@ out/validate-clusters.data
 This log includes detailed information that may help to troubleshoot the
 validate clusters command. If the command failed, check the error details in the
 log.
+
+## validate recipe
+
+The validate recipe command checks a Recipe YAML file for semantic problems
+offline, without connecting to any cluster. It is useful for catching errors in
+a recipe before deploying it.
+
+### Validating a recipe
+
+```console
+$ ramenctl validate recipe path/to/recipe.yaml
+```
+
+The command reads the file, parses it as a `Recipe` CR, runs semantic checks,
+and writes the results as YAML to stdout.
+
+#### No issues found
+
+```console
+$ ramenctl validate recipe recipe.yaml
+name: my-recipe
+namespace: my-namespace
+workflows:
+  - name: backup
+    state: ok ✅
+    sequence:
+      - group: res-group
+      - hook: pre-hook/quiesce
+  - name: restore
+    state: ok ✅
+    sequence:
+      - group: vol-group
+```
+
+#### Issues found
+
+```console
+$ ramenctl validate recipe bad-recipe.yaml
+name: my-recipe
+namespace: my-namespace
+workflows:
+  - name: backup
+    state: ok ✅
+    sequence:
+      - group: res-group
+  - name: restore
+    state: problem ❌
+    description: sequence item "hook2" does not reference a known hook
+    sequence:
+      - hook: hook2
+```
+
+The command exits 0 when no problems are found (warnings are non-fatal) and
+exits 1 when any problem-level issue is detected or when the file cannot be read
+or parsed.
