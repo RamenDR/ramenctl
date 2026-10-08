@@ -143,6 +143,9 @@ func gatherData(
 	var errs []error
 	for _, prefix := range prefixes {
 		if err := objectStore.downloadObjects(ctx, prefix, outputDir); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return err
+			}
 			errs = append(errs, err)
 		}
 	}
@@ -173,6 +176,9 @@ func checkBucket(
 		Bucket: aws.String(profile.Bucket),
 	})
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return err
+		}
 		log.Warnf("Failed to access bucket %q for profile %q: %v",
 			profile.Bucket, profile.Name, err)
 		return fmt.Errorf("failed to access bucket %q for profile %q",
@@ -256,6 +262,9 @@ func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir str
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return err
+			}
 			s.log.Warnf("Failed to list objects in bucket %q with prefix %q: %v",
 				s.profile.Bucket, prefix, err)
 			return fmt.Errorf("failed to list objects in bucket %q with prefix %q",
@@ -264,6 +273,9 @@ func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir str
 		for _, obj := range page.Contents {
 			total++
 			if err := s.downloadObject(ctx, *obj.Key, profileDir); err != nil {
+				if errors.Is(err, context.Canceled) {
+					return err
+				}
 				s.log.Warnf("Failed to download object %q from bucket %q: %v",
 					*obj.Key, s.profile.Bucket, err)
 				failed++
