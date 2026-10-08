@@ -124,6 +124,8 @@ config:
     ramenDRClusterNamespace: ramen-system
     ramenHubNamespace: ramen-system
     ramenOpsNamespace: ramen-ops
+  s3:
+    timeout: 30
 created: "2026-03-16T20:16:31.019224+02:00"
 duration: 2.207900458
 host:

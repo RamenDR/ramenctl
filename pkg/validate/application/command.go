@@ -200,8 +200,12 @@ func (c *Command) gatherS3Profiles(profiles []*s3.Profile, prefix string) bool {
 	c.Logger().Infof("Gathering application S3 data from profiles %q with prefix %q",
 		logging.ProfileNames(profiles), prefix)
 
+	s3Options := s3.Options{
+		Timeout: stdtime.Duration(c.Config().S3.Timeout) * stdtime.Second,
+	}
+
 	var failedProfiles []string
-	for r := range c.Backend.GatherS3(c, profiles, []string{prefix}, outputDir) {
+	for r := range c.Backend.GatherS3(c, profiles, []string{prefix}, outputDir, s3Options) {
 		// Store the s3 gather result for validation.
 		c.S3Results = append(c.S3Results, r)
 

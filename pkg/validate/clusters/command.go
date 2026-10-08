@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	stdtime "time"
 
 	ramenapi "github.com/ramendr/ramen/api/v1alpha1"
 	"github.com/ramendr/ramen/e2e/types"
@@ -1086,7 +1087,11 @@ func (c *Command) checkS3(profiles []*s3.Profile) bool {
 	c.Logger().Infof("Checking S3 profiles %q", logging.ProfileNames(profiles))
 
 	var failedProfiles []string
-	for r := range c.Backend.CheckS3(c, profiles) {
+	s3Options := s3.Options{
+		Timeout: stdtime.Duration(c.Config().S3.Timeout) * stdtime.Second,
+	}
+
+	for r := range c.Backend.CheckS3(c, profiles, s3Options) {
 		// Collect results to validate and report S3 status in validateS3Status.
 		c.S3Results = append(c.S3Results, r)
 

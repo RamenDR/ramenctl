@@ -68,10 +68,11 @@ func (b Backend) GatherS3(
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
+	options s3.Options,
 ) <-chan s3.Result {
-	return s3.Gather(ctx.Context(), profiles, prefixes, outputDir, ctx.Logger())
+	return s3.Gather(ctx.Context(), profiles, prefixes, outputDir, options, ctx.Logger())
 }
 
-func (b Backend) CheckS3(ctx Context, profiles []*s3.Profile) <-chan s3.Result {
-	return s3.Check(ctx.Context(), profiles, ctx.Logger())
+func (b Backend) CheckS3(ctx Context, profiles []*s3.Profile, options s3.Options) <-chan s3.Result {
+	return s3.Check(ctx.Context(), profiles, options, ctx.Logger())
 }

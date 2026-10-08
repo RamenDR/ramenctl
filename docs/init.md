@@ -128,6 +128,17 @@ Use this value in the configuration file:
 clusterSet: dr-clusters
 ```
 
+### Configuring S3 options
+
+The `s3` section configures S3 operations. The `timeout` option sets the timeout
+in seconds for each S3 request (default 30). Increase this value if S3
+operations timeout in slow environments.
+
+```yaml
+s3:
+  timeout: 30
+```
+
 ### Example common configuration
 
 ```yaml
@@ -144,6 +155,9 @@ clusters:
     kubeconfig: my-c2.yaml
 
 clusterSet: dr-clusters
+
+s3:
+  timeout: 30
 ```
 
 ## Configuration for the test command

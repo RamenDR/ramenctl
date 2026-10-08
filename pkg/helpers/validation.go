@@ -23,9 +23,9 @@ type ValidationMock struct {
 	ValidateFunc              func(validation.Context) error
 	ApplicationNamespacesFunc func(ctx validation.Context, drpcName, drpcNamespace string) ([]string, error)
 	GatherFunc                func(ctx validation.Context, clsuters []*types.Cluster, options gathering.Options) <-chan gathering.Result
-	GatherS3Func              func(ctx validation.Context, profiles []*s3.Profile, prefixes []string, outputDir string) <-chan s3.Result
+	GatherS3Func              func(ctx validation.Context, profiles []*s3.Profile, prefixes []string, outputDir string, options s3.Options) <-chan s3.Result
 	GetSecretFunc             func(ctx validation.Context, cluster *types.Cluster, name, namespace string) (*corev1.Secret, error)
-	CheckS3Func               func(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result
+	CheckS3Func               func(ctx validation.Context, profiles []*s3.Profile, options s3.Options) <-chan s3.Result
 }
 
 var _ validation.Validation = &ValidationMock{}
@@ -85,9 +85,10 @@ func (m *ValidationMock) GatherS3(
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
+	options s3.Options,
 ) <-chan s3.Result {
 	if m.GatherS3Func != nil {
-		return m.GatherS3Func(ctx, profiles, prefixes, outputDir)
+		return m.GatherS3Func(ctx, profiles, prefixes, outputDir, options)
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
@@ -102,9 +103,13 @@ func (m *ValidationMock) GatherS3(
 	return results
 }
 
-func (m *ValidationMock) CheckS3(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+func (m *ValidationMock) CheckS3(
+	ctx validation.Context,
+	profiles []*s3.Profile,
+	options s3.Options,
+) <-chan s3.Result {
 	if m.CheckS3Func != nil {
-		return m.CheckS3Func(ctx, profiles)
+		return m.CheckS3Func(ctx, profiles, options)
 	}
 	results := make(chan s3.Result, len(profiles))
 	for _, profile := range profiles {
@@ -188,6 +193,7 @@ func GatherS3DataFailed(
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
+	options s3.Options,
 ) <-chan s3.Result {
 	results := make(chan s3.Result, 2)
 	for i, profile := range profiles {
@@ -206,6 +212,7 @@ func GatherS3DataCanceled(
 	profiles []*s3.Profile,
 	prefixes []string,
 	outputDir string,
+	options s3.Options,
 ) <-chan s3.Result {
 	results := make(chan s3.Result, 2)
 	for i, profile := range profiles {
@@ -219,7 +226,11 @@ func GatherS3DataCanceled(
 	return results
 }
 
-func CheckS3DataFailed(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+func CheckS3DataFailed(
+	ctx validation.Context,
+	profiles []*s3.Profile,
+	options s3.Options,
+) <-chan s3.Result {
 	results := make(chan s3.Result, 2)
 	for i, profile := range profiles {
 		if i == 0 {
@@ -232,7 +243,11 @@ func CheckS3DataFailed(ctx validation.Context, profiles []*s3.Profile) <-chan s3
 	return results
 }
 
-func CheckS3DataCanceled(ctx validation.Context, profiles []*s3.Profile) <-chan s3.Result {
+func CheckS3DataCanceled(
+	ctx validation.Context,
+	profiles []*s3.Profile,
+	options s3.Options,
+) <-chan s3.Result {
 	results := make(chan s3.Result, 2)
 	for _, profile := range profiles {
 		results <- s3.Result{ProfileName: profile.Name, Err: context.Canceled}

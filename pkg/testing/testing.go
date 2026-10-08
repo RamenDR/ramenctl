@@ -43,5 +43,6 @@ type Testing interface {
 		profiles []*s3.Profile,
 		prefixes []string,
 		outputDir string,
+		options s3.Options,
 	) <-chan s3.Result
 }
