@@ -159,8 +159,8 @@ jobs:
       matrix:
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
         runner:
-          - ubuntu-24.04 # x86_64
-          - ubuntu-24.04-arm # arm64
+          - ubuntu-26.04 # x86_64
+          - ubuntu-26.04-arm # arm64
           - windows-latest # x86_64
           - macos-26-intel # x86_64
           - macos-26 # arm64
