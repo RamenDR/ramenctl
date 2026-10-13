@@ -1,0 +1,7 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: no-workflows-recipe
+  namespace: test-ns
+spec:
+  appType: stateless
