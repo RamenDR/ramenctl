@@ -163,7 +163,7 @@ jobs:
           - ubuntu-26.04-arm # arm64
           - windows-latest # x86_64
           - macos-26-intel # x86_64
-          - macos-26 # arm64
+          - xcode-27 # arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout source
