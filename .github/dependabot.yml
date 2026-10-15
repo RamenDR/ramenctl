@@ -10,15 +10,18 @@ updates:
       interval: "weekly"
       day: "sunday"
     open-pull-requests-limit: 3
-    # These Kubernetes libraries are upgraded deliberately and in lockstep;
-    # leave them out of automated Dependabot bumps. client-go is included
-    # because this module requires it directly.
     ignore:
+      # These Kubernetes libraries are upgraded deliberately and in lockstep;
+      # leave them out of automated Dependabot bumps. client-go is included
+      # because this module requires it directly.
       - dependency-name: "k8s.io/api"
       - dependency-name: "k8s.io/apimachinery"
       - dependency-name: "k8s.io/client-go"
       - dependency-name: "k8s.io/component-base"
       - dependency-name: "sigs.k8s.io/controller-runtime"
+      # ramenctl pins ramen modules to a specific commit so it can consume
+      # e2e fixes. ramen does not publish releases for those fixes.
+      - dependency-name: "github.com/ramendr/ramen/*"
 
   - package-ecosystem: "pip"
     directory: "/"
