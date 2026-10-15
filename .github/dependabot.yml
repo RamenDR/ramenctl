@@ -8,6 +8,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 3
     # These Kubernetes libraries are upgraded deliberately and in lockstep;
     # leave them out of automated Dependabot bumps. client-go is included
     # because this module requires it directly.
@@ -22,8 +24,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 3
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "thursday"
+    open-pull-requests-limit: 3
