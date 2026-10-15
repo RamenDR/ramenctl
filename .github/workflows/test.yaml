@@ -34,7 +34,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -52,7 +52,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -83,7 +83,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -111,7 +111,7 @@ jobs:
       - name: Create build tag
         run: git tag build-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -143,7 +143,7 @@ jobs:
           version=$(awk '/^go [0-9]/ {print $2}' go.mod)
           echo "version=$version" >> $GITHUB_OUTPUT
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           # We cannot use go-version-file since in v6 it picks the toolchain
           # version instead of go version, ignoring GOTOOLCHAIN=local.
@@ -173,7 +173,7 @@ jobs:
       - name: Create build tag
         run: git tag latest
       - name: Setup go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
