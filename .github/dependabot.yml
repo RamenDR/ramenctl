@@ -8,14 +8,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    groups:
-      # These libraries share a Kubernetes release and must be upgraded together.
-      kubernetes:
-        patterns:
-          - "k8s.io/api"
-          - "k8s.io/apimachinery"
-          - "k8s.io/client-go"
-          - "sigs.k8s.io/controller-runtime"
+    # These Kubernetes libraries are upgraded deliberately and in lockstep;
+    # leave them out of automated Dependabot bumps. client-go is included
+    # because this module requires it directly.
+    ignore:
+      - dependency-name: "k8s.io/api"
+      - dependency-name: "k8s.io/apimachinery"
+      - dependency-name: "k8s.io/client-go"
+      - dependency-name: "k8s.io/component-base"
+      - dependency-name: "sigs.k8s.io/controller-runtime"
 
   - package-ecosystem: "pip"
     directory: "/"
