@@ -15,8 +15,8 @@ require (
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/nirs/kubectl-gather v0.14.0
-	github.com/ramendr/ramen/api v0.0.0-20260820171631-6ec7115daad9
-	github.com/ramendr/ramen/e2e v0.0.0-20260820171631-6ec7115daad9
+	github.com/ramendr/ramen/api v0.1.0
+	github.com/ramendr/ramen/e2e v0.0.0-20261015142229-7a814c08fc22
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
@@ -104,8 +104,9 @@ require (
 	kubevirt.io/api v1.5.2 // indirect
 	kubevirt.io/containerized-data-importer-api v1.60.3-0.20241105012228-50fbed985de9 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
+	open-cluster-management.io/managed-serviceaccount v0.5.0 // indirect
 	open-cluster-management.io/multicloud-operators-channel v0.15.0 // indirect
-	open-cluster-management.io/multicloud-operators-subscription v0.15.0 // indirect
+	open-cluster-management.io/multicloud-operators-subscription v0.16.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
