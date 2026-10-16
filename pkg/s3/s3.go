@@ -157,6 +157,11 @@ func gatherData(
 	var errs []error
 	for _, prefix := range prefixes {
 		if err := objectStore.downloadObjects(ctx, prefix, outputDir); err != nil {
+			// Fail early if the command context was canceled or timed out.
+			if ctx.Err() != nil {
+				return fmt.Errorf("failed to download objects from profile %q: %w",
+					profile.Name, ctx.Err())
+			}
 			errs = append(errs, err)
 		}
 	}
@@ -193,8 +198,8 @@ func checkBucket(
 	if err != nil {
 		log.Warnf("Failed to access bucket %q for profile %q: %v",
 			profile.Bucket, profile.Name, err)
-		return fmt.Errorf("failed to access bucket %q for profile %q",
-			profile.Bucket, profile.Name)
+		return fmt.Errorf("failed to access bucket %q for profile %q: %w",
+			profile.Bucket, profile.Name, err)
 	}
 
 	return nil
@@ -276,14 +281,20 @@ func (s *objectStore) downloadObjects(ctx context.Context, prefix, outputDir str
 	for paginator.HasMorePages() {
 		page, err := s.nextPage(paginator, ctx)
 		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
 			s.log.Warnf("Failed to list objects in bucket %q with prefix %q: %v",
 				s.profile.Bucket, prefix, err)
-			return fmt.Errorf("failed to list objects in bucket %q with prefix %q",
-				s.profile.Bucket, prefix)
+			return fmt.Errorf("failed to list objects in bucket %q with prefix %q: %w",
+				s.profile.Bucket, prefix, err)
 		}
 		for _, obj := range page.Contents {
 			total++
 			if err := s.downloadObject(ctx, *obj.Key, profileDir); err != nil {
+				if ctx.Err() != nil {
+					return ctx.Err()
+				}
 				s.log.Warnf("Failed to download object %q from bucket %q: %v",
 					*obj.Key, s.profile.Bucket, err)
 				failed++
@@ -333,6 +344,11 @@ func (s *objectStore) downloadObject(ctx context.Context, key, profileDir string
 	var buf bytes.Buffer
 	tee := io.TeeReader(result.Body, &buf)
 	gzipReader, err := gzip.NewReader(tee)
+
+	// Reading the body for gzip detection may fail due to cancellation or timeout.
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
 
 	// Create a reader exposing the entire response, including bytes consumed during detection.
 	reader := io.MultiReader(bytes.NewReader(buf.Bytes()), result.Body)
