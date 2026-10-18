@@ -14,7 +14,7 @@ require (
 	github.com/aws/smithy-go v1.28.5
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/go-logr/zapr v1.3.0
-	github.com/nirs/kubectl-gather v0.14.0
+	github.com/nirs/kubectl-gather v0.15.0
 	github.com/ramendr/ramen/api v0.1.0
 	github.com/ramendr/ramen/e2e v0.0.0-20261015142229-7a814c08fc22
 	github.com/spf13/cobra v1.10.2
