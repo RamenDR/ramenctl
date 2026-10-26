@@ -18,6 +18,7 @@ import (
 
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
@@ -941,5 +942,55 @@ func writeDRPolicy(t *testing.T, dataDir, name, schedulingInterval string) {
 
 	if err := os.WriteFile(filepath.Join(dir, name+".yaml"), data, 0o600); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestValidatedS3ProfileDetailedError(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+	err := &report.DetailedError{
+		Message:    "failed to download objects from profile \"s3profile\"",
+		Reason:     "certificate signed by unknown authority",
+		Suggestion: "configure CACertificates in the S3 store profile to trust the endpoint certificate",
+		URL:        "https://ramendr.github.io/ramen/s3-store-profile/#cacertificates",
+	}
+	status := cmd.validatedS3Profile(s3.Result{ProfileName: "s3profile", Err: err})
+
+	expected := report.ApplicationS3ProfileStatus{
+		Name: "s3profile",
+		Gathered: report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: err.Message,
+				Reason:      err.Reason,
+				Suggestion:  err.Suggestion,
+				URL:         err.URL,
+			},
+			Value: false,
+		},
+	}
+	if status != expected {
+		t.Fatalf("unexpected status\n%s", helpers.UnifiedDiff(t, expected, status))
+	}
+}
+
+func TestValidatedS3ProfilePlainError(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+	status := cmd.validatedS3Profile(s3.Result{
+		ProfileName: "s3profile",
+		Err:         fmt.Errorf("connection refused"),
+	})
+
+	expected := report.ApplicationS3ProfileStatus{
+		Name: "s3profile",
+		Gathered: report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: "connection refused",
+			},
+			Value: false,
+		},
+	}
+	if status != expected {
+		t.Fatalf("unexpected status\n%s", helpers.UnifiedDiff(t, expected, status))
 	}
 }

@@ -5,6 +5,8 @@ package report
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"slices"
 	"time"
 )
@@ -43,6 +45,61 @@ type Validated struct {
 	State ValidationState `json:"state"`
 	// Description explains why the value is not OK.
 	Description string `json:"description,omitempty"`
+	// Reason explains why it happened.
+	Reason string `json:"reason,omitempty"`
+	// Suggestion tells the user how to fix it.
+	Suggestion string `json:"suggestion,omitempty"`
+	// URL links to related documentation.
+	URL string `json:"url,omitempty"`
+}
+
+// DetailedError adds an optional reason and recovery hint to an error
+type DetailedError struct {
+	// Message explains what went wrong.
+	Message string
+	// Reason explains why it happened.
+	Reason string
+	// Suggestion tells the user how to fix it.
+	Suggestion string
+	// URL links to related documentation.
+	URL string
+}
+
+func (e *DetailedError) Error() string {
+	return e.Message
+}
+
+// SetError copies err into Validated. For DetailedError, also fills reason and suggestion
+func SetError(v *Validated, err error) {
+	if err == nil {
+		return
+	}
+	var detailed *DetailedError
+	if errors.As(err, &detailed) {
+		v.Description = detailed.Message
+		v.Reason = detailed.Reason
+		v.Suggestion = detailed.Suggestion
+		v.URL = detailed.URL
+		return
+	}
+	v.Description = err.Error()
+}
+
+// Promote replaces a DetailedError's message, keeping reason and suggestion. Otherwise wraps err
+func Promote(message string, err error) error {
+	if err == nil {
+		return nil
+	}
+	var detailed *DetailedError
+	if errors.As(err, &detailed) {
+		return &DetailedError{
+			Message:    message,
+			Reason:     detailed.Reason,
+			Suggestion: detailed.Suggestion,
+			URL:        detailed.URL,
+		}
+	}
+	return fmt.Errorf("%s: %w", message, err)
 }
 
 // ValidatedString is a validated object string property.
@@ -240,10 +297,7 @@ func (v *ValidatedDRClustersList) Equal(o *ValidatedDRClustersList) bool {
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -265,10 +319,7 @@ func (v *ValidatedDRPoliciesList) Equal(o *ValidatedDRPoliciesList) bool {
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -290,10 +341,7 @@ func (v *ValidatedPeerClassesList) Equal(o *ValidatedPeerClassesList) bool {
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -315,10 +363,7 @@ func (v *ValidatedS3StoreProfilesList) Equal(o *ValidatedS3StoreProfilesList) bo
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -342,10 +387,7 @@ func (v *ValidatedApplicationS3ProfileStatusList) Equal(
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(
@@ -367,10 +409,7 @@ func (v *ValidatedClustersS3ProfileStatusList) Equal(o *ValidatedClustersS3Profi
 	if o == nil {
 		return false
 	}
-	if v.State != o.State {
-		return false
-	}
-	if v.Description != o.Description {
+	if v.Validated != o.Validated {
 		return false
 	}
 	if !slices.EqualFunc(

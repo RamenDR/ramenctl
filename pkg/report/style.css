@@ -310,6 +310,17 @@ dl.validation > dd.nested {
     margin: 0;
 }
 
+.reason,
+.suggestion {
+    flex-basis: 100%;
+    font-size: 0.85em;
+    margin: 0;
+}
+
+.suggestion a {
+    color: #0066cc;
+}
+
 dd>ul {
     flex-basis: 100%;
     list-style: none;
