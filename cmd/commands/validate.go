@@ -49,9 +49,24 @@ var ValidateApplicationCmd = &cobra.Command{
 	},
 }
 
+var ValidateRecipeCmd = &cobra.Command{
+	Use:   "recipe <file.yaml>",
+	Short: "Detect problems in a Recipe YAML file",
+	Args:  cobra.ExactArgs(1),
+	Run: func(c *cobra.Command, args []string) {
+		if err := validate.Recipe(args[0], command.Options{
+			OutputDir:   outputDir,
+			Interactive: interactive,
+		}); err != nil {
+			os.Exit(1)
+		}
+	},
+}
+
 func init() {
 	addDRPCFlags(ValidateApplicationCmd)
 	addOutputFlags(ValidateCmd)
 	ValidateCmd.AddCommand(ValidateClustersCmd)
 	ValidateCmd.AddCommand(ValidateApplicationCmd)
+	ValidateCmd.AddCommand(ValidateRecipeCmd)
 }
