@@ -14,6 +14,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/helpers"
 	"github.com/ramendr/ramenctl/pkg/ramen"
 	"github.com/ramendr/ramenctl/pkg/report"
+	"github.com/ramendr/ramenctl/pkg/s3"
 	"github.com/ramendr/ramenctl/pkg/validate/summary"
 )
 
@@ -273,5 +274,33 @@ func testConfigMap(controllerType string) *corev1.ConfigMap {
 		Data: map[string]string{
 			ramen.ConfigMapRamenConfigKeyName: "ramenControllerType: " + controllerType + "\n",
 		},
+	}
+}
+
+func TestValidatedS3ProfileDetailedError(t *testing.T) {
+	cmd := testCommand(t, &helpers.ValidationMock{}, testK8s)
+	err := &report.DetailedError{
+		Message:    "failed to access bucket \"odrbucket\" for profile \"s3profile\"",
+		Reason:     "certificate signed by unknown authority",
+		Suggestion: "configure CACertificates in the S3 store profile to trust the endpoint certificate",
+		URL:        "https://ramendr.github.io/ramen/s3-store-profile/#cacertificates",
+	}
+	status := cmd.validatedS3Profile(s3.Result{ProfileName: "s3profile", Err: err})
+
+	expected := report.ClustersS3ProfileStatus{
+		Name: "s3profile",
+		Accessible: report.ValidatedBool{
+			Validated: report.Validated{
+				State:       report.Problem,
+				Description: err.Message,
+				Reason:      err.Reason,
+				Suggestion:  err.Suggestion,
+				URL:         err.URL,
+			},
+			Value: false,
+		},
+	}
+	if status != expected {
+		t.Fatalf("unexpected status\n%s", helpers.UnifiedDiff(t, expected, status))
 	}
 }
