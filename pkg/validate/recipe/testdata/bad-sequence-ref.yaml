@@ -1,0 +1,18 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: bad-sequence-recipe
+  namespace: test-ns
+spec:
+  appType: stateful
+  groups:
+    - name: r-group
+      type: resource
+  workflows:
+    - name: backup
+      sequence:
+        - group: nonexistent-group
+        - hook: nonexistent-hook/op
+    - name: restore
+      sequence:
+        - group: r-group

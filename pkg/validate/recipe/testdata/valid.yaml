@@ -1,0 +1,28 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: valid-recipe
+  namespace: test-ns
+spec:
+  appType: stateful
+  groups:
+    - name: r-group
+      type: resource
+  volumes:
+    name: v-group
+    type: volume
+  hooks:
+    - name: app-hook
+      namespace: test-ns
+      type: exec
+      ops:
+        - name: quiesce
+          command: sync
+  workflows:
+    - name: backup
+      sequence:
+        - group: r-group
+        - hook: app-hook/quiesce
+    - name: restore
+      sequence:
+        - group: v-group

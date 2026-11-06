@@ -1,0 +1,18 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: invalid-enum-recipe
+  namespace: test-ns
+spec:
+  appType: stateful
+  groups:
+    - name: r-group
+      type: resource
+  workflows:
+    - name: backup
+      failOn: invalid-fail-mode
+      sequence:
+        - group: r-group
+    - name: restore
+      sequence:
+        - group: r-group
