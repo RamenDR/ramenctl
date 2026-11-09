@@ -9,6 +9,7 @@ import (
 	"github.com/ramendr/ramenctl/pkg/console"
 	"github.com/ramendr/ramenctl/pkg/validate/application"
 	"github.com/ramendr/ramenctl/pkg/validate/clusters"
+	"github.com/ramendr/ramenctl/pkg/validate/recipe"
 	"github.com/ramendr/ramenctl/pkg/validation"
 )
 
@@ -59,6 +60,29 @@ func Application(opts command.ApplicationOptions) error {
 
 	if opts.Interactive {
 		cmd.BrowseReport()
+	}
+
+	return failed
+}
+
+// Recipe reads the Recipe YAML at path, runs offline semantic checks, and writes
+// the recipe validation status report to the output directory.
+// It returns a non-nil error when any problem-level issue is found or when the file
+// cannot be read or parsed.
+func Recipe(path string, opts command.Options) error {
+	cmd, err := command.ForTest(recipe.CommandName, nil, opts.OutputDir)
+	if err != nil {
+		return console.Failed(err)
+	}
+	defer cmd.Close()
+
+	console.Info("Using report %q", opts.OutputDir)
+
+	validate := recipe.NewCommand(cmd, path)
+
+	var failed error
+	if err := validate.Run(); err != nil {
+		failed = console.Failed(err)
 	}
 
 	return failed
