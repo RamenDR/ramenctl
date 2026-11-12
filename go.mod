@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: The RamenDR authors
+// SPDX-License-Identifier: Apache-2.0
+
 module github.com/ramendr/ramenctl
 
 // Required minimum version, must be available in downstream builders.
