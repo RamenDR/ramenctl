@@ -6,32 +6,41 @@ SPDX-License-Identifier: Apache-2.0
 # ramenctl init
 
 The init command crates a configuration file required for other *ramenctl*
-commands.
+commands and installs AI agent skills for other *ramenctl* commands.
 
 ```console
 % ramenctl init -h
-Create configuration file for your clusters
+Create configuration file and install AI skills
 
 Usage:
   ramenctl init [flags]
 
 Flags:
+  -a, --agent string     AI agent to install skills for (bob, claude, codex, cursor, generic) (default "generic")
       --envfile string   ramen testing environment file
   -h, --help             help for init
 
 Global Flags:
   -c, --config string   configuration file (default "config.yaml")
+      --interactive     enable interactive features (default auto)
 ```
 
-## Creating a configuration file
+## Getting started
 
 The init command creates a configuration file named "config.yaml" in the current
-directory:
+and installs AI skills in the current directory:
 
 ```console
 $ ramenctl init
+⭐ Using config "config.yaml"
 
-✅ Created config file "config.yaml" - please modify for your clusters
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills in ".agents/skills/"
+   ✅ Created context file "AGENTS.md"
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
 ```
 
 > [!IMPORTANT]
@@ -40,6 +49,22 @@ $ ramenctl init
 
 Other *ramenctl* commands use "config.yaml" by default.
 
+### AI skills
+
+`ramenctl init` installs AI agent skills alongside the configuration file in the
+current directory. After running `init`, the directory is ready for agentic
+usage out of the box.
+
+Use the `--agent` (`-a`) flag to install skills in the format expected by your
+AI tool (e.g. `ramenctl init -a cursor`). The default generic format works with
+any agent.
+
+Running `init` again is safe. Existing skill files and context files are not
+overwritten, preserving any user modifications.
+
+For more details on available skills, supported agents, and output directory
+conventions, see [AI Skills](skills.md).
+
 ## Creating configuration file for a ramen testing environment
 
 When using a ramen testing environment we can create a configuration file
@@ -47,9 +72,16 @@ optimized for the testing environment using the `--envfile` option:
 
 ```console
 $ ramenctl init --envfile ../ramen/test/envs/regional-dr.yaml
+⭐ Using config "config.yaml"
 ⭐ Using envfile "../ramen/test/envs/regional-dr.yaml"
 
-✅ Created config file "config.yaml" - please modify for your clusters
+🔎 Initializing ...
+   ✅ Created config file "config.yaml" - please modify for your clusters
+   ✅ Created skills in ".agents/skills/"
+   ✅ Created context file "AGENTS.md"
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
 ```
 
 You can edit the configuration file to change the default tests.
@@ -64,8 +96,15 @@ Create a configuration file named "myenv.yaml":
 
 ```console
 $ ramenctl init --config myenv.yaml
+⭐ Using config "myenv.yaml"
 
-✅ Created config file "myenv.yaml" - please modify for your clusters
+🔎 Initializing ...
+   ✅ Created config file "myenv.yaml" - please modify for your clusters
+   ✅ Created skills in ".agents/skills/"
+   ✅ Created context file "AGENTS.md"
+      Instruct your agent to read AGENTS.md
+
+✅ Init completed
 ```
 
 To use the configuration file with other commands, specify it with the
@@ -82,6 +121,10 @@ $ ramenctl test run --config myenv.yaml -o test
 
 All *ramenctl* commands require the `clusters` and `clusterSet` options. For the
 validate and gather commands, these are the only options needed.
+
+> [!TIP]
+> You can ask your AI agent to configure the options for your environment using
+> the skills installed by `ramenctl init`.
 
 > [!TIP]
 > When using a ramen testing environment, the `--envfile` option configures

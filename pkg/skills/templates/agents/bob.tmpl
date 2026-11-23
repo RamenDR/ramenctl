@@ -1,0 +1,42 @@
+{{- /* SPDX-FileCopyrightText: The RamenDR authors */ -}}
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+# {{.Command.Name}}
+
+`{{.Command.Name}}` manages disaster recovery for OpenShift and Kubernetes
+clusters.
+
+## Critical workflow rule
+
+BEFORE taking ANY action on a {{.Command.Name}} task, you MUST:
+1. Identify which ramenctl command the user needs (init, validate, gather, test)
+2. Read the corresponding skill file from .bob/skills/{{.Command.Slug}}-COMMAND/SKILL.md
+3. Follow the exact steps, flags, and workflow documented in the skill
+
+Skills contain required steps, flags, expected output, and troubleshooting
+guidance that you need to follow precisely.
+
+## Running commands
+
+**CRITICAL: When executing ANY {{.Command.Name}} command with execute_command:**
+
+- **ALWAYS use `<timeout>0</timeout>`** — {{.Command.Name}} commands can
+  take several minutes gathering data from remote clusters and S3.
+- **NEVER use `<background>true</background>`** — run in foreground only.
+- **NEVER cancel or kill** a running {{.Command.Name}} command — let it
+  complete naturally.
+- **DO NOT retry** a command that timed out — report the timeout and let
+  the user decide.
+
+Example:
+
+```xml
+<execute_command>
+<command>{{.Command.Name}} validate application ...</command>
+<timeout>0</timeout>
+<background>false</background>
+</execute_command>
+```
+
+## Important
+
+Switch to advanced mode to discover the {{.Command.Name}} skills.
