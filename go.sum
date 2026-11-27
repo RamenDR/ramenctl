@@ -259,8 +259,8 @@ github.com/ramendr/ramen/api v0.1.0 h1:dFHlYh7zlqBAA5MUvHbjhvZu05+TMJLmKs6doZSbL
 github.com/ramendr/ramen/api v0.1.0/go.mod h1:OcpEzl0uLzjiZ4WiYEhWND5oCqxekFfbLZ2MRlodLMI=
 github.com/ramendr/ramen/e2e v0.0.0-20261015142229-7a814c08fc22 h1:ZdAMdoHItePIqegFBDWCDMLDiaaXmhtjFpKjsFFdv4o=
 github.com/ramendr/ramen/e2e v0.0.0-20261015142229-7a814c08fc22/go.mod h1:0YRUTMMSo6YeDyiX3xsI1MhsHy+7N08/IsBjZ230bHo=
-github.com/ramendr/recipe v0.0.0-20250507125257-0295a01da567 h1:QRcHe6GTJAgLK7zgF6ivwZ6B0SFe1tONbA7VMQMWjMM=
-github.com/ramendr/recipe v0.0.0-20250507125257-0295a01da567/go.mod h1:dGXrk743fq6VG8u6lflEce7ITM7d/9xSBeAbI2RXl9s=
+github.com/ramendr/recipe v0.0.0-20260511145713-454117f61334 h1:zQm08iieBQVHdoJ4nzeeRiC9t3aYf0ZdoRoSPtCHZc4=
+github.com/ramendr/recipe v0.0.0-20260511145713-454117f61334/go.mod h1:Bn5mdTSHEb5lb9uHFMy++syF2v5CKrWyiOjIY5eFmMc=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

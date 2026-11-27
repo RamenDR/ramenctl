@@ -1,0 +1,13 @@
+apiVersion: ramendr.openshift.io/v1alpha1
+kind: Recipe
+metadata:
+  name: unknown-group-recipe
+  namespace: test-ns
+spec:
+  appType: stateless
+  workflows:
+    - name: backup
+      sequence:
+        - group: nonexistent-group
+    - name: restore
+      sequence: []
